@@ -1,5 +1,5 @@
 # build stage
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM maven:3.9.11-eclipse-temurin-21 AS build
 
 # Setting the working directory inside the container
 WORKDIR /app
