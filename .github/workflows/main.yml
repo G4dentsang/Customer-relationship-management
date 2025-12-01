@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: [self-hosted, linux]
 
     steps:
       # Checkout the repository
