@@ -23,4 +23,4 @@ COPY --from=build /app/target/b2b-0.0.1-SNAPSHOT.jar  /app/app.jar
 EXPOSE 8080
 
 # Command to run my Spring Boot application
-CMD ["java", "-jar", "/app/app.jar"]
+CMD ["java", "-jar", "/app/app.jar", "--spring.profiles.active=prod"]
