@@ -46,6 +46,12 @@ public class User {
     private LocalDate createdAt;
     @OneToMany(mappedBy = "user")
     private List<UserOrganization> userOrganizations = new ArrayList<>();
+    public User(String userName, String email, String password ) {
+        this.email = email;
+        this.password = password;
+        this.userName = userName;
+    }
+
 
 //    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 //    private List<Address> addresses = new ArrayList<>();

@@ -20,6 +20,11 @@ public class Organization {
     private Integer organizationId;
     private String organizationName;
     private LocalDate createdAt;
+
     @OneToMany(mappedBy = "organization")
     private List<UserOrganization> userOrganizations = new ArrayList<>();
+    public Organization(String organizationName, LocalDate createdAt) {
+        this.organizationName = organizationName;
+        this.createdAt = createdAt;
+    }
 }

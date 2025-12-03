@@ -20,5 +20,10 @@ public class UserOrganization {
     @ManyToOne
     private Role role;
     private boolean isPrimary;
+    public UserOrganization(User user, Organization organization, Role role, boolean isPrimary) {
+        this.user = user;
+        this.organization = organization;
+        this.role = role;
+    }
 
 }

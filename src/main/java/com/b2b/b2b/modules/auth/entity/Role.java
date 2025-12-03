@@ -19,7 +19,7 @@ public class Role {
     @Column(name="role_id")
     private Integer roleId;
     @Enumerated(EnumType.STRING)
-    private AppRoles appRoles; //from enum i created
+    private AppRoles appRoles;
     @OneToMany(mappedBy = "role")
     private List<UserOrganization> userOrganizations = new ArrayList<>();
 }
