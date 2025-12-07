@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService
         organizationRepository.save(organization);
 
         //create user
-        User user  = new User(signUpRequestDTO.getUserName(), passwordEncoder.encode(signUpRequestDTO.getPassword()), signUpRequestDTO.getEmail());
+        User user  = new User(signUpRequestDTO.getUserName(),signUpRequestDTO.getEmail(), passwordEncoder.encode(signUpRequestDTO.getPassword()));
         userRepository.save(user);
         Role adminRole = roleRepository.findByAppRoles(AppRoles.ROLE_ADMIN).orElseThrow(()-> new RuntimeException("ROLE_ADMIN not found"));
 
