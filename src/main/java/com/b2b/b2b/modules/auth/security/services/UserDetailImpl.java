@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class UserDetailImpl implements UserDetails {
     @Serial
     private static final long serialVersionUID = 1L;
-
     private Integer id;
     private String userName;
     private String email;
@@ -36,11 +35,11 @@ public class UserDetailImpl implements UserDetails {
                                                     .map(role -> new SimpleGrantedAuthority(role.getAppRoles().name()))
                                                     .collect(Collectors.toList());
         return new UserDetailImpl(
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getPassword(),
-                grantedAuthorities);
+                  user.getUserId(),
+                  user.getUserName(),
+                  user.getEmail(),
+                  user.getPassword(),
+                  grantedAuthorities);
 
     }
     @Override
@@ -57,6 +56,5 @@ public class UserDetailImpl implements UserDetails {
     public String getUsername() {
         return userName;
     }
-
 
 }

@@ -1,15 +1,22 @@
 package com.b2b.b2b.modules.auth.security.jwt;
 
 import com.b2b.b2b.modules.auth.security.services.UserDetailImpl;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.WebUtils;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 
@@ -27,6 +34,15 @@ public class JwtUtils {
     @Value("${spring.ecom.app.jwtCookieName}")
     private String jwtCookie;
 
+    public String getJwtTokenFromCookie(HttpServletRequest request) {
+        Cookie cookie = WebUtils.getCookie(request, jwtCookie);
+        if(cookie != null) {
+            return cookie.getValue();
+        }else {
+            return null;
+        }
+    }
+
     public ResponseCookie generateJwtToken(UserDetailImpl userPrincipal) {
         String jwt = generateTokenFromUsername(userPrincipal.getUsername());
         return ResponseCookie.from(jwtCookie, jwt)
@@ -37,6 +53,7 @@ public class JwtUtils {
                 .sameSite("Lax")//Strict in prod
                 .build();
     }
+
     public String generateTokenFromUsername(String username) {
         return Jwts.builder()
                 .subject(username)
@@ -45,7 +62,35 @@ public class JwtUtils {
                 .signWith(key())
                 .compact();
     }
+
+    public String getUserNameFromJwtToken(String token) {
+        return Jwts.parser()
+                 .verifyWith((SecretKey) key()).build()
+                 .parseSignedClaims(token).getPayload().getSubject();
+    }
+
+    public boolean validateJwtToken(String jwtToken) {
+        try {
+            Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(jwtToken);
+            return true;
+        } catch (MalformedJwtException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT token is expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            logger.error("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("JWT claims string is empty: {}", e.getMessage());
+        }
+        return false;
+
+    }
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    }
+    public ResponseCookie getCleanJwtCookie() {
+        return ResponseCookie.from(jwtCookie,null)
+                .path("/app/v1")
+                .build();
     }
 }

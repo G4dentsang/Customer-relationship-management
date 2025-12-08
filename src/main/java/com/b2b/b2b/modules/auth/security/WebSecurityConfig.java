@@ -2,6 +2,7 @@ package com.b2b.b2b.modules.auth.security;
 
 
 import com.b2b.b2b.modules.auth.security.jwt.AuthEntryPointJwt;
+import com.b2b.b2b.modules.auth.security.jwt.JwtAuthTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,20 +16,25 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
     private final AuthEntryPointJwt authEntryPointJwt;
     private final UserDetailsService userDetailsService;
-    public WebSecurityConfig(AuthEntryPointJwt authEntryPointJwt,  UserDetailsService userDetailsService) {
+    private final JwtAuthTokenFilter jwtAuthTokenFilter;
+
+    public WebSecurityConfig(AuthEntryPointJwt authEntryPointJwt,  UserDetailsService userDetailsService,  JwtAuthTokenFilter jwtAuthTokenFilter) {
         this.authEntryPointJwt = authEntryPointJwt;
         this.userDetailsService = userDetailsService;
+        this.jwtAuthTokenFilter = jwtAuthTokenFilter;
     }
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -41,10 +47,10 @@ public class WebSecurityConfig {
         return authConfig.getAuthenticationManager();
     }
     @Bean
-    public SecurityFilterChain FilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain FilterChain(HttpSecurity http, JwtAuthTokenFilter jwtAuthTokenFilter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
 
-       // http.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt));
+        http.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt));
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
@@ -52,7 +58,8 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated()
         );
         http.authenticationProvider(daoAuthenticationProvider());
-  //      http.headers(headers -> headers.frameOptions(frameOptionsConfig ->  frameOptionsConfig.sameOrigin()));
+        http.addFilterBefore(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.headers(headers -> headers.frameOptions(frameOptionsConfig ->  frameOptionsConfig.sameOrigin()));
 
         return http.build();
     }
