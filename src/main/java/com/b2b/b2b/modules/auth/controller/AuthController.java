@@ -3,7 +3,7 @@ package com.b2b.b2b.modules.auth.controller;
 import com.b2b.b2b.modules.auth.security.jwt.JwtUtils;
 import com.b2b.b2b.modules.auth.security.request.SignInRequestDTO;
 import com.b2b.b2b.modules.auth.security.request.SignUpRequestDTO;
-import com.b2b.b2b.modules.auth.security.response.MessageResponse;
+import com.b2b.b2b.shared.MessageResponse;
 import com.b2b.b2b.modules.auth.security.response.SignInResponseDTO;
 import com.b2b.b2b.modules.auth.security.services.UserDetailImpl;
 import com.b2b.b2b.modules.auth.service.AuthService;

@@ -20,16 +20,26 @@ import java.util.List;
 public class Lead {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     private String leadName;
     private String leadEmail;
     private String leadPhone;
     private String leadStatus;
     private LocalDateTime createdAt;
+
     @ManyToOne
     private Organization organization;
+
     @OneToMany(mappedBy = "lead")
     private List<Deals> deals = new ArrayList<>();
+
+    public Lead(String leadEmail, String leadName, String leadPhone) {
+        this.leadEmail = leadEmail;
+        this.leadName = leadName;
+        this.leadPhone = leadPhone;
+        this.leadStatus = "New";
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

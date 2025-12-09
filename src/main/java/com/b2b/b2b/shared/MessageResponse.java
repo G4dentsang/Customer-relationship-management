@@ -1,4 +1,4 @@
-package com.b2b.b2b.modules.auth.security.response;
+package com.b2b.b2b.shared;
 
 import lombok.Getter;
 import lombok.Setter;
