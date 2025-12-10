@@ -28,6 +28,7 @@ public class UserOrganization {
         this.user = user;
         this.organization = organization;
         this.role = role;
+        this.isPrimary = isPrimary;
     }
 
 }

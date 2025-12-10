@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.crm.lead.entity;
 
 import com.b2b.b2b.modules.auth.entity.Organization;
+import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.deal.entity.Deals;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,11 +25,15 @@ public class Lead {
     private String leadName;
     private String leadEmail;
     private String leadPhone;
-    private String leadStatus;
+    @Enumerated(EnumType.STRING)
+    private LeadStatus leadStatus = LeadStatus.NEW;
     private LocalDateTime createdAt;
 
     @ManyToOne
     private Organization organization;
+
+    @ManyToOne
+    private Company company;
 
     @OneToMany(mappedBy = "lead")
     private List<Deals> deals = new ArrayList<>();
@@ -37,7 +42,6 @@ public class Lead {
         this.leadEmail = leadEmail;
         this.leadName = leadName;
         this.leadPhone = leadPhone;
-        this.leadStatus = "New";
     }
 
     @PrePersist

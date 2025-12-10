@@ -54,7 +54,7 @@ public class WebSecurityConfig {
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/app/v1/auth/**").permitAll()
+                .requestMatchers("/app/v1/**").permitAll()
                 .anyRequest().authenticated()
         );
         http.authenticationProvider(daoAuthenticationProvider());

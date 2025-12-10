@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 
+
 @Data
 @Getter
 @Setter
@@ -21,5 +22,9 @@ public class LeadCreateDTO {
     private String leadEmail;
     @Size(min = 1, max = 20)
     private String leadPhone;
-   // private Organization organization; later
+    @Size(min = 1, max = 50)
+    private String companyName;
+    private String website;
+    @Size(min = 1, max = 50)
+    private String industry;
 }

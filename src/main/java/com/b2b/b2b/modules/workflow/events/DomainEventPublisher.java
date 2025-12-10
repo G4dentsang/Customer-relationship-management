@@ -1,17 +1,23 @@
 package com.b2b.b2b.modules.workflow.events;
 
+
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 
-public class DomainEventPublisher implements ApplicationEventPublisher
+@Component
+public class DomainEventPublisher
 {
-    @Override
-    public void publishEvent(ApplicationEvent event) {
-        ApplicationEventPublisher.super.publishEvent(event);
+    private final ApplicationEventPublisher applicationEventPublisher;
+    public  DomainEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    {
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    @Override
-    public void publishEvent(Object event) {
-
+    public void publishEvent(ApplicationEvent event){
+        applicationEventPublisher.publishEvent(event);
+    }
+    public void publishEvent(Object event){
+        applicationEventPublisher.publishEvent(event);
     }
 }

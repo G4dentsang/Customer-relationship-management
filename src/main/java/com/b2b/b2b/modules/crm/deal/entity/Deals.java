@@ -22,6 +22,7 @@ public class Deals {
     private Long id;
     private String dealName;
     private Double dealAmount;
+    private DealStatus dealStatus = DealStatus.CREATED;
     private LocalDateTime closedAt;
     private LocalDateTime createdAt;
     @ManyToOne
