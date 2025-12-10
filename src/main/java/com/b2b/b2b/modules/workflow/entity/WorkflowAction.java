@@ -1,0 +1,25 @@
+package com.b2b.b2b.modules.workflow.entity;
+
+import com.b2b.b2b.modules.workflow.enums.WorkflowActionType;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class WorkflowAction {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Enumerated(EnumType.STRING)
+    private WorkflowActionType actionType;
+//    @Lob
+//    private String actionConfigJson;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WorkflowRule workflowRule;
+}

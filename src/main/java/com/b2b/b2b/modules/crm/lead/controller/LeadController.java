@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.lead.controller;
 
 import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.crm.lead.payloads.LeadCreateDTO;
+import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.service.LeadService;
 import com.b2b.b2b.shared.AuthUtil;
@@ -25,10 +25,10 @@ public class LeadController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> createLead(@Valid @RequestBody LeadCreateDTO leadCreateDTO) {
+    public ResponseEntity<?> createLead(@Valid @RequestBody CreateLeadRequestDTO createLeadRequestDTO) {
         User user = authUtil.loggedInUser();
         logger.info("Logged in USer : {}", user);
-        LeadResponseDTO savedLeadResponseDTO = leadService.createLead(leadCreateDTO, user);
+        LeadResponseDTO savedLeadResponseDTO = leadService.createLead(createLeadRequestDTO, user);
         return new ResponseEntity<>(savedLeadResponseDTO,HttpStatus.CREATED);
     }
 

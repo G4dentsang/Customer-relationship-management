@@ -1,21 +1,30 @@
 package com.b2b.b2b.modules.crm.lead.payloads;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+
+
 
 @Data
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LeadUpdateDTO {
+public class CreateLeadRequestDTO {
+    @NotBlank
     @Size(min = 1, max = 50)
     private String leadName;
+    @NotBlank
     @Size(min = 1, max = 50)
     @Email
     private String leadEmail;
     @Size(min = 1, max = 20)
     private String leadPhone;
-    private String leadStatus;
+    @Size(min = 1, max = 50)
+    private String companyName;
+    private String website;
+    @Size(min = 1, max = 50)
+    private String industry;
 }

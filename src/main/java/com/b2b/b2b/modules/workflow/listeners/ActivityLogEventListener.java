@@ -8,16 +8,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LeadEventListener {
-    Logger logger = LoggerFactory.getLogger(LeadEventListener.class);
+public class ActivityLogEventListener {
+    Logger logger = LoggerFactory.getLogger(ActivityLogEventListener.class);
     @EventListener
     @Async
     public void handleOnLeadCreatedEvent(LeadCreatedEvent leadCreatedEvent)
     {
-        logger.info("lead created with id {}", leadCreatedEvent.getId());
-        //pipeline starts
-        //1 evaluate workflow rule
-        //2 trigger pipeline action
-        //logging
+        //logger for replaces ActivityLog service
+        logger.info("Activity logging  with id {}", leadCreatedEvent.getId());
+        //other domain related task
     }
 }

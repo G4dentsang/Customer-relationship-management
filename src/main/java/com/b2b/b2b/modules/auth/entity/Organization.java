@@ -3,6 +3,7 @@ package com.b2b.b2b.modules.auth.entity;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipelines;
+import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,10 +34,10 @@ public class Organization {
     private List<Company> companies = new ArrayList<>();
     @OneToMany(mappedBy = "organization")
     private List<Pipelines> pipelines = new ArrayList<>();
-
-
     @OneToMany(mappedBy = "organization")
     private List<UserOrganization> userOrganizations = new ArrayList<>();
+    @OneToMany(mappedBy = "organization")
+    private List<WorkflowRule> workflowRule = new ArrayList<>();
     public Organization(String organizationName, LocalDate createdAt) {
         this.organizationName = organizationName;
         this.createdAt = createdAt;

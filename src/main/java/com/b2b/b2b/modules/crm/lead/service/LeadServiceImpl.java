@@ -8,7 +8,7 @@ import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.lead.payloads.LeadCreateDTO;
+import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
@@ -19,37 +19,37 @@ import org.springframework.stereotype.Service;
 @Service
 public class LeadServiceImpl implements LeadService {
     private final LeadRepository leadRepository;
-    private final DomainEventPublisher domainEventPublisher;
     private final ModelMapper modelMapper;
     private final CompanyRepository companyRepository;
+    private final DomainEventPublisher domainEventPublisher;
 
-    public LeadServiceImpl(LeadRepository leadRepository, DomainEventPublisher domainEventPublisher, ModelMapper modelMapper, CompanyRepository companyRepository) {
+    public LeadServiceImpl(LeadRepository leadRepository, ModelMapper modelMapper, CompanyRepository companyRepository, DomainEventPublisher domainEventPublisher) {
         this.leadRepository = leadRepository;
-        this.domainEventPublisher = domainEventPublisher;
         this.modelMapper = modelMapper;
         this.companyRepository = companyRepository;
+        this.domainEventPublisher = domainEventPublisher;
     }
     @Override
-    public LeadResponseDTO createLead(LeadCreateDTO leadCreateDTO, User user) {
+    public LeadResponseDTO createLead(CreateLeadRequestDTO createLeadRequestDTO, User user) {
 
-    Lead lead = modelMapper.map(leadCreateDTO,Lead.class);
+    Lead lead = modelMapper.map(createLeadRequestDTO,Lead.class);
     Organization organization = user.getUserOrganizations()
             .stream()
             .filter((userOrganization -> userOrganization.isPrimary()))
             .findFirst()
             .orElseThrow(()-> new APIException("User has no primary organization"))
             .getOrganization();
-    Company company = companyRepository.findByCompanyNameAndOrganization(leadCreateDTO.getCompanyName(), organization);
+    Company company = companyRepository.findByCompanyNameAndOrganization(createLeadRequestDTO.getCompanyName(), organization);
 
     if(company==null){
-        company = new Company(leadCreateDTO.getCompanyName(),leadCreateDTO.getWebsite(),
-        leadCreateDTO.getIndustry(), organization);
+        company = new Company(createLeadRequestDTO.getCompanyName(), createLeadRequestDTO.getWebsite(),
+        createLeadRequestDTO.getIndustry(), organization);
         };
     companyRepository.save(company);
 
-    lead.setLeadName(leadCreateDTO.getLeadName());
-    lead.setLeadEmail(leadCreateDTO.getLeadEmail());
-    lead.setLeadPhone(leadCreateDTO.getLeadPhone());
+    lead.setLeadName(createLeadRequestDTO.getLeadName());
+    lead.setLeadEmail(createLeadRequestDTO.getLeadEmail());
+    lead.setLeadPhone(createLeadRequestDTO.getLeadPhone());
     lead.setOrganization(organization);
     lead.setCompany(company);
     Lead savedLead = leadRepository.save(lead);
@@ -64,9 +64,7 @@ public class LeadServiceImpl implements LeadService {
             savedLead.getCompany().getWebsite(),
             savedLead.getCompany().getIndustry()
     );
-    //Async
     domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead, savedLead.getId()));
-    //event listener later after workflow rules and conditions added*************
 
     return new LeadResponseDTO(
             savedLead.getId(),
@@ -83,7 +81,7 @@ public class LeadServiceImpl implements LeadService {
 
 
     @Override
-    public void updateLead(Integer leadId, LeadCreateDTO leadCreateDTO) {
+    public void updateLead(Integer leadId, CreateLeadRequestDTO createLeadRequestDTO) {
       //  Lead lead = leadRepository.findById(leadId).orElseThrow();
     }
 }
