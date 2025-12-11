@@ -11,6 +11,7 @@ import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
+import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.modules.workflow.events.LeadCreatedEvent;
 import org.modelmapper.ModelMapper;
@@ -22,12 +23,15 @@ public class LeadServiceImpl implements LeadService {
     private final ModelMapper modelMapper;
     private final CompanyRepository companyRepository;
     private final DomainEventPublisher domainEventPublisher;
+    private final PipelineService pipelineService;
 
-    public LeadServiceImpl(LeadRepository leadRepository, ModelMapper modelMapper, CompanyRepository companyRepository, DomainEventPublisher domainEventPublisher) {
+    public LeadServiceImpl(LeadRepository leadRepository, ModelMapper modelMapper, CompanyRepository companyRepository,
+                           DomainEventPublisher domainEventPublisher, PipelineService pipelineService) {
         this.leadRepository = leadRepository;
         this.modelMapper = modelMapper;
         this.companyRepository = companyRepository;
         this.domainEventPublisher = domainEventPublisher;
+        this.pipelineService = pipelineService;
     }
     @Override
     public LeadResponseDTO createLead(CreateLeadRequestDTO createLeadRequestDTO, User user) {
@@ -64,6 +68,7 @@ public class LeadServiceImpl implements LeadService {
             savedLead.getCompany().getWebsite(),
             savedLead.getCompany().getIndustry()
     );
+    pipelineService.assignDefaultPipeline(savedLead);
     domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead, savedLead.getId()));
 
     return new LeadResponseDTO(

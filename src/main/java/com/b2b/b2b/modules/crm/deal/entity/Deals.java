@@ -2,7 +2,7 @@ package com.b2b.b2b.modules.crm.deal.entity;
 
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStages;
+import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +30,7 @@ public class Deals {
     @ManyToOne
     private Company company;
     @ManyToOne
-    private PipelineStages pipelineStages;
+    private PipelineStage pipelineStage;
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

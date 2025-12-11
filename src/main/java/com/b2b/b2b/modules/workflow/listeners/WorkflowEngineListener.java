@@ -15,8 +15,8 @@ public class WorkflowEngineListener {
     public void handleOnLeadCreatedEvent(LeadCreatedEvent leadCreatedEvent)
     {
         //logger for replaces workflow run service
-        logger.info("Run workflow engine with id {}", leadCreatedEvent.getId());
+        logger.info("Run workflow engine for event object{}", leadCreatedEvent.getSource().toString());
         //Before the workflow engine can react to events, create workflow rules first
-        //workflow engine will launch internally pipeline
+        //call WorkflowEngineServiceimple.run(leadCreatedEvent.getLead())
     }
 }
