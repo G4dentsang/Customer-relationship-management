@@ -20,7 +20,7 @@ import java.util.List;
 public class WorkflowRule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     @Enumerated(EnumType.STRING)
     private WorkflowTriggerType workflowTriggerType;
     private String name;
@@ -33,7 +33,7 @@ public class WorkflowRule {
     @OneToMany(mappedBy = "workflowRule",  cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowAction> workflowActions = new ArrayList<>();
 
-    private boolean isActive = true;
+    private boolean isActive;
     private LocalDateTime createdAt;
 
     @PrePersist

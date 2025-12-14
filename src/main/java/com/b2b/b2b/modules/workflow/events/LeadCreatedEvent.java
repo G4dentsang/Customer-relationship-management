@@ -1,14 +1,13 @@
 package com.b2b.b2b.modules.workflow.events;
 
+import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import lombok.Getter;
-import org.springframework.context.ApplicationEvent;
 
 @Getter
-public class LeadCreatedEvent extends ApplicationEvent {
-    private final Integer id;
-    public LeadCreatedEvent(Object source, Integer id) {
-        super(source);
-        this.id = id;
+public class LeadCreatedEvent {
+    private final Lead lead;
+    public LeadCreatedEvent(Lead lead) {
+        this.lead = lead;
     }
 
 

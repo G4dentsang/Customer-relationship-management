@@ -18,8 +18,14 @@ public class WorkflowAction {
     private Long id;
     @Enumerated(EnumType.STRING)
     private WorkflowActionType actionType;
-//    @Lob
-//    private String actionConfigJson;
+    @Lob
+    private String actionConfigJson; //defines  actual action
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowRule workflowRule;
+
+    public WorkflowAction(WorkflowRule workflowRule, String actionConfigJson, WorkflowActionType actionType) {
+        this.workflowRule = workflowRule;
+        this.actionConfigJson = actionConfigJson;
+        this.actionType = actionType;
+    }
 }

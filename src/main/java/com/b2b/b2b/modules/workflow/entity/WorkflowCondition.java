@@ -16,8 +16,9 @@ public class WorkflowCondition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String field;
     @Enumerated(EnumType.STRING)
-    private WorkflowConditionOperator workflowCondition;
+    private WorkflowConditionOperator workflowConditionOperator;
     private String expectedValue;
     @ManyToOne
     private WorkflowRule workflowRule;

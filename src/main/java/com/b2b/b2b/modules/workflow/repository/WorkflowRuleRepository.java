@@ -1,4 +1,14 @@
 package com.b2b.b2b.modules.workflow.repository;
 
-public interface WorkflowRuleRepository {
+import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
+import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface WorkflowRuleRepository extends JpaRepository<WorkflowRule, Integer>
+{
+    List<WorkflowRule> findByOrganization_organizationIdAndWorkflowTriggerTypeAndIsActive(
+            Integer organizationId, WorkflowTriggerType  workflowTriggerType, Boolean isActive
+    );
 }

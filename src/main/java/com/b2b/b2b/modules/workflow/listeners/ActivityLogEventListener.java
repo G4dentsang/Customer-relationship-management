@@ -15,7 +15,7 @@ public class ActivityLogEventListener {
     public void handleOnLeadCreatedEvent(LeadCreatedEvent leadCreatedEvent)
     {
         //logger for replaces ActivityLog service
-        logger.info("Activity logging  with id {}", leadCreatedEvent.getId());
+        logger.info("Activity logging  with id {}", leadCreatedEvent.getLead().getId());
         //other domain related task
     }
 }

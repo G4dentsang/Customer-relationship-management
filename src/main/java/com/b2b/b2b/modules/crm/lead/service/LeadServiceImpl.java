@@ -69,7 +69,7 @@ public class LeadServiceImpl implements LeadService {
             savedLead.getCompany().getIndustry()
     );
     pipelineService.assignDefaultPipeline(savedLead);
-    domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead, savedLead.getId()));
+    domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead));
 
     return new LeadResponseDTO(
             savedLead.getId(),
