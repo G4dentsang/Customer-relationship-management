@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/app/v1/leads")
 public class LeadController {
@@ -27,9 +29,26 @@ public class LeadController {
     @PostMapping("")
     public ResponseEntity<?> createLead(@Valid @RequestBody CreateLeadRequestDTO createLeadRequestDTO) {
         User user = authUtil.loggedInUser();
-        logger.info("Logged in USer : {}", user);
         LeadResponseDTO savedLeadResponseDTO = leadService.createLead(createLeadRequestDTO, user);
         return new ResponseEntity<>(savedLeadResponseDTO,HttpStatus.CREATED);
+    }
+    @GetMapping("")
+    public ResponseEntity<?> getAllOrganizationLeads() {
+        User user = authUtil.loggedInUser();
+        List<LeadResponseDTO> leadResponseDTOs = leadService.getAllOrganizationLeads(user);
+        return new  ResponseEntity<>(leadResponseDTOs,HttpStatus.OK);
+    }
+    @GetMapping("/userOwned")
+    public ResponseEntity<?> getAllUserOwnedLeads() {
+        User user = authUtil.loggedInUser();
+        List<LeadResponseDTO> leadResponseDTOs = leadService.getAllUserOwnedLeads(user);
+        return new  ResponseEntity<>(leadResponseDTOs,HttpStatus.OK);
+    }
+    @GetMapping("/{leadId}")
+    public ResponseEntity<?> getLeadById(@PathVariable("leadId") Integer leadId) {
+        User user = authUtil.loggedInUser();
+        LeadResponseDTO leadResponseDTO = leadService.getLeadById(leadId, user);
+        return new ResponseEntity<>(leadResponseDTO,HttpStatus.OK);
     }
 
 

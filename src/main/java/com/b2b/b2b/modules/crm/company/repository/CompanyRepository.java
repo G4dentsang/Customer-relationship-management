@@ -4,9 +4,11 @@ import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface CompanyRepository extends JpaRepository<Company, Integer>
 {
-    Company findByCompanyName(String companyName);
+    List<Company> findAllByOrganizationOrganizationId(Integer organizationId);
     Company findByCompanyNameAndOrganization(String companyName, Organization organization);
 
 }
