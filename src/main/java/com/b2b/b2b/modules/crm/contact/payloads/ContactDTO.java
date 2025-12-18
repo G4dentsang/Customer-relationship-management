@@ -13,5 +13,5 @@ public class ContactDTO {
     private String lastName;
     private String email;
     private String phone;
-    private Company company;
+    private String companyName;
 }

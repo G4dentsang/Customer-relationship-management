@@ -7,6 +7,9 @@ import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
+import com.b2b.b2b.modules.crm.contact.entity.Contacts;
+import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
+import com.b2b.b2b.modules.crm.contact.repository.ContactRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +18,11 @@ import java.util.List;
 public class CompanyServiceImpl implements CompanyService
 {
     private final CompanyRepository companyRepository;
+    private final ContactRepository contactRepository;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository) {
+    public CompanyServiceImpl(CompanyRepository companyRepository, ContactRepository contactRepository) {
         this.companyRepository = companyRepository;
+        this.contactRepository = contactRepository;
     }
 
     @Override
@@ -51,7 +56,7 @@ public class CompanyServiceImpl implements CompanyService
                 .findFirst()
                 .orElseThrow(()-> new APIException("User has no primary Organization"))
                 .getOrganization();
-        List<Company> companiesList = companyRepository.findAllByOrganizationOrganizationId(organization.getOrganizationId());
+        List<Company> companiesList = companyRepository.findAllByOrganization(organization);
         return companiesList.stream().map(company ->
          new CompanyResponseDTO(
                 company.getId(),
@@ -77,5 +82,24 @@ public class CompanyServiceImpl implements CompanyService
                 companyFrmDB.getWebsite(),
                 companyFrmDB.getIndustry()
         );
+    }
+
+    @Override
+    public List<ContactResponseDTO> getCompanyContacts(Integer companyId, User user) {
+        Organization organization = user.getUserOrganizations()
+                .stream()
+                .filter((userOrganization -> userOrganization.isPrimary()))
+                .findFirst()
+                .orElseThrow(()-> new APIException("User has no primary Organization"))
+                .getOrganization();
+        List<Contacts> companyContacts = contactRepository.findAllContactsByCompanyIdAndOrganization(companyId,organization);
+        return companyContacts.stream().map(c -> new ContactResponseDTO(
+                c.getId(),
+                c.getFirstName(),
+                c.getLastName(),
+                c.getEmail(),
+                c.getPhone(),
+                c.getCompany().getCompanyName()
+        ) ).toList();
     }
 }

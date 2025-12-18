@@ -16,7 +16,7 @@ import lombok.Setter;
 public class Contacts {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private  Integer id;
     private String firstName;
     private String lastName;
     private String email;
