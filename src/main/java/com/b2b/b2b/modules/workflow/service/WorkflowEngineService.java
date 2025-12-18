@@ -6,5 +6,5 @@ import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import java.util.List;
 
 public interface WorkflowEngineService {
-    void run(Lead lead);
+    void run(Lead lead, List<WorkflowRule> rules);
 }

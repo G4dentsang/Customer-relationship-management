@@ -18,7 +18,7 @@ public class WorkflowAction {
     private Long id;
     @Enumerated(EnumType.STRING)
     private WorkflowActionType actionType;
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String actionConfigJson; //defines  actual action
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowRule workflowRule;

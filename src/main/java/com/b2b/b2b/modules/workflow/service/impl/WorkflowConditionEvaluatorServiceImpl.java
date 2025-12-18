@@ -2,7 +2,10 @@ package com.b2b.b2b.modules.workflow.service.impl;
 
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
+import com.b2b.b2b.modules.workflow.listeners.WorkflowEngineListener;
 import com.b2b.b2b.modules.workflow.service.WorkflowConditionEvaluatorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -13,7 +16,9 @@ public class WorkflowConditionEvaluatorServiceImpl implements WorkflowConditionE
 {
     @Override
     public boolean evaluateCondition(List<WorkflowCondition> conditions, Lead lead) {
+        Logger logger = LoggerFactory.getLogger(WorkflowEngineListener.class);
         for (WorkflowCondition workflowCondition : conditions) {
+            logger.info("existing conditions: {}", workflowCondition);
             String actualValue = getFieldValue(lead, workflowCondition.getField());
             String expectedValue = workflowCondition.getExpectedValue();
             switch(workflowCondition.getWorkflowConditionOperator()){

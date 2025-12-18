@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.crm.lead.entity;
 
 import com.b2b.b2b.modules.auth.entity.Organization;
+import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.deal.entity.Deals;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
@@ -45,6 +46,9 @@ public class Lead {
 
     @OneToMany(mappedBy = "lead")
     private List<Deals> deals = new ArrayList<>();
+
+    @ManyToOne
+    private User owner; //lead or deal
 
     public Lead(String leadEmail, String leadName, String leadPhone) {
         this.leadEmail = leadEmail;

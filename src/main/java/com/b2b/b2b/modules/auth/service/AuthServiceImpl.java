@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService
         //link User + Organization + Role
         UserOrganization userOrganization = new UserOrganization(user,organization,adminRole,true);
         userOrganizaitonRepository.save(userOrganization);
-        emailVerificationService.sendVerificationEmail(user);
+      //  emailVerificationService.sendVerificationEmail(user);
 
     }
 }

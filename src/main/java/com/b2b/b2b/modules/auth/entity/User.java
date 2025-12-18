@@ -1,5 +1,6 @@
 package com.b2b.b2b.modules.auth.entity;
 
+import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -48,6 +49,8 @@ public class User {
     private LocalDate createdAt;
     @OneToMany(mappedBy = "user")
     private List<UserOrganization> userOrganizations = new ArrayList<>();
+    @OneToMany(mappedBy = "owner")
+    private  List<Lead> leads = new ArrayList<>();
     public User(String userName, String email, String password ) {
         this.email = email;
         this.password = password;

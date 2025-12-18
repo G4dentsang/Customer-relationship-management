@@ -27,6 +27,11 @@ public class WorkflowRuleServiceImpl implements WorkflowRuleService {
         return workflowRuleRepository.findByOrganization_organizationIdAndWorkflowTriggerTypeAndIsActive(orgId, triggerType, isActive);
     }
 
+    public List<WorkflowRule> getWorkflowRulesEAGERLY(Integer orgId, WorkflowTriggerType triggerType, Boolean isActive) {
+        return workflowRuleRepository.findWorkflowRulesEagerly(orgId, triggerType, isActive);
+
+    }
+
     @Override
     public WorkflowRuleResponseDTO saveWorkflowRule(WorkflowRuleCreateDTO workflowRuleCreateDTO, User user) {
         //get organization
