@@ -1,6 +1,8 @@
 package com.b2b.b2b.modules.crm.lead.controller;
 
 import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
+import com.b2b.b2b.modules.crm.deal.service.DealService;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.service.LeadService;
@@ -19,10 +21,12 @@ import java.util.List;
 public class LeadController {
     Logger logger = LoggerFactory.getLogger(LeadController.class);
     private final LeadService leadService;
+    private final DealService dealService;
     private final AuthUtil authUtil;
 
-    public LeadController(LeadService leadService, AuthUtil authUtil) {
+    public LeadController(LeadService leadService,DealService dealService, AuthUtil authUtil) {
         this.leadService = leadService;
+        this.dealService = dealService;
         this.authUtil = authUtil;
     }
 
@@ -49,6 +53,13 @@ public class LeadController {
         User user = authUtil.loggedInUser();
         LeadResponseDTO leadResponseDTO = leadService.getLeadById(leadId, user);
         return new ResponseEntity<>(leadResponseDTO,HttpStatus.OK);
+    }
+
+    @PostMapping("/{leadId}/convert")
+    public ResponseEntity<?> convertLead(@PathVariable("leadId") Integer leadId) {
+        User user = authUtil.loggedInUser();
+        DealResponseDTO dealResponseDTO = dealService.convertFromLead(leadId,user);
+        return new ResponseEntity<>(dealResponseDTO,HttpStatus.OK);
     }
 
 

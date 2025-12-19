@@ -23,7 +23,7 @@ public class PipelineStage {
     private Long id;
     private String stageName; //later enum
     private String stageDescription;
-    private int stageOrder;// later enum
+    private Integer stageOrder;// later enum
     private LocalDateTime createdAt;
     @ManyToOne
     private Pipeline pipeline;

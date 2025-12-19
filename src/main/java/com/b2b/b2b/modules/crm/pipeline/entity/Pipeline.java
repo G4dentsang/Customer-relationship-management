@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.crm.pipeline.entity;
 
 import com.b2b.b2b.modules.auth.entity.Organization;
+import com.b2b.b2b.modules.crm.deal.entity.Deals;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import jakarta.persistence.*;
@@ -23,13 +24,17 @@ public class Pipeline {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String pipelineName;
-    private boolean isDefault;//every org 1 default pipeline
+    private boolean isDefault;
     private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    //every org 2 default pipeline
+    private PipelineType pipelineType;
     @ManyToOne
     private Organization organization;
     @OneToMany(mappedBy = "pipeline")
     private List<Lead> lead = new ArrayList<>();
-    //deal later
+    @OneToMany(mappedBy = "pipeline")
+    private List<Deals> deals = new ArrayList<>();
     @OneToMany(mappedBy = "pipeline", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<PipelineStage> pipelineStages = new ArrayList<>();
 

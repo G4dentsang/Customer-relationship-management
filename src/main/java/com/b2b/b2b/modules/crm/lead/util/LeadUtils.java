@@ -2,6 +2,7 @@ package com.b2b.b2b.modules.crm.lead.util;
 
 import com.b2b.b2b.modules.auth.payloads.OrganizationDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
+import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import org.springframework.stereotype.Component;
@@ -10,12 +11,13 @@ import org.springframework.stereotype.Component;
 public class LeadUtils {
     public LeadResponseDTO createLeadResponseDTO(Lead lead)
     {
-        OrganizationDTO orgDTO = new  OrganizationDTO(
+        OrganizationDTO org = new  OrganizationDTO(
                 lead.getOrganization().getOrganizationName(),
                 lead.getOrganization().getCreatedAt()
 
         );
-        CompanyDTO companyDTO = new  CompanyDTO(
+        CompanyResponseDTO company = new CompanyResponseDTO(
+                lead.getCompany().getId(),
                 lead.getCompany().getCompanyName(),
                 lead.getCompany().getWebsite(),
                 lead.getCompany().getIndustry()
@@ -28,8 +30,8 @@ public class LeadUtils {
                 lead.getLeadPhone(),
                 lead.getLeadStatus(),
                 lead.getCreatedAt(),
-                orgDTO,
-                companyDTO);
+                org,
+                company);
     }
 
 }

@@ -5,6 +5,7 @@ import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.deal.entity.Deals;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Lead {
+public class Lead implements PipelineAssignable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -31,6 +32,7 @@ public class Lead {
     @Enumerated(EnumType.STRING)
     private LeadStatus leadStatus = LeadStatus.NEW;
     private LocalDateTime createdAt;
+    private boolean readyForConversion;
 
     @ManyToOne
     private Organization organization;

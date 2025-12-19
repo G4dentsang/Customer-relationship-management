@@ -5,11 +5,9 @@ import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import com.b2b.b2b.modules.workflow.events.LeadCreatedEvent;
 import com.b2b.b2b.modules.workflow.service.WorkflowEngineService;
 import com.b2b.b2b.modules.workflow.service.WorkflowRuleService;
-import com.b2b.b2b.modules.workflow.service.impl.WorkflowRuleServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

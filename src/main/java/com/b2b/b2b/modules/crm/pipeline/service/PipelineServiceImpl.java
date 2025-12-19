@@ -4,11 +4,15 @@ import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.payloads.CreatePipelineRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineResponseDTO;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
 
 @Service
 public class PipelineServiceImpl implements PipelineService {
@@ -24,13 +28,20 @@ public class PipelineServiceImpl implements PipelineService {
         return null;
     }
 
+    @Transactional
     @Override
-    public void assignDefaultPipeline(Lead lead) {
-        Pipeline pipeline =  pipelineRepository.findDefaultPipelineByOrganizationId(lead.getOrganization().getOrganizationId());
-        PipelineStage  pipelineStage = pipeline.getPipelineStages().getFirst();
-        lead.setPipeline(pipeline);
-        lead.setPipelineStage(pipelineStage);
-        leadRepository.save(lead); //updated lead
+    public <T extends PipelineAssignable> void assignDefaultPipeline(T entity, PipelineType pipelineType) {
+
+        Pipeline pipeline =  pipelineRepository.findDefaultPipelineByOrganizationIdAndType(entity.getOrganization().getOrganizationId(), pipelineType);
+
+        PipelineStage  pipelineStage = pipeline.getPipelineStages()
+                .stream()
+                .sorted(Comparator.comparingInt(PipelineStage -> PipelineStage.getStageOrder()))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("PipelineStage not found"));
+
+        entity.setPipeline(pipeline);
+        entity.setPipelineStage(pipelineStage);
     }
 
 }

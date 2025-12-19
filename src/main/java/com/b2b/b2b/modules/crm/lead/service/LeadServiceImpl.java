@@ -13,6 +13,7 @@ import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.lead.util.LeadUtils;
+import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.modules.workflow.events.LeadCreatedEvent;
@@ -65,7 +66,7 @@ public class LeadServiceImpl implements LeadService {
     lead.setOrganization(organization);
     lead.setCompany(company);
     Lead savedLead = leadRepository.save(lead);
-    pipelineService.assignDefaultPipeline(savedLead);
+    pipelineService.assignDefaultPipeline(savedLead, PipelineType.LEAD);
     domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead));
     return leadUtils.createLeadResponseDTO(savedLead);
     }

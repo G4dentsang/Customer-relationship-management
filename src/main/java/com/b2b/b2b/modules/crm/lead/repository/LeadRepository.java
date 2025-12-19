@@ -8,4 +8,5 @@ import java.util.List;
 public interface LeadRepository extends JpaRepository<Lead, Integer> {
     List<Lead> findAllByOrganizationOrganizationId(Integer id);
     List<Lead> findAllByOwnerUserId(Integer id);
+
 }
