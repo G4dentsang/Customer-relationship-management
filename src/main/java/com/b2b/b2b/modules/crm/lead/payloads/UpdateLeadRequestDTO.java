@@ -1,5 +1,6 @@
 package com.b2b.b2b.modules.crm.lead.payloads;
 
+import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -17,5 +18,5 @@ public class UpdateLeadRequestDTO {
     private String leadEmail;
     @Size(min = 1, max = 20)
     private String leadPhone;
-    private String leadStatus;
+    private LeadStatus leadStatus;
 }

@@ -4,6 +4,7 @@ import com.b2b.b2b.modules.auth.entity.*;
 import com.b2b.b2b.modules.auth.repository.*;
 import com.b2b.b2b.modules.auth.security.request.SignUpRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.repository.PipelineStageRepository;
@@ -45,10 +46,18 @@ public class AuthServiceImpl implements AuthService
         Organization organization = new Organization(signUpRequestDTO.getOrganizationName(), LocalDate.now());
         organizationRepository.save(organization);
         //create default pipeline with default pipeline stage for all organization
-        Pipeline  defaultOrganizationPipeline = new Pipeline("Standard pipeline", true, LocalDateTime.now(), organization);
-        PipelineStage pipelineStage = new PipelineStage("NEW", "this is a default pipeline stage",1, LocalDateTime.now(), defaultOrganizationPipeline);
-        pipelineRepository.save(defaultOrganizationPipeline);
-        pipelineStageRepository.save(pipelineStage);
+        Pipeline  defaultOrganizationLeadPipeline = new Pipeline("Standard pipeline", true, LocalDateTime.now(), PipelineType.LEAD, organization);
+        pipelineRepository.save(defaultOrganizationLeadPipeline);
+
+        String[] leadPipelineStages = {"NEW","CONTACTED", "IN_PROGRESS", "QUALIFIED", "UNQUALIFIED", "CONVERTED"};
+        for (int i = 0; i < leadPipelineStages.length; i++) {
+           pipelineStageRepository.save(new PipelineStage( leadPipelineStages[i], "lead pipeline stage : " + leadPipelineStages[i],i, LocalDateTime.now(), defaultOrganizationLeadPipeline));
+        }
+        //for deal also later during dealUpdate method
+        Pipeline  defaultOrganizationDealPipeline = new Pipeline("Standard pipeline", true, LocalDateTime.now(),PipelineType.DEAL, organization);
+        PipelineStage pipelineDealStage = new PipelineStage("CREATED", "this is a default deal pipeline stage",0, LocalDateTime.now(), defaultOrganizationDealPipeline);
+        pipelineRepository.save(defaultOrganizationDealPipeline);
+        pipelineStageRepository.save(pipelineDealStage);
         //create user
         User user  = new User(signUpRequestDTO.getUserName(),signUpRequestDTO.getEmail(), passwordEncoder.encode(signUpRequestDTO.getPassword()));
         userRepository.save(user);

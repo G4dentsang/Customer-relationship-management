@@ -5,6 +5,7 @@ import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.service.DealService;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
+import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.service.LeadService;
 import com.b2b.b2b.shared.AuthUtil;
 import jakarta.validation.Valid;
@@ -36,6 +37,12 @@ public class LeadController {
         LeadResponseDTO savedLeadResponseDTO = leadService.createLead(createLeadRequestDTO, user);
         return new ResponseEntity<>(savedLeadResponseDTO,HttpStatus.CREATED);
     }
+    @PatchMapping("/{leadId}")
+    public ResponseEntity<?> updateLead(@PathVariable("leadId") Integer leadId,@Valid @RequestBody UpdateLeadRequestDTO updateLeadRequestDTO) {
+        LeadResponseDTO leadResponseDTO = leadService.updateLead(leadId, updateLeadRequestDTO);
+        return new  ResponseEntity<>(leadResponseDTO,HttpStatus.OK);
+    }
+
     @GetMapping("")
     public ResponseEntity<?> getAllOrganizationLeads() {
         User user = authUtil.loggedInUser();

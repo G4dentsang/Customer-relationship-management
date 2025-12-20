@@ -6,6 +6,7 @@ import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
+import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,13 +20,14 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Deals implements PipelineAssignable {
+public class Deals implements PipelineAssignable, WorkflowTarget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     private String dealName;
-    private Double dealAmount;
-    private DealStatus dealStatus = DealStatus.CREATED;
+    private Double dealAmount = 0.00;
+    @Enumerated(EnumType.STRING)
+    private DealStatus dealStatus;
     private LocalDateTime closedAt;
     private LocalDateTime createdAt;
     @ManyToOne

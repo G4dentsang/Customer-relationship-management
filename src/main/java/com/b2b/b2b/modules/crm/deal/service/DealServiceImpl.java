@@ -15,11 +15,16 @@ import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
 import com.b2b.b2b.modules.workflow.events.DealCreatedEvent;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DealServiceImpl implements DealService
 {
+    Logger logger = LoggerFactory.getLogger(DealServiceImpl.class);
+
     private final LeadRepository leadRepository;
     private final DealRepository dealRepository;
     private final DealUtils dealUtils;
@@ -62,12 +67,14 @@ public class DealServiceImpl implements DealService
         deal.setDealStatus(DealStatus.CREATED);
         deal.setCompany(lead.getCompany());
         deal.setLead(lead);
+        deal.setOrganization(leadOrganization);
+        pipelineService.assignDefaultPipeline(deal, PipelineType.DEAL);
         Deals savedDeal = dealRepository.save(deal);
-        pipelineService.assignDefaultPipeline(savedDeal, PipelineType.DEAL);
+
 
         lead.setLeadStatus(LeadStatus.CONVERTED);
         leadRepository.save(lead);
-
+        logger.info("Deals saved successfully");
         domainEventPublisher.publishEvent(new DealCreatedEvent(savedDeal));
 
         return dealUtils.createDealResponseDTO(savedDeal);

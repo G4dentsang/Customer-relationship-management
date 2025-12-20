@@ -6,5 +6,5 @@ import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
 import java.util.List;
 
 public interface WorkflowConditionEvaluatorService {
-    boolean evaluateCondition(List<WorkflowCondition> conditions, Lead lead);
+    boolean evaluateCondition(List<WorkflowCondition> conditions, WorkflowTarget target);
 }

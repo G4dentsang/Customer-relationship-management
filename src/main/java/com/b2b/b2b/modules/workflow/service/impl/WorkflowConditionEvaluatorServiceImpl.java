@@ -1,9 +1,9 @@
 package com.b2b.b2b.modules.workflow.service.impl;
 
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
 import com.b2b.b2b.modules.workflow.listeners.WorkflowEngineListener;
 import com.b2b.b2b.modules.workflow.service.WorkflowConditionEvaluatorService;
+import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,11 +15,10 @@ import java.util.List;
 public class WorkflowConditionEvaluatorServiceImpl implements WorkflowConditionEvaluatorService
 {
     @Override
-    public boolean evaluateCondition(List<WorkflowCondition> conditions, Lead lead) {
+    public boolean evaluateCondition(List<WorkflowCondition> conditions, WorkflowTarget target) {
         Logger logger = LoggerFactory.getLogger(WorkflowEngineListener.class);
         for (WorkflowCondition workflowCondition : conditions) {
-            logger.info("existing conditions: {}", workflowCondition);
-            String actualValue = getFieldValue(lead, workflowCondition.getField());
+            String actualValue = getFieldValue(target, workflowCondition.getField());
             String expectedValue = workflowCondition.getExpectedValue();
             switch(workflowCondition.getWorkflowConditionOperator()){
                 case EQUALS:
@@ -33,11 +32,11 @@ public class WorkflowConditionEvaluatorServiceImpl implements WorkflowConditionE
         }
         return true;
     }
-    private String getFieldValue(Lead lead,String fieldName){
+    private String getFieldValue(WorkflowTarget target,String fieldName){
         try{
-            Field field = lead.getClass().getDeclaredField(fieldName);
+            Field field = target.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
-            return String.valueOf(field.get(lead));
+            return String.valueOf(field.get(target));
 
         }catch(Exception e){
             throw new RuntimeException("Invalid field " + fieldName + " in Lead");

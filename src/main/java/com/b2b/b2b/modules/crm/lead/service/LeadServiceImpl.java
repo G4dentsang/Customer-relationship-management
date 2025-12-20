@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.crm.lead.service;
 
 import com.b2b.b2b.exception.APIException;
+import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.payloads.OrganizationDTO;
@@ -11,14 +12,18 @@ import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
+import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.lead.util.LeadUtils;
 import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
+import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.modules.workflow.events.LeadCreatedEvent;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,9 +36,10 @@ public class LeadServiceImpl implements LeadService {
     private final PipelineService pipelineService;
     private final LeadUtils leadUtils;
     private final UserRepository userRepository;
+    private final PipelineStageService pipelineStageService;
 
     public LeadServiceImpl(LeadRepository leadRepository, ModelMapper modelMapper, CompanyRepository companyRepository,
-                           DomainEventPublisher domainEventPublisher, PipelineService pipelineService, LeadUtils leadUtils, UserRepository userRepository) {
+                           DomainEventPublisher domainEventPublisher, PipelineService pipelineService, LeadUtils leadUtils, UserRepository userRepository, PipelineStageService pipelineStageService) {
         this.leadRepository = leadRepository;
         this.modelMapper = modelMapper;
         this.companyRepository = companyRepository;
@@ -41,7 +47,9 @@ public class LeadServiceImpl implements LeadService {
         this.pipelineService = pipelineService;
         this.leadUtils = leadUtils;
         this.userRepository = userRepository;
+        this.pipelineStageService = pipelineStageService;
     }
+  //  @Transactional
     @Override
     public LeadResponseDTO createLead(CreateLeadRequestDTO createLeadRequestDTO, User user) {
 
@@ -65,16 +73,34 @@ public class LeadServiceImpl implements LeadService {
     lead.setLeadPhone(createLeadRequestDTO.getLeadPhone());
     lead.setOrganization(organization);
     lead.setCompany(company);
+    pipelineService.assignDefaultPipeline(lead, PipelineType.LEAD);
     Lead savedLead = leadRepository.save(lead);
-    pipelineService.assignDefaultPipeline(savedLead, PipelineType.LEAD);
+
     domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead));
     return leadUtils.createLeadResponseDTO(savedLead);
     }
 
 
     @Override
-    public void updateLead(Integer leadId, CreateLeadRequestDTO createLeadRequestDTO) {
-      //  Lead lead = leadRepository.findById(leadId).orElseThrow();
+    public LeadResponseDTO updateLead(Integer leadId, UpdateLeadRequestDTO updateLeadRequestDTO) {
+       Lead lead = leadRepository.findById(leadId).orElseThrow(()-> new ResourceNotFoundException("Lead", "id", leadId));
+
+       lead.setLeadName(updateLeadRequestDTO.getLeadName());
+       lead.setLeadEmail(updateLeadRequestDTO.getLeadEmail());
+       lead.setLeadPhone(updateLeadRequestDTO.getLeadPhone());
+
+      if(!lead.getLeadStatus().equals(updateLeadRequestDTO.getLeadStatus())){
+
+          lead.setLeadStatus(updateLeadRequestDTO.getLeadStatus());
+          PipelineStage nexStage = pipelineStageService.findNextPipelineStage(lead.getPipeline(),lead.getPipelineStage().getStageOrder());
+            if(nexStage!=null){
+                lead.setPipelineStage(nexStage);
+            }
+      }
+      Lead updatedLead = leadRepository.save(lead);
+      return leadUtils.createLeadResponseDTO(updatedLead);
+      //tomorrow should check this functions if workin or not with postman*********************************************
+
     }
 
     @Override //all leads including user owned leads

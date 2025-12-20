@@ -1,11 +1,10 @@
 package com.b2b.b2b.modules.workflow.service.impl;
 
 import com.b2b.b2b.modules.auth.repository.UserRepository;
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
 import com.b2b.b2b.modules.workflow.listeners.WorkflowEngineListener;
 import com.b2b.b2b.modules.workflow.service.WorkflowActionExecutorService;
+import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -19,25 +18,24 @@ public class WorkflowActionExecutorServiceImpl implements WorkflowActionExecutor
 {
     Logger logger = LoggerFactory.getLogger(WorkflowEngineListener.class);
     private final UserRepository userRepository;
-    private final LeadRepository leadRepository;
     private final ObjectMapper objectMapper;
 
 
-    public WorkflowActionExecutorServiceImpl(UserRepository userRepository, LeadRepository leadRepository, ObjectMapper objectMapper) {
+    public WorkflowActionExecutorServiceImpl(UserRepository userRepository, ObjectMapper objectMapper) {
         this.userRepository = userRepository;
-        this.leadRepository = leadRepository;
+
         this.objectMapper = objectMapper;
     }
 
     @Transactional(readOnly = true)
     @Override
-    public void execute(WorkflowAction action, Lead lead) {
+    public void execute(WorkflowAction action, WorkflowTarget target) {
         switch (action.getActionType()){
             case SEND_EMAIL:
-                executeEmailAction(action, lead);
+                executeEmailAction(action, target);
                 break;
             case ASSIGN_USER:
-                executeAssignmentAction(action,lead);
+                executeAssignmentAction(action,target);
                 //many more cases will to add later ******
         }
     }
@@ -45,8 +43,8 @@ public class WorkflowActionExecutorServiceImpl implements WorkflowActionExecutor
 
     @Async
     @Override
-    public void executeEmailAction(WorkflowAction action, Lead lead) {
-        logger.info("Sending email to lead");
+    public void executeEmailAction(WorkflowAction action, WorkflowTarget target) {
+        logger.info("Sending email to target");
         try{
             JsonNode node = objectMapper.readTree(action.getActionConfigJson());
             Integer templateId = node.path("templateId").asInt();
@@ -63,8 +61,8 @@ public class WorkflowActionExecutorServiceImpl implements WorkflowActionExecutor
     }
     @Async
     @Override
-    public void executeAssignmentAction(WorkflowAction action, Lead lead) {
-        logger.info("Assigning user to lead");
+    public void executeAssignmentAction(WorkflowAction action, WorkflowTarget target) {
+        logger.info("Assigning user to target");
         //add after user with role not admin  creation
     /* try{
 
@@ -72,9 +70,7 @@ public class WorkflowActionExecutorServiceImpl implements WorkflowActionExecutor
         Integer assignedUserId = node.get("assignedUserId").asInt();
         User user = userRepository.findById(assignedUserId).orElseThrow(()->
                  new APIException("Assigned user is not found "));
-        lead.setOwner(user);
-        logger.info("This Lead: {},  is assigned to user {}.",lead.getLeadName(), user.getUserName());
-        leadRepository.save(lead);
+        target.setOwner(user);
 
      }catch(Exception e){
          throw new RuntimeException(e.getMessage());

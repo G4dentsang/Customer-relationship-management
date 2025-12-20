@@ -21,9 +21,9 @@ public class PipelineStage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String stageName; //later enum
+    private String stageName;
     private String stageDescription;
-    private Integer stageOrder;// later enum
+    private Integer stageOrder;
     private LocalDateTime createdAt;
     @ManyToOne
     private Pipeline pipeline;
@@ -38,7 +38,7 @@ public class PipelineStage {
         this.createdAt = LocalDateTime.now();
     }
 
-    public PipelineStage(String stageName, String stageDescription, int stageOrder, LocalDateTime createdAt, Pipeline pipeline) {
+    public PipelineStage(String stageName, String stageDescription, Integer stageOrder, LocalDateTime createdAt, Pipeline pipeline) {
         this.stageName = stageName;
         this.stageDescription = stageDescription;
         this.stageOrder = stageOrder;

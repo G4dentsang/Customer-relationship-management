@@ -28,7 +28,6 @@ public class PipelineServiceImpl implements PipelineService {
         return null;
     }
 
-    @Transactional
     @Override
     public <T extends PipelineAssignable> void assignDefaultPipeline(T entity, PipelineType pipelineType) {
 

@@ -38,10 +38,11 @@ public class Pipeline {
     @OneToMany(mappedBy = "pipeline", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<PipelineStage> pipelineStages = new ArrayList<>();
 
-    public Pipeline(String pipelineName, boolean isDefault, LocalDateTime createdAt, Organization organization) {
+    public Pipeline(String pipelineName, boolean isDefault, LocalDateTime createdAt,PipelineType pipelineType, Organization organization) {
         this.pipelineName = pipelineName;
         this.isDefault = isDefault;
         this.createdAt = createdAt;
+        this.pipelineType = pipelineType;
         this.organization = organization;
     }
 

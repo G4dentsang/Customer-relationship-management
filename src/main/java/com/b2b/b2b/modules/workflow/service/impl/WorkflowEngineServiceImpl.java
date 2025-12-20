@@ -1,12 +1,12 @@
 package com.b2b.b2b.modules.workflow.service.impl;
 
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.listeners.WorkflowEngineListener;
 import com.b2b.b2b.modules.workflow.service.WorkflowActionExecutorService;
 import com.b2b.b2b.modules.workflow.service.WorkflowConditionEvaluatorService;
 import com.b2b.b2b.modules.workflow.service.WorkflowEngineService;
+import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,16 +28,13 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
         this.workflowActionExecutorService = workflowActionExecutorService;
     }
     @Override
-    public void run(Lead lead, List<WorkflowRule> rules) {
+    public void run(WorkflowTarget target, List<WorkflowRule> rules) {
 
-            logger.info("rules found for lead id {}", lead.getId());
             for(WorkflowRule rule : rules){
-                boolean match = workflowConditionEvaluatorService.evaluateCondition(rule.getWorkflowConditions(), lead);
+                boolean match = workflowConditionEvaluatorService.evaluateCondition(rule.getWorkflowConditions(), target);
                 if(!match) break;
-                logger.info("condition matched for lead's organization");
                 for(WorkflowAction action: rule.getWorkflowActions()){
-                    logger.info("running action for lead actions");
-                    workflowActionExecutorService.execute(action, lead);
+                    workflowActionExecutorService.execute(action, target);
                 }
             }
         }
