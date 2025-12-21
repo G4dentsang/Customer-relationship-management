@@ -51,7 +51,7 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     private List<Deals> deals = new ArrayList<>();
 
     @ManyToOne
-    private User owner; //lead or deal
+    private User owner;
 
     public Lead(String leadEmail, String leadName, String leadPhone) {
         this.leadEmail = leadEmail;

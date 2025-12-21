@@ -13,5 +13,6 @@ public record DealResponseDTO(
         LocalDateTime createdAt,
         LocalDateTime closedAt,
         CompanyResponseDTO company
+
 ) {
 }

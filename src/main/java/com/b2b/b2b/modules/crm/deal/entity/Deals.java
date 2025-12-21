@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.crm.deal.entity;
 
 import com.b2b.b2b.modules.auth.entity.Organization;
+import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
@@ -40,6 +41,8 @@ public class Deals implements PipelineAssignable, WorkflowTarget {
     private Pipeline pipeline;
     @ManyToOne
     private PipelineStage pipelineStage;
+    @ManyToOne
+    private User owner;
 
     @PrePersist
     protected void onCreate() {

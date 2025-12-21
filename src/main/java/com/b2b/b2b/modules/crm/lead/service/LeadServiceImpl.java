@@ -4,11 +4,10 @@ import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.auth.payloads.OrganizationDTO;
 import com.b2b.b2b.modules.auth.repository.UserRepository;
 import com.b2b.b2b.modules.crm.company.entity.Company;
-import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
+import com.b2b.b2b.modules.crm.deal.entity.Deals;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
@@ -23,7 +22,6 @@ import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.modules.workflow.events.LeadCreatedEvent;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -49,7 +47,7 @@ public class LeadServiceImpl implements LeadService {
         this.userRepository = userRepository;
         this.pipelineStageService = pipelineStageService;
     }
-  //  @Transactional
+
     @Override
     public LeadResponseDTO createLead(CreateLeadRequestDTO createLeadRequestDTO, User user) {
 
@@ -95,12 +93,12 @@ public class LeadServiceImpl implements LeadService {
           PipelineStage nexStage = pipelineStageService.findNextPipelineStage(lead.getPipeline(),lead.getPipelineStage().getStageOrder());
             if(nexStage!=null){
                 lead.setPipelineStage(nexStage);
+            }else{
+                lead.setReadyForConversion(true);
             }
       }
       Lead updatedLead = leadRepository.save(lead);
       return leadUtils.createLeadResponseDTO(updatedLead);
-      //tomorrow should check this functions if workin or not with postman*********************************************
-
     }
 
     @Override //all leads including user owned leads
@@ -118,8 +116,14 @@ public class LeadServiceImpl implements LeadService {
 
     @Override
     public List<LeadResponseDTO> getAllUserOwnedLeads(User user) {
-        List<Lead> leads = leadRepository.findAllByOwnerUserId(user.getUserId());
-        return leads.stream()
+        Organization organization = user.getUserOrganizations()
+                .stream()
+                .filter((userOrganization -> userOrganization.isPrimary()))
+                .findFirst()
+                .orElseThrow(()-> new APIException("User has no primary organization"))
+                .getOrganization();
+        List<Lead> ownersLeads = leadRepository.findAllByOwnerAndOrganization(user,organization);;
+        return ownersLeads.stream()
                 .map(lead -> leadUtils.createLeadResponseDTO(lead)).toList();
     }
 

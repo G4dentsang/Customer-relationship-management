@@ -17,10 +17,8 @@ import java.util.Comparator;
 @Service
 public class PipelineServiceImpl implements PipelineService {
     private final PipelineRepository pipelineRepository;
-    private final LeadRepository leadRepository;
-    public PipelineServiceImpl(PipelineRepository pipelineRepository, LeadRepository leadRepository) {
+    public PipelineServiceImpl(PipelineRepository pipelineRepository) {
         this.pipelineRepository = pipelineRepository;
-        this.leadRepository = leadRepository;
     }
 
     @Override
