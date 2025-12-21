@@ -10,6 +10,10 @@ import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.contact.entity.Contacts;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import com.b2b.b2b.modules.crm.contact.repository.ContactRepository;
+import com.b2b.b2b.modules.crm.deal.entity.Deals;
+import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
+import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
+import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,10 +23,14 @@ public class CompanyServiceImpl implements CompanyService
 {
     private final CompanyRepository companyRepository;
     private final ContactRepository contactRepository;
+    private final DealRepository dealRepository;
+    private final DealUtils dealUtils;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, ContactRepository contactRepository) {
+    public CompanyServiceImpl(CompanyRepository companyRepository, ContactRepository contactRepository, DealRepository dealRepository, DealUtils dealUtils) {
         this.companyRepository = companyRepository;
         this.contactRepository = contactRepository;
+        this.dealRepository = dealRepository;
+        this.dealUtils = dealUtils;
     }
 
     @Override
@@ -101,5 +109,17 @@ public class CompanyServiceImpl implements CompanyService
                 c.getPhone(),
                 c.getCompany().getCompanyName()
         ) ).toList();
+    }
+
+    @Override
+    public List<DealResponseDTO> getCompanyDeals(Integer companyId, User user) {
+        Organization organization = user.getUserOrganizations()
+                .stream()
+                .filter((userOrganization -> userOrganization.isPrimary()))
+                .findFirst()
+                .orElseThrow(()-> new APIException("User has no primary Organization"))
+                .getOrganization();
+        List<Deals> companyDeals = dealRepository.findAllDealsByCompanyIdAndOrganization(companyId, organization);
+        return companyDeals.stream().map(deals -> dealUtils.createDealResponseDTO(deals)).toList();
     }
 }

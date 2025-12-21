@@ -11,5 +11,7 @@ public interface DealRepository extends JpaRepository<Deals, Integer> {
     List<Deals> findAllByOrganization(Organization organization);
     List<Deals> findAllByOwnerAndOrganization(User user, Organization organization);
     Deals findDealByIdAndOrganization(Integer dealId, Organization organization);
+    List<Deals> findAllDealsByCompanyIdAndOrganization(Integer companyId, Organization organization);
+    List<Deals> findAllDealsByCompanyContactsIdAndOrganization(Integer contactId, Organization organization);
 }
 

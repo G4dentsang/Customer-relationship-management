@@ -4,6 +4,7 @@ import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactDTO;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import com.b2b.b2b.modules.crm.contact.service.ContactService;
+import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.shared.AuthUtil;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,12 @@ public class ContactController {
         User user = authUtil.loggedInUser();
         List<ContactResponseDTO> contactResponseDTOs = contactService.getAllContacts(user);
         return new ResponseEntity<>(contactResponseDTOs, HttpStatus.OK);
+    }
+    @GetMapping("{/contactId}/deals")
+    public ResponseEntity<?> getDealsByContact(@PathVariable("contactId") Integer contactId) {
+        User user = authUtil.loggedInUser();
+        List<DealResponseDTO> dealResponseDTOs = contactService.getDealsByContact(contactId,user);
+        return new ResponseEntity<>(dealResponseDTOs, HttpStatus.OK);
     }
 
 }

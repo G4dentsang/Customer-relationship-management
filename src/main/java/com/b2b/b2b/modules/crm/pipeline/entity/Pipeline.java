@@ -22,7 +22,7 @@ import java.util.List;
 public class Pipeline {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     private String pipelineName;
     private boolean isDefault;
     private LocalDateTime createdAt;

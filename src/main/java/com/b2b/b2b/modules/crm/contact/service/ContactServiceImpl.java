@@ -9,6 +9,10 @@ import com.b2b.b2b.modules.crm.contact.entity.Contacts;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactDTO;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import com.b2b.b2b.modules.crm.contact.repository.ContactRepository;
+import com.b2b.b2b.modules.crm.deal.entity.Deals;
+import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
+import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
+import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,10 +22,14 @@ public class ContactServiceImpl implements ContactService {
 
     private final CompanyRepository companyRepository;
     private final ContactRepository contactRepository;
+    private final DealRepository dealRepository;
+    private final DealUtils dealUtils;
 
-    public ContactServiceImpl(CompanyRepository companyRepository, ContactRepository contactRepository) {
+    public ContactServiceImpl(CompanyRepository companyRepository, ContactRepository contactRepository, DealRepository dealRepository, DealUtils dealUtils) {
         this.companyRepository = companyRepository;
         this.contactRepository = contactRepository;
+        this.dealRepository = dealRepository;
+        this.dealUtils = dealUtils;
     }
 
     @Override
@@ -89,6 +97,18 @@ public class ContactServiceImpl implements ContactService {
                 c.getPhone(),
                 c.getCompany().getCompanyName()
         )).toList();
+    }
+
+    @Override
+    public List<DealResponseDTO> getDealsByContact(Integer contactId, User user) {
+        Organization organization = user.getUserOrganizations()
+                .stream()
+                .filter(userOrganization -> userOrganization.isPrimary())
+                .findFirst()
+                .orElseThrow(()-> new APIException("User has no primary organization"))
+                .getOrganization();
+        List<Deals> contactDeals = dealRepository.findAllDealsByCompanyContactsIdAndOrganization(contactId, organization);
+        return contactDeals.stream().map(deals -> dealUtils.createDealResponseDTO(deals)).toList();
     }
 
     @Override

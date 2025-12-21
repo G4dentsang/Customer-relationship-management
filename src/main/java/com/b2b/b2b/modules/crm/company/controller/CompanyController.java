@@ -5,6 +5,7 @@ import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.company.service.CompanyService;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
+import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.shared.AuthUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,5 +51,11 @@ public class CompanyController {
         User user = authUtil.loggedInUser();
         List<ContactResponseDTO> contactResponseDTOs = companyService.getCompanyContacts(companyId, user);
         return new ResponseEntity<>(contactResponseDTOs, HttpStatus.OK);
+    }
+    @GetMapping("/{companyId}/deals")
+    public ResponseEntity<?> getCompanyDeals(@PathVariable("companyId") Integer companyId) {
+        User user = authUtil.loggedInUser();
+        List<DealResponseDTO> dealResponseDTOs = companyService.getCompanyDeals(companyId, user);
+        return new ResponseEntity<>(dealResponseDTOs, HttpStatus.OK);
     }
 }

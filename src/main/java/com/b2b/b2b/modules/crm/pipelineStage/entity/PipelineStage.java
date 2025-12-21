@@ -20,7 +20,7 @@ import java.util.List;
 public class PipelineStage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     private String stageName;
     private String stageDescription;
     private Integer stageOrder;
