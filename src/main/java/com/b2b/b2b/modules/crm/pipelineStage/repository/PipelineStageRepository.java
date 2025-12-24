@@ -12,4 +12,6 @@ public interface PipelineStageRepository extends JpaRepository<PipelineStage, In
 {
     @Query("SELECT ps FROM PipelineStage ps WHERE ps.pipeline = :pipeline AND ps.stageOrder > :currentOrder ORDER BY ps.stageOrder ASC")
     List<PipelineStage> findNextStages(@Param("pipeline") Pipeline pipeline, @Param("currentOrder") Integer currentOrder);
+    List<PipelineStage> findAllByPipelineOrderByStageOrderAsc(Pipeline pipeline);
+
 }
