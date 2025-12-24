@@ -15,13 +15,13 @@ public class WorkflowUtil {
                 .stream()
                 .map(c -> new WorkflowConditionResponseDTO(
                         c.getField(),
-                        c.getWorkflowConditionOperator().name(),
+                        c.getWorkflowConditionOperator(),
                         c.getExpectedValue()
                 )).toList();
         List<WorkflowActionResponseDTO> workflowActions = savedRule.getWorkflowActions()
                 .stream()
                 .map(a -> new WorkflowActionResponseDTO(
-                        a.getActionType().name(),
+                        a.getActionType(),
                         a.getActionConfigJson()
                 )).toList();
 
