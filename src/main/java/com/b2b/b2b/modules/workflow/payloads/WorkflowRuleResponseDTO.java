@@ -1,4 +1,4 @@
-package com.b2b.b2b.modules.workflow.dto;
+package com.b2b.b2b.modules.workflow.payloads;
 
 import java.time.LocalDateTime;
 import java.util.List;

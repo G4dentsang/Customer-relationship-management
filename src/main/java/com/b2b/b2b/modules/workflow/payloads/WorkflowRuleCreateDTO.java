@@ -1,4 +1,4 @@
-package com.b2b.b2b.modules.workflow.dto;
+package com.b2b.b2b.modules.workflow.payloads;
 
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import jakarta.validation.constraints.NotBlank;

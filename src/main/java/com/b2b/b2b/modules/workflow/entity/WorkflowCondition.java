@@ -23,4 +23,10 @@ public class WorkflowCondition {
     @ManyToOne
     private WorkflowRule workflowRule;
 
+    public WorkflowCondition(String expectedValue, WorkflowConditionOperator workflowConditionOperator, String field, WorkflowRule workflowRule) {
+        this.expectedValue = expectedValue;
+        this.workflowConditionOperator = workflowConditionOperator;
+        this.field = field;
+        this.workflowRule = workflowRule;
+    }
 }

@@ -1,8 +1,8 @@
 package com.b2b.b2b.modules.workflow.util;
 
-import com.b2b.b2b.modules.workflow.dto.WorkflowActionResponseDTO;
-import com.b2b.b2b.modules.workflow.dto.WorkflowConditionResponseDTO;
-import com.b2b.b2b.modules.workflow.dto.WorkflowRuleResponseDTO;
+import com.b2b.b2b.modules.workflow.payloads.WorkflowActionResponseDTO;
+import com.b2b.b2b.modules.workflow.payloads.WorkflowConditionResponseDTO;
+import com.b2b.b2b.modules.workflow.payloads.WorkflowRuleResponseDTO;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import org.springframework.stereotype.Component;
 

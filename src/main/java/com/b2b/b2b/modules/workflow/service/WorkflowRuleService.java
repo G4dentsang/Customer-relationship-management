@@ -1,8 +1,8 @@
 package com.b2b.b2b.modules.workflow.service;
 
 import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.workflow.dto.WorkflowRuleCreateDTO;
-import com.b2b.b2b.modules.workflow.dto.WorkflowRuleResponseDTO;
+import com.b2b.b2b.modules.workflow.payloads.WorkflowRuleCreateDTO;
+import com.b2b.b2b.modules.workflow.payloads.WorkflowRuleResponseDTO;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 
