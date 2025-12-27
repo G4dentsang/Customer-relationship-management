@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Deals implements PipelineAssignable, WorkflowTarget {
+public class Deal implements PipelineAssignable, WorkflowTarget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

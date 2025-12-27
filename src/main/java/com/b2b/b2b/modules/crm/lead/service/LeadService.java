@@ -8,9 +8,9 @@ import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
 import java.util.List;
 
 public interface LeadService {
-    LeadResponseDTO createLead(CreateLeadRequestDTO createLeadRequestDTO, User user);
-    LeadResponseDTO updateLead(Integer leadId, UpdateLeadRequestDTO updateLeadRequestDTO);
-    List<LeadResponseDTO> getAllOrganizationLeads(User user);
-    List<LeadResponseDTO> getAllUserOwnedLeads(User user);
-    LeadResponseDTO getLeadById(Integer leadId, User user);
+    LeadResponseDTO create(CreateLeadRequestDTO request, User user);
+    LeadResponseDTO update(Integer id, UpdateLeadRequestDTO updateLeadRequestDTO, User user);
+    List<LeadResponseDTO> findAllByOrganization(User user);
+    List<LeadResponseDTO> findAllByUser(User user);
+    LeadResponseDTO getById(Integer id, User user);
 }

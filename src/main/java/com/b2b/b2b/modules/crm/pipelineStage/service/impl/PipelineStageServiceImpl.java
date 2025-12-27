@@ -4,6 +4,7 @@ import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
@@ -11,107 +12,104 @@ import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageResponseDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.repository.PipelineStageRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
+import com.b2b.b2b.modules.crm.pipelineStage.util.PipelineStageUtils;
+import com.b2b.b2b.shared.AuthUtil;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PipelineStageServiceImpl implements PipelineStageService
 {
     private final PipelineStageRepository pipelineStageRepository;
     private final PipelineRepository pipelineRepository;
+    private final AuthUtil authUtil;
+    private final PipelineStageUtils pipelineStageUtils;
+    private final ModelMapper modelMapper;
 
-    public PipelineStageServiceImpl(PipelineStageRepository pipelineStageRepository, PipelineRepository pipelineRepository) {
-        this.pipelineStageRepository = pipelineStageRepository;
-        this.pipelineRepository = pipelineRepository;
+
+    @Override
+    public Optional<PipelineStage> findNextPipelineStage(Pipeline pipeline, Integer currentOrder) {
+    return pipelineStageRepository.findNextStages(pipeline,currentOrder);
     }
 
     @Override
-    public PipelineStage findNextPipelineStage(Pipeline pipeline, Integer currentOrder) {
-    return pipelineStageRepository.findNextStages(pipeline,currentOrder)
-            .stream()
-            .findFirst()
-            .orElse(null);
+    public void promoteToNextStage(Lead lead) {
+       findNextPipelineStage(lead.getPipeline(), lead.getPipelineStage().getStageOrder())
+               .ifPresentOrElse(
+                       nextStage -> lead.setPipelineStage(nextStage),
+                       () -> lead.setReadyForConversion(true)
+               );
     }
 
     @Override
-    public List<PipelineStageResponseDTO> addPipelineStage(Integer pipelineId, List<PipelineStageRequestDTO> pipelineStageRequestDTOs, User user) {
-       Organization organization = user.getUserOrganizations()
-               .stream()
-               .filter(userOrg -> userOrg.isPrimary())
-               .findFirst()
-               .orElseThrow(() -> new APIException("User's organization not found"))
-               .getOrganization();
+    @Transactional
+    public List<PipelineStageResponseDTO> addPipelineStage(Integer id, List<PipelineStageRequestDTO> request, User user) {
 
-       Pipeline pipeline = pipelineRepository.findByIdAndOrganization(pipelineId, organization);
-       if(pipeline == null){
-           throw new ResourceNotFoundException("Pipeline", "id", pipelineId);
-       }
+       Pipeline pipeline = pipelineRepository.findByIdAndOrganization(id, getOrg(user))
+               .orElseThrow(() -> new ResourceNotFoundException("Pipeline", "id", id));
 
        List<PipelineStage> existingStages = pipelineStageRepository.findAllByPipelineOrderByStageOrderAsc(pipeline);
-       List<PipelineStage> addedStages = new ArrayList<>();
+       List<PipelineStage> newStagesList = new ArrayList<>();
 
-       for(PipelineStageRequestDTO stageDto: pipelineStageRequestDTOs){
-
+       for(PipelineStageRequestDTO stageDto: request){
            int requestedOrder = stageDto.getStageOrder();
-           int maxStageOrder = existingStages.isEmpty() ? -1 : existingStages.getLast().getStageOrder();
-           if(requestedOrder < 0 || requestedOrder > maxStageOrder + 1){
-               throw new APIException("StageOrder out of range");
-           }
-           //shifting existing order
-           for(PipelineStage stage: existingStages){
-               if(stage.getStageOrder() >= requestedOrder){
-                   stage.setStageOrder(stage.getStageOrder() + 1);
-               }
+           validateOrderRange(requestedOrder, existingStages);
 
-           }
-           pipelineStageRepository.saveAll(existingStages);
-           //inserting new stages
-           PipelineStage stage = new PipelineStage();
-           stage.setStageName(stageDto.getStageName());
-           stage.setStageDescription(stageDto.getStageDescription());
-           stage.setStageOrder(requestedOrder);
-           stage.setPipeline(pipeline);
-           PipelineStage savedStage = pipelineStageRepository.save(stage);
+           shiftExistingStages(existingStages, requestedOrder);
 
-           existingStages.add(savedStage);
-           //getLast always stays highest order  value
+           PipelineStage newStage = convertToEntity(stageDto, pipeline);
+
+           existingStages.add(newStage);
+           newStagesList.add(newStage);
+
            existingStages.sort(Comparator.comparingInt(PipelineStage::getStageOrder));
-
-           addedStages.add(stage);
        }
-
-
-        return addedStages.stream().map(stage ->{
-            return new PipelineStageResponseDTO(
-                      stage.getId(),
-                      stage.getStageName(),
-                      stage.getStageDescription(),
-                      stage.getStageOrder()
-              );
-                }).toList();
-
+        pipelineStageRepository.saveAll(existingStages );
+        return toDTOList(newStagesList);
     }
 
     @Override
-    public  List<PipelineStageResponseDTO> getPipelineStage(Integer pipelineId, User user) {
-        Organization organization = user.getUserOrganizations()
-                .stream()
-                .filter(userOrg -> userOrg.isPrimary())
-                .findFirst()
-                .orElseThrow(() -> new APIException("User's organization not found"))
-                .getOrganization();
-        Pipeline pipeline = pipelineRepository.findByIdAndOrganization(pipelineId, organization);
-        List<PipelineStage> pipelineStages = pipelineStageRepository.findAllByPipelineOrderByStageOrderAsc(pipeline);
-        return pipelineStages.stream().map(stage ->{
-            return new PipelineStageResponseDTO(
-                    stage.getId(),
-                    stage.getStageName(),
-                    stage.getStageDescription(),
-                    stage.getStageOrder()
-            );
-        }).toList();
+    public  List<PipelineStageResponseDTO> getPipelineStage(Integer id, User user) {
+        Pipeline pipeline = pipelineRepository.findByIdAndOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Pipeline", "id", id));;
+        return toDTOList(pipelineStageRepository.findAllByPipelineOrderByStageOrderAsc(pipeline));
+    }
+
+/***********Helper methods*************/
+
+    private Organization getOrg(User user) {
+        return authUtil.getPrimaryOrganization(user);
+    }
+
+    private List<PipelineStageResponseDTO> toDTOList(List<PipelineStage> stages) {
+        return stages.stream().map(pipelineStageUtils::createPipelineStageResponseDTO).toList();
+    }
+
+    private void validateOrderRange(int requestedOrder, List<PipelineStage> stages) {
+        int maxStageOrder = stages.isEmpty() ? 0 : stages.getLast().getStageOrder() + 1;
+        if (requestedOrder < 0 || requestedOrder > maxStageOrder + 1) {
+            throw new APIException("Stage order " + requestedOrder + " is out of range.");
+        }
+    }
+
+    private void shiftExistingStages(List<PipelineStage> stages, int requestedOrder) {
+        stages.stream().filter(s -> s.getStageOrder() >= requestedOrder)
+                .forEach(s -> s.setStageOrder(s.getStageOrder() + 1));
+
+    }
+
+    private PipelineStage convertToEntity(PipelineStageRequestDTO request, Pipeline pipeline) {
+        PipelineStage stage = modelMapper.map(request, PipelineStage.class);
+        stage.setStageOrder(request.getStageOrder());
+        stage.setPipeline(pipeline);
+        return stage;
     }
 }

@@ -1,4 +1,4 @@
-package com.b2b.b2b.modules.crm.activitylog.entity;
+package com.b2b.b2b.modules.activitylog.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,10 +17,20 @@ public class ActivityLogs {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Integer entityId;
     @Enumerated(EnumType.STRING)
     private EntityType entityType;
-    private String message;
+
+    private String performedByType;
+    private Integer performedById;
+
+    @Lob
+    private String changesJson;
+
+    @Lob
+    private String metadataJson;
+
     private LocalDateTime createdAt;
     @PrePersist
     protected void onCreate() {

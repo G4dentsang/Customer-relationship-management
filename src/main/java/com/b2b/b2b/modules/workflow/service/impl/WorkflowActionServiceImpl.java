@@ -98,11 +98,11 @@ public class WorkflowActionServiceImpl implements WorkflowActionService
                 .stream()
                 .filter(userOrg -> userOrg.isPrimary())
                 .findFirst()
-                .orElseThrow(()-> new APIException("User's organization not found"))
+                .orElseThrow(() -> new APIException("User's organization not found"))
                 .getOrganization();
         WorkflowRule workflowRule = workflowRuleRepository.findByIdAndOrganization(ruleId, organization);
         List<WorkflowAction> workflowActions = new ArrayList<>();
-        for(WorkflowActionDTO workflowActionDTO : workflowActionDTOs){
+        for (WorkflowActionDTO workflowActionDTO : workflowActionDTOs) {
             WorkflowAction workflowAction = new WorkflowAction();
             workflowAction.setActionConfigJson(workflowActionDTO.getActionConfigJson());
             workflowAction.setWorkflowRule(workflowRule);
@@ -112,9 +112,9 @@ public class WorkflowActionServiceImpl implements WorkflowActionService
             workflowActions.add(workflowAction);
         }
         return workflowActions.stream().map(action -> new WorkflowActionResponseDTO(
-                action.getActionType(),
-                action.getActionConfigJson()
-        )
+                        action.getActionType(),
+                        action.getActionConfigJson()
+                )
         ).toList();
     }
 }

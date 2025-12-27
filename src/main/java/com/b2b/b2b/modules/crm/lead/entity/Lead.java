@@ -3,7 +3,7 @@ package com.b2b.b2b.modules.crm.lead.entity;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
-import com.b2b.b2b.modules.crm.deal.entity.Deals;
+import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
@@ -33,7 +33,10 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     @Enumerated(EnumType.STRING)
     private LeadStatus leadStatus = LeadStatus.NEW;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;//lead
+    private LocalDateTime convertedAt;//to deal
     private boolean readyForConversion = false;
+    private boolean isConverted = false;
 
     @ManyToOne
     private Organization organization;
@@ -48,7 +51,7 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     private PipelineStage pipelineStage;
 
     @OneToMany(mappedBy = "lead")
-    private List<Deals> deals = new ArrayList<>();
+    private List<Deal> deals = new ArrayList<>();
 
     @ManyToOne
     private User owner;
@@ -62,6 +65,12 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void markAsConverted(){
+        this.leadStatus = LeadStatus.CONVERTED;
+        this.isConverted = true;
+        this.convertedAt = LocalDateTime.now();
     }
 
 

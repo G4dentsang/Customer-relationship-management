@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.pipelineStage.entity;
 
-import com.b2b.b2b.modules.crm.deal.entity.Deals;
+import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import jakarta.persistence.*;
@@ -30,7 +30,7 @@ public class PipelineStage {
     @OneToMany(mappedBy = "pipelineStage")
     private List<Lead> leads;
     @OneToMany(mappedBy = "pipelineStage")
-    private List<Deals> deals;
+    private List<Deal> deals;
 
     @PrePersist
     public void prePersist()

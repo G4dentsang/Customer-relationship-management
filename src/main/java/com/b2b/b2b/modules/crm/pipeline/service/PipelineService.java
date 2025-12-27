@@ -10,8 +10,8 @@ import java.util.List;
 
 public interface PipelineService {
 
-    <T extends PipelineAssignable> void assignDefaultPipeline(T entity, PipelineType pipelineType);
-    PipelineResponseDTO createPipeline(CreatePipelineRequestDTO createPipelineRequestDTO, User user);
+    <T extends PipelineAssignable> void assignDefaultPipeline(T entity, PipelineType type);
+    PipelineResponseDTO createPipeline(CreatePipelineRequestDTO request, User user);
     List<PipelineResponseDTO> getAllPipeline(User user);
-    PipelineResponseDTO getPipelineById(Integer pipelineId,User user);
+    PipelineResponseDTO getPipelineById(Integer id,User user);
 }

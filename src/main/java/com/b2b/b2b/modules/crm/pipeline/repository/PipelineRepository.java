@@ -4,15 +4,13 @@ import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PipelineRepository extends JpaRepository<Pipeline, Integer>
 {
-    @Query("Select p FROM Pipeline p WHERE p.organization.organizationId = :orgId AND p.pipelineType = :pipelineType")
-    Pipeline findDefaultPipelineByOrganizationIdAndType(@Param("orgId") Integer organizationId, @Param("pipelineType")PipelineType pipelineType);
-    List<Pipeline> findAllByOrganization(Organization organization);
-    Pipeline findByIdAndOrganization(Integer pipelineId, Organization organization);
+    Optional<Pipeline> findDefaultPipelineByOrganizationOrganizationIdAndPipelineType(Integer id, PipelineType type);
+    List<Pipeline> findAllByOrganization(Organization org);
+    Optional<Pipeline> findByIdAndOrganization(Integer id, Organization org);
 }

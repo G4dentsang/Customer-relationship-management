@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.pipeline.entity;
 
 import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.crm.deal.entity.Deals;
+import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import jakarta.persistence.*;
@@ -34,7 +34,7 @@ public class Pipeline {
     @OneToMany(mappedBy = "pipeline")
     private List<Lead> lead = new ArrayList<>();
     @OneToMany(mappedBy = "pipeline")
-    private List<Deals> deals = new ArrayList<>();
+    private List<Deal> deals = new ArrayList<>();
     @OneToMany(mappedBy = "pipeline", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<PipelineStage> pipelineStages = new ArrayList<>();
 

@@ -38,14 +38,14 @@ public class WorkflowConditionServiceImpl implements WorkflowConditionService
         for (WorkflowCondition workflowCondition : conditions) {
             String actualValue = getFieldValue(target, workflowCondition.getField());
             String expectedValue = workflowCondition.getExpectedValue();
-            switch(workflowCondition.getWorkflowConditionOperator()){
+            switch (workflowCondition.getWorkflowConditionOperator()) {
                 case EQUALS:
-                    if(!expectedValue.equals(actualValue)) return  false;
+                    if (!expectedValue.equals(actualValue)) return false;
                     break;
-                    case NOT_EQUALS:
-                        if(expectedValue.equals(actualValue)) return  false;
-                        break;
-                        //more operators
+                case NOT_EQUALS:
+                    if (expectedValue.equals(actualValue)) return false;
+                    break;
+                //more operators
             }
         }
         return true;
@@ -59,11 +59,11 @@ public class WorkflowConditionServiceImpl implements WorkflowConditionService
                 .findFirst()
                 .orElseThrow(() -> new APIException("User's organization not found"))
                 .getOrganization();
-        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(ruleId,organization);
+        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(ruleId, organization);
 
         List<WorkflowCondition> workflowConditions = new ArrayList<>();
 
-        for(WorkflowConditionDTO workflowConditionDTO : conditions){
+        for (WorkflowConditionDTO workflowConditionDTO : conditions) {
             WorkflowCondition workflowCondition = new WorkflowCondition(
                     workflowConditionDTO.getExpectedValue(),
                     workflowConditionDTO.getWorkflowConditionOperator(),
@@ -75,20 +75,20 @@ public class WorkflowConditionServiceImpl implements WorkflowConditionService
         }
 
         return workflowConditions.stream().map(condition -> new WorkflowConditionResponseDTO(
-                condition.getField(),
-                condition.getWorkflowConditionOperator(),
-                condition.getExpectedValue()
+                        condition.getField(),
+                        condition.getWorkflowConditionOperator(),
+                        condition.getExpectedValue()
                 )
         ).toList();
     }
 
-    private String getFieldValue(WorkflowTarget target,String fieldName){
-        try{
+    private String getFieldValue(WorkflowTarget target, String fieldName) {
+        try {
             Field field = target.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
             return String.valueOf(field.get(target));
 
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Invalid field " + fieldName + " in Lead");
         }
     }

@@ -7,11 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PipelineStageRepository extends JpaRepository<PipelineStage, Integer>
 {
-    @Query("SELECT ps FROM PipelineStage ps WHERE ps.pipeline = :pipeline AND ps.stageOrder > :currentOrder ORDER BY ps.stageOrder ASC")
-    List<PipelineStage> findNextStages(@Param("pipeline") Pipeline pipeline, @Param("currentOrder") Integer currentOrder);
+    @Query("SELECT ps FROM PipelineStage ps WHERE ps.pipeline = :pipeline AND ps.stageOrder > :currentOrder ORDER BY ps.stageOrder ASC LIMIT 1")
+    Optional<PipelineStage> findNextStages(@Param("pipeline") Pipeline pipeline, @Param("currentOrder") Integer currentOrder);
     List<PipelineStage> findAllByPipelineOrderByStageOrderAsc(Pipeline pipeline);
 
 }

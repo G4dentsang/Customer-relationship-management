@@ -5,8 +5,11 @@ import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.company.service.CompanyService;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
+import com.b2b.b2b.modules.crm.contact.service.ContactService;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
+import com.b2b.b2b.modules.crm.deal.service.DealService;
 import com.b2b.b2b.shared.AuthUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,47 +18,41 @@ import java.util.List;
 
 @RestController
 @RequestMapping("app/v1/companies")
+@RequiredArgsConstructor
 public class CompanyController {
 
     private final AuthUtil authUtil;
     private final CompanyService companyService;
+    private final DealService dealService;
+    private final ContactService contactService;
 
-    public CompanyController(AuthUtil authUtil, CompanyService companyService) {
-        this.authUtil = authUtil;
-        this.companyService = companyService;
-    }
-
-    @PostMapping("")
-    public ResponseEntity<?> addCompany(@RequestBody CompanyDTO companyDTO) {
+    @PostMapping
+    public ResponseEntity<CompanyResponseDTO> addCompany(@RequestBody CompanyDTO request) {
         User user = authUtil.loggedInUser();
-        CompanyResponseDTO companyResponseDTO  = companyService.addCompany(companyDTO, user);
-        return new ResponseEntity<>(companyResponseDTO,HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(companyService.create(request, user));
     }
 
-    @GetMapping("")
-    public ResponseEntity<?> getAllCompanies() {
-        User user  = authUtil.loggedInUser();
-        List<CompanyResponseDTO> companyResponseDTOs = companyService.getAllCompanies(user);
-        return new ResponseEntity<>(companyResponseDTOs, HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<List<CompanyResponseDTO>> listAll() {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(companyService.listAll(user));
     }
 
     @GetMapping("/{companyId}")
-    public ResponseEntity<?> getCompany(@PathVariable("companyId") Integer companyId) {
+    public ResponseEntity<CompanyResponseDTO> get(@PathVariable Integer companyId) {
         User user = authUtil.loggedInUser();
-        CompanyResponseDTO companyResponseDTO = companyService.getCompany(companyId, user);
-        return new ResponseEntity<>(companyResponseDTO, HttpStatus.OK);
+        return ResponseEntity.ok(companyService.getById(companyId, user));
     }
 
     @GetMapping("/{companyId}/contacts")
-    public ResponseEntity<?> getCompanyContacts(@PathVariable("companyId") Integer companyId) {
+    public ResponseEntity<List<ContactResponseDTO>> getContacts(@PathVariable Integer companyId) {
         User user = authUtil.loggedInUser();
-        List<ContactResponseDTO> contactResponseDTOs = companyService.getCompanyContacts(companyId, user);
-        return new ResponseEntity<>(contactResponseDTOs, HttpStatus.OK);
+        return ResponseEntity.ok(contactService.getCompanyContacts(companyId, user));
     }
+
     @GetMapping("/{companyId}/deals")
-    public ResponseEntity<?> getCompanyDeals(@PathVariable("companyId") Integer companyId) {
+    public ResponseEntity<List<DealResponseDTO>> getDeals(@PathVariable Integer companyId) {
         User user = authUtil.loggedInUser();
-        List<DealResponseDTO> dealResponseDTOs = companyService.getCompanyDeals(companyId, user);
-        return new ResponseEntity<>(dealResponseDTOs, HttpStatus.OK);
+        return ResponseEntity.ok(dealService.getCompanyDeals(companyId, user));
     }
 }

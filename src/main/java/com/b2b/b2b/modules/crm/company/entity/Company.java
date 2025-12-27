@@ -1,8 +1,8 @@
 package com.b2b.b2b.modules.crm.company.entity;
 
 import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.crm.contact.entity.Contacts;
-import com.b2b.b2b.modules.crm.deal.entity.Deals;
+import com.b2b.b2b.modules.crm.contact.entity.Contact;
+import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,9 +29,9 @@ public class Company {
     @ManyToOne
     private Organization organization;
     @OneToMany(mappedBy = "company")
-    private List<Deals> deals = new ArrayList<>();
+    private List<Deal> deals = new ArrayList<>();
     @OneToMany(mappedBy = "company")
-    private List<Contacts> contacts = new ArrayList<>();
+    private List<Contact> contacts = new ArrayList<>();
     @OneToMany(mappedBy = "company")
     private List<Lead> leads = new ArrayList<>();
 

@@ -1,126 +1,85 @@
 package com.b2b.b2b.modules.crm.contact.service;
 
-import com.b2b.b2b.exception.APIException;
+import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
-import com.b2b.b2b.modules.crm.contact.entity.Contacts;
+import com.b2b.b2b.modules.crm.contact.entity.Contact;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactDTO;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import com.b2b.b2b.modules.crm.contact.repository.ContactRepository;
-import com.b2b.b2b.modules.crm.deal.entity.Deals;
-import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
-import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
-import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
+import com.b2b.b2b.modules.crm.contact.util.ContactUtils;
+import com.b2b.b2b.shared.AuthUtil;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ContactServiceImpl implements ContactService {
 
     private final CompanyRepository companyRepository;
     private final ContactRepository contactRepository;
-    private final DealRepository dealRepository;
-    private final DealUtils dealUtils;
+    private final AuthUtil authUtil;
+    private final ContactUtils contactUtils;
+    private final ModelMapper modelMapper;
 
-    public ContactServiceImpl(CompanyRepository companyRepository, ContactRepository contactRepository, DealRepository dealRepository, DealUtils dealUtils) {
-        this.companyRepository = companyRepository;
-        this.contactRepository = contactRepository;
-        this.dealRepository = dealRepository;
-        this.dealUtils = dealUtils;
-    }
 
     @Override
-    public ContactResponseDTO addContact(ContactDTO contactDTO, User user) {
+    @Transactional
+    public ContactResponseDTO addContact(ContactDTO request, User user) {
 
-        Organization organization = user.getUserOrganizations()
-         .stream()
-         .filter(userOrganization -> userOrganization.isPrimary())
-         .findFirst()
-         .orElseThrow(() -> new APIException("User has no primary organization"))
-         .getOrganization();
+        Company company = companyRepository.findByCompanyNameAndOrganization(request.getCompanyName(), getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "name", request.getCompanyName()));
+        Contact contact = convertToEntity(request, company);
 
-        Company companyFromDB = companyRepository.findByCompanyNameAndOrganization(contactDTO.getCompanyName(), organization);
-        Contacts contacts = new Contacts();
-        contacts.setEmail(contactDTO.getEmail());
-        contacts.setFirstName(contactDTO.getFirstName());
-        contacts.setLastName(contactDTO.getLastName());
-        contacts.setPhone(contactDTO.getPhone());
-        contacts.setCompany(companyFromDB);
-        Contacts savedContact = contactRepository.save(contacts);
-
-        return new ContactResponseDTO(
-                savedContact.getId(),
-                savedContact.getFirstName(),
-                savedContact.getLastName(),
-                savedContact.getEmail(),
-                savedContact.getPhone(),
-                savedContact.getCompany().getCompanyName()
-        );
+        Contact savedContact = contactRepository.save(contact);
+        return contactUtils.createContactResponseDTO(savedContact);
     }
+
     @Override
     public ContactResponseDTO getContact(Integer id, User user) {
-        Organization organization = user.getUserOrganizations()
-                .stream()
-                .filter(userOrganization -> userOrganization.isPrimary())
-                .findFirst()
-                .orElseThrow(()-> new APIException("User has no primary organization"))
-                .getOrganization();
-        Contacts contact = contactRepository.findByIdAndOrganization(id, organization);
-        return new ContactResponseDTO(
-                contact.getId(),
-                contact.getFirstName(),
-                contact.getLastName(),
-                contact.getEmail(),
-                contact.getPhone(),
-                contact.getCompany().getCompanyName()
-        );
+        return contactUtils.createContactResponseDTO(contactRepository.findByIdAndCompanyOrganization(id, getOrg(user)));
     }
 
     @Override
     public List<ContactResponseDTO> getAllContacts(User user) {
-        Organization organization = user.getUserOrganizations()
-                .stream()
-                .filter(userOrganization -> userOrganization.isPrimary())
-                .findFirst()
-                .orElseThrow(()-> new APIException("User has no primary organization"))
-                .getOrganization();
-        List<Contacts> contactsList = contactRepository.findAllByOrganization(organization);
-
-        return contactsList.stream().map(c-> new ContactResponseDTO(
-                c.getId(),
-                c.getFirstName(),
-                c.getLastName(),
-                c.getEmail(),
-                c.getPhone(),
-                c.getCompany().getCompanyName()
-        )).toList();
+        return toDTOList(contactRepository.findAllByCompanyOrganization(getOrg(user)));
     }
 
     @Override
-    public List<DealResponseDTO> getDealsByContact(Integer contactId, User user) {
-        Organization organization = user.getUserOrganizations()
-                .stream()
-                .filter(userOrganization -> userOrganization.isPrimary())
-                .findFirst()
-                .orElseThrow(()-> new APIException("User has no primary organization"))
-                .getOrganization();
-        List<Deals> contactDeals = dealRepository.findAllDealsByCompanyContactsIdAndOrganization(contactId, organization);
-        return contactDeals.stream().map(deals -> dealUtils.createDealResponseDTO(deals)).toList();
+    public List<ContactResponseDTO> getCompanyContacts(Integer id, User user) {
+        return toDTOList(contactRepository.findAllContactsByCompanyIdAndCompanyOrganization(id, getOrg(user)));
     }
 
     @Override
-    public ContactResponseDTO updateContact(ContactDTO contactDTO, User user) {
+    public ContactResponseDTO updateContact(ContactDTO request, User user) {
         return null;
     }
 
     @Override
-    public ContactResponseDTO deleteContact(ContactDTO contactDTO, User user) {
+    public ContactResponseDTO deleteContact(ContactDTO request, User user) {
         return null;
     }
 
+    /********Helper methods********/
 
+    private Organization getOrg(User user) {
+        return authUtil.getPrimaryOrganization(user);
+    }
 
+    private List<ContactResponseDTO> toDTOList(List<Contact> contacts) {
+        return contacts.stream()
+                .map(contactUtils::createContactResponseDTO).toList();
+    }
+
+    private Contact convertToEntity(ContactDTO request, Company company) {
+        Contact contact = modelMapper.map(request, Contact.class);
+        contact.setCompany(company);
+        return contact;
+    }
 }

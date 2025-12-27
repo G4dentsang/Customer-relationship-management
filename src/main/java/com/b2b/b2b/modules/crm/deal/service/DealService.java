@@ -7,9 +7,11 @@ import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import java.util.List;
 
 public interface DealService {
-    DealResponseDTO convertFromLead(Integer leadId, User user); // add this service method inside leadService
-    DealResponseDTO createDeal(DealCreateRequestDTO dealCreateRequestDTO, User user);
-    List<DealResponseDTO> getAllDeals(User user);
-    List<DealResponseDTO> getAllUserOwnedDeals(User user);
-    DealResponseDTO getDealById(Integer dealId, User user);
+    DealResponseDTO convertFromLead(Integer id, User user);
+    DealResponseDTO create(DealCreateRequestDTO request, User user);
+    List<DealResponseDTO> findAllByOrganization(User user);
+    List<DealResponseDTO> findAllByUser(User user);
+    DealResponseDTO getById(Integer id, User user);
+    List<DealResponseDTO> getCompanyDeals(Integer id, User user);
+    List<DealResponseDTO> getContactDeals(Integer id, User user);
 }

@@ -1,5 +1,7 @@
 package com.b2b.b2b.shared;
 
+import com.b2b.b2b.exception.APIException;
+import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.UserRepository;
 import org.springframework.security.core.Authentication;
@@ -33,5 +35,14 @@ public class AuthUtil {
         User user = userRepository.findByUserName(authentication.getName())
                 .orElseThrow(()-> new UsernameNotFoundException("User Not Found with username: " + authentication.getName()));
         return user.getUserId();
+    }
+
+    public Organization getPrimaryOrganization(User user) {
+        return  user.getUserOrganizations()
+                .stream()
+                .filter((userOrganization -> userOrganization.isPrimary()))
+                .findFirst()
+                .orElseThrow(()-> new APIException("User has no primary organization"))
+                .getOrganization();
     }
 }

@@ -9,8 +9,8 @@ import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.service.LeadService;
 import com.b2b.b2b.shared.AuthUtil;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,54 +19,48 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/app/v1/leads")
+@Slf4j
+@RequiredArgsConstructor
 public class LeadController {
-    Logger logger = LoggerFactory.getLogger(LeadController.class);
+
     private final LeadService leadService;
     private final DealService dealService;
     private final AuthUtil authUtil;
 
-    public LeadController(LeadService leadService,DealService dealService, AuthUtil authUtil) {
-        this.leadService = leadService;
-        this.dealService = dealService;
-        this.authUtil = authUtil;
+    @PostMapping
+    public ResponseEntity<LeadResponseDTO> create(@Valid @RequestBody CreateLeadRequestDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.status(HttpStatus.CREATED).body(leadService.create(request, user));
     }
 
-    @PostMapping("")
-    public ResponseEntity<?> createLead(@Valid @RequestBody CreateLeadRequestDTO createLeadRequestDTO) {
+    @GetMapping
+    public ResponseEntity<List<LeadResponseDTO>> listAll() {
         User user = authUtil.loggedInUser();
-        LeadResponseDTO savedLeadResponseDTO = leadService.createLead(createLeadRequestDTO, user);
-        return new ResponseEntity<>(savedLeadResponseDTO,HttpStatus.CREATED);
+        return ResponseEntity.ok(leadService.findAllByOrganization(user));
     }
+
     @PatchMapping("/{leadId}")
-    public ResponseEntity<?> updateLead(@PathVariable("leadId") Integer leadId,@Valid @RequestBody UpdateLeadRequestDTO updateLeadRequestDTO) {
-        LeadResponseDTO leadResponseDTO = leadService.updateLead(leadId, updateLeadRequestDTO);
-        return new  ResponseEntity<>(leadResponseDTO,HttpStatus.OK);
+    public ResponseEntity<LeadResponseDTO> update(@PathVariable Integer leadId, @Valid @RequestBody UpdateLeadRequestDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(leadService.update(leadId, request, user));
     }
 
-    @GetMapping("")
-    public ResponseEntity<?> getAllOrganizationLeads() {
+    @GetMapping("/my-leads") //userOwned
+    public ResponseEntity<List<LeadResponseDTO>> listMine() {
         User user = authUtil.loggedInUser();
-        List<LeadResponseDTO> leadResponseDTOs = leadService.getAllOrganizationLeads(user);
-        return new  ResponseEntity<>(leadResponseDTOs,HttpStatus.OK);
+        return ResponseEntity.ok(leadService.findAllByUser(user));
     }
-    @GetMapping("/userOwned")
-    public ResponseEntity<?> getAllUserOwnedLeads() {
-        User user = authUtil.loggedInUser();
-        List<LeadResponseDTO> leadResponseDTOs = leadService.getAllUserOwnedLeads(user);
-        return new  ResponseEntity<>(leadResponseDTOs,HttpStatus.OK);
-    }
+
     @GetMapping("/{leadId}")
-    public ResponseEntity<?> getLeadById(@PathVariable("leadId") Integer leadId) {
+    public ResponseEntity<LeadResponseDTO> get(@PathVariable Integer leadId) {
         User user = authUtil.loggedInUser();
-        LeadResponseDTO leadResponseDTO = leadService.getLeadById(leadId, user);
-        return new ResponseEntity<>(leadResponseDTO,HttpStatus.OK);
+        return ResponseEntity.ok(leadService.getById(leadId, user));
     }
 
     @PostMapping("/{leadId}/convert")
-    public ResponseEntity<?> convertLead(@PathVariable("leadId") Integer leadId) {
+    public ResponseEntity<DealResponseDTO> convert(@PathVariable Integer leadId) {
         User user = authUtil.loggedInUser();
-        DealResponseDTO dealResponseDTO = dealService.convertFromLead(leadId,user);
-        return new ResponseEntity<>(dealResponseDTO,HttpStatus.OK);
+        return ResponseEntity.ok(dealService.convertFromLead(leadId, user));
     }
 
 
