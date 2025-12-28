@@ -9,7 +9,5 @@ import java.util.List;
 
 public interface WorkflowActionService {
     void execute(WorkflowAction action, WorkflowTarget target);
-    void executeEmailAction(WorkflowAction action, WorkflowTarget target);
-    void executeAssignmentAction(WorkflowAction action, WorkflowTarget target);
-    List<WorkflowActionResponseDTO> addWorkflowActions(Integer ruleId, List<WorkflowActionDTO> workflowActionDTOs, User user);
+    List<WorkflowActionResponseDTO> addActions(Integer ruleId, List<WorkflowActionDTO> actions, User user);
 }

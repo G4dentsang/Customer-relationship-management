@@ -1,5 +1,7 @@
 package com.b2b.b2b.modules.workflow.util;
 
+import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
+import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
 import com.b2b.b2b.modules.workflow.payloads.WorkflowActionResponseDTO;
 import com.b2b.b2b.modules.workflow.payloads.WorkflowConditionResponseDTO;
 import com.b2b.b2b.modules.workflow.payloads.WorkflowRuleResponseDTO;
@@ -14,6 +16,7 @@ public class WorkflowUtil {
         List<WorkflowConditionResponseDTO> workflowConditions = savedRule.getWorkflowConditions()
                 .stream()
                 .map(c -> new WorkflowConditionResponseDTO(
+                        c.getId(),
                         c.getField(),
                         c.getWorkflowConditionOperator(),
                         c.getExpectedValue()
@@ -21,6 +24,7 @@ public class WorkflowUtil {
         List<WorkflowActionResponseDTO> workflowActions = savedRule.getWorkflowActions()
                 .stream()
                 .map(a -> new WorkflowActionResponseDTO(
+                        a.getId(),
                         a.getActionType(),
                         a.getActionConfigJson()
                 )).toList();
@@ -34,6 +38,20 @@ public class WorkflowUtil {
                 workflowConditions,
                 workflowActions,
                 savedRule.getCreatedAt()
+        );
+    }
+    public WorkflowConditionResponseDTO createWorkflowConditionResponseDTO(WorkflowCondition c) {
+       return  new WorkflowConditionResponseDTO(
+                c.getId(),
+                c.getField(),
+                c.getWorkflowConditionOperator(),
+                c.getExpectedValue());
+    }
+    public WorkflowActionResponseDTO createWorkflowActionResponseDTO(WorkflowAction a) {
+        return new WorkflowActionResponseDTO(
+                a.getId(),
+                a.getActionType(),
+                a.getActionConfigJson()
         );
     }
 

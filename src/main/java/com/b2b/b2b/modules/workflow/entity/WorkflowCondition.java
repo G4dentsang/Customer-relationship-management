@@ -17,16 +17,9 @@ public class WorkflowCondition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String field;
-    @Enumerated(EnumType.STRING)
     private WorkflowConditionOperator workflowConditionOperator;
     private String expectedValue;
     @ManyToOne
     private WorkflowRule workflowRule;
 
-    public WorkflowCondition(String expectedValue, WorkflowConditionOperator workflowConditionOperator, String field, WorkflowRule workflowRule) {
-        this.expectedValue = expectedValue;
-        this.workflowConditionOperator = workflowConditionOperator;
-        this.field = field;
-        this.workflowRule = workflowRule;
-    }
 }

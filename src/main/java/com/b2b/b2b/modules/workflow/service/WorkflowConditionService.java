@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface WorkflowConditionService {
     boolean evaluateCondition(List<WorkflowCondition> conditions, WorkflowTarget target);
-    List<WorkflowConditionResponseDTO> addWorkflowConditions(Integer ruleId, List<WorkflowConditionDTO> conditions, User user);
+    List<WorkflowConditionResponseDTO> addConditions(Integer ruleId, List<WorkflowConditionDTO> conditions, User user);
 }

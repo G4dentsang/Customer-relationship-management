@@ -61,4 +61,5 @@ public class EmailVerificaitonServiceImpl implements EmailVerificationService
         emailVerificationToken.setUsed(true);
         emailVerificationTokenRepository.save(emailVerificationToken);
     }
+    //Send email for workflow methods here.....
 }

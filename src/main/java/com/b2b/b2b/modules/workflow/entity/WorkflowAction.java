@@ -19,13 +19,8 @@ public class WorkflowAction {
     @Enumerated(EnumType.STRING)
     private WorkflowActionType actionType;
     @Column(columnDefinition = "TEXT")
-    private String actionConfigJson; //defines  actual action
+    private String actionConfigJson; //actual action
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowRule workflowRule;
 
-    public WorkflowAction(WorkflowRule workflowRule, String actionConfigJson, WorkflowActionType actionType) {
-        this.workflowRule = workflowRule;
-        this.actionConfigJson = actionConfigJson;
-        this.actionType = actionType;
-    }
 }

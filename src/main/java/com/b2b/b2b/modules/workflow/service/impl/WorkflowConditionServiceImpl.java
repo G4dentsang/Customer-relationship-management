@@ -1,95 +1,88 @@
 package com.b2b.b2b.modules.workflow.service.impl;
 
-import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
-import com.b2b.b2b.modules.workflow.listeners.WorkflowEngineListener;
 import com.b2b.b2b.modules.workflow.payloads.WorkflowConditionDTO;
 import com.b2b.b2b.modules.workflow.payloads.WorkflowConditionResponseDTO;
 import com.b2b.b2b.modules.workflow.repository.WorkflowConditionRepository;
 import com.b2b.b2b.modules.workflow.repository.WorkflowRuleRepository;
 import com.b2b.b2b.modules.workflow.service.WorkflowConditionService;
 import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.b2b.b2b.modules.workflow.util.WorkflowUtil;
+import com.b2b.b2b.shared.AuthUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class WorkflowConditionServiceImpl implements WorkflowConditionService
 {
     private final WorkflowRuleRepository workflowRuleRepository;
     private final WorkflowConditionRepository workflowConditionRepository;
-
-    public WorkflowConditionServiceImpl(WorkflowRuleRepository workflowRuleRepository, WorkflowConditionRepository workflowConditionRepository) {
-        this.workflowRuleRepository = workflowRuleRepository;
-        this.workflowConditionRepository = workflowConditionRepository;
-    }
+    private final AuthUtil authUtil;
+    private final ModelMapper modelMapper;
+    private final WorkflowUtil workflowUtil;
 
     @Override
     public boolean evaluateCondition(List<WorkflowCondition> conditions, WorkflowTarget target) {
-        Logger logger = LoggerFactory.getLogger(WorkflowEngineListener.class);
-        for (WorkflowCondition workflowCondition : conditions) {
-            String actualValue = getFieldValue(target, workflowCondition.getField());
-            String expectedValue = workflowCondition.getExpectedValue();
-            switch (workflowCondition.getWorkflowConditionOperator()) {
-                case EQUALS:
-                    if (!expectedValue.equals(actualValue)) return false;
-                    break;
-                case NOT_EQUALS:
-                    if (expectedValue.equals(actualValue)) return false;
-                    break;
-                //more operators
-            }
-        }
-        return true;
+        return conditions.stream().allMatch(c -> {
+            String actual = getDBFieldValue(target, c.getField());
+            return c.getWorkflowConditionOperator().apply(actual, c.getExpectedValue());
+        });
     }
 
     @Override
-    public List<WorkflowConditionResponseDTO> addWorkflowConditions(Integer ruleId, List<WorkflowConditionDTO> conditions, User user) {
-        Organization organization = user.getUserOrganizations()
-                .stream()
-                .filter(userOrg -> userOrg.isPrimary())
-                .findFirst()
-                .orElseThrow(() -> new APIException("User's organization not found"))
-                .getOrganization();
-        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(ruleId, organization);
+    @Transactional
+    public List<WorkflowConditionResponseDTO> addConditions(Integer id, List<WorkflowConditionDTO> request, User user) {
 
-        List<WorkflowCondition> workflowConditions = new ArrayList<>();
+        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
 
-        for (WorkflowConditionDTO workflowConditionDTO : conditions) {
-            WorkflowCondition workflowCondition = new WorkflowCondition(
-                    workflowConditionDTO.getExpectedValue(),
-                    workflowConditionDTO.getWorkflowConditionOperator(),
-                    workflowConditionDTO.getField(),
-                    rule
-            );
-            workflowConditionRepository.save(workflowCondition);
-            workflowConditions.add(workflowCondition);
-        }
+        List<WorkflowCondition> newConditions = request.stream()
+                        .map(dto -> {
+                            WorkflowCondition condition = modelMapper.map(dto, WorkflowCondition.class);
+                            condition.setWorkflowRule(rule);
+                            return  condition;
+                        }).toList();
 
-        return workflowConditions.stream().map(condition -> new WorkflowConditionResponseDTO(
-                        condition.getField(),
-                        condition.getWorkflowConditionOperator(),
-                        condition.getExpectedValue()
-                )
-        ).toList();
+        List<WorkflowCondition> savedConditions =   workflowConditionRepository.saveAll(newConditions);
+        return toDTOList(savedConditions);
     }
 
-    private String getFieldValue(WorkflowTarget target, String fieldName) {
+    /******************Helper methods************************/
+
+    private Organization getOrg(User user) {
+        return authUtil.getPrimaryOrganization(user);
+    }
+
+    private List<WorkflowConditionResponseDTO> toDTOList(List<WorkflowCondition> conditions) {
+        return conditions.stream().map(workflowUtil::createWorkflowConditionResponseDTO).toList();
+    }
+
+    private String getDBFieldValue(WorkflowTarget target, String fieldName) {
+
         try {
-            Field field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return String.valueOf(field.get(target));
+            BeanWrapper beanWrapper = PropertyAccessorFactory.forBeanPropertyAccess(target);
+            Object value = beanWrapper.getPropertyValue(fieldName);
+
+            return value != null ? String.valueOf(value) : null;
 
         } catch (Exception e) {
-            throw new RuntimeException("Invalid field " + fieldName + " in Lead");
+            log.error("Could not find field {} on class {}", fieldName, target.getClass().getSimpleName());
+            return null;
         }
     }
+
+
 }

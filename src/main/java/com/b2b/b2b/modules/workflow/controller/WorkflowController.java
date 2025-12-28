@@ -7,6 +7,7 @@ import com.b2b.b2b.modules.workflow.service.WorkflowConditionService;
 import com.b2b.b2b.modules.workflow.service.WorkflowRuleService;
 import com.b2b.b2b.shared.AuthUtil;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("app/v1/workflows/rules")
+@RequiredArgsConstructor
 public class WorkflowController {
 
     private final AuthUtil authUtil;
@@ -22,60 +24,40 @@ public class WorkflowController {
     private final WorkflowConditionService workflowConditionService;
     private final WorkflowActionService workflowActionService;
 
-    public WorkflowController(WorkflowRuleService workflowRuleService, AuthUtil authUtil, WorkflowConditionService workflowConditionService, WorkflowActionService workflowActionService) {
-        this.workflowRuleService = workflowRuleService;
-        this.authUtil = authUtil;
-        this.workflowConditionService = workflowConditionService;
-        this.workflowActionService = workflowActionService;
+    @PostMapping
+    public ResponseEntity<WorkflowRuleResponseDTO> create(@Valid @RequestBody WorkflowRuleCreateDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.status(HttpStatus.CREATED).body(workflowRuleService.create(request, user));
     }
 
-    @PostMapping("")
-    public ResponseEntity<?> createWorkflowRule(@Valid @RequestBody WorkflowRuleCreateDTO workflowRuleCreateDTO) {
+    @GetMapping
+    public ResponseEntity<List<WorkflowRuleResponseDTO>> get() {
         User user = authUtil.loggedInUser();
-        WorkflowRuleResponseDTO workflowRuleResponseDTO = workflowRuleService.saveWorkflowRule(workflowRuleCreateDTO, user);
-        return new ResponseEntity<>(workflowRuleResponseDTO, HttpStatus.CREATED);
-    }
-
-    @GetMapping("")
-    public ResponseEntity<?> getWorkflowRules() {
-        User user = authUtil.loggedInUser();
-        List<WorkflowRuleResponseDTO> workflowRuleResponseDTOs = workflowRuleService.getAllWorkflowRules(user);
-        return new ResponseEntity<>(workflowRuleResponseDTOs, HttpStatus.OK);
+        return ResponseEntity.ok(workflowRuleService.getAllWorkflowRules(user));
     }
 
     @GetMapping("/{ruleId}")
-    public ResponseEntity<?> getWorkflowRule(@PathVariable("ruleId") Integer ruleId) {
+    public ResponseEntity<WorkflowRuleResponseDTO> getById(@PathVariable Integer ruleId) {
         User user = authUtil.loggedInUser();
-        WorkflowRuleResponseDTO workflowRuleResponseDTO = workflowRuleService.getWorkflowRule(ruleId, user);
-        return new ResponseEntity<>(workflowRuleResponseDTO, HttpStatus.OK);
+        return ResponseEntity.ok(workflowRuleService.getWorkflowRule(ruleId, user));
     }
 
-    @PostMapping("/{ruleId}/activate")
-    public ResponseEntity<?> activateWorkflowRule(@PathVariable("ruleId") Integer ruleId) {
+    @PostMapping("/{ruleId}/status")
+    public ResponseEntity<WorkflowRuleResponseDTO> updateStatus(@PathVariable Integer ruleId, @RequestParam boolean status) {
         User user = authUtil.loggedInUser();
-        WorkflowRuleResponseDTO workflowRuleResponseDTO = workflowRuleService.activateWorkflowRule(ruleId, user);
-        return new ResponseEntity<>(workflowRuleResponseDTO, HttpStatus.OK);
-    }
-
-    @PostMapping("/{ruleId}/deactivate")
-    public ResponseEntity<?> deactivateWorkflowRule(@PathVariable("ruleId") Integer ruleId) {
-        User user = authUtil.loggedInUser();
-        WorkflowRuleResponseDTO workflowRuleResponseDTO = workflowRuleService.deactivateWorkflowRule(ruleId, user);
-        return new ResponseEntity<>(workflowRuleResponseDTO, HttpStatus.OK);
+        return ResponseEntity.ok(workflowRuleService.updateStatus(ruleId, user, status));
     }
 
     @PostMapping("/{ruleId}/conditions")
-    public ResponseEntity<?> addWorkflowConditions(@PathVariable("ruleId") Integer ruleId, @RequestBody List<WorkflowConditionDTO> workflowConditionDTOs) {
+    public ResponseEntity<List<WorkflowConditionResponseDTO>> addConditions(@PathVariable Integer ruleId, @RequestBody List<WorkflowConditionDTO> request) {
         User user = authUtil.loggedInUser();
-        List<WorkflowConditionResponseDTO> workflowConditionResponseDTOs = workflowConditionService.addWorkflowConditions(ruleId, workflowConditionDTOs, user);
-        return new ResponseEntity<>(workflowConditionResponseDTOs, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(workflowConditionService.addConditions(ruleId, request, user));
     }
 
     @PostMapping("/{ruleId}/actions")
-    public ResponseEntity<?> addWorkflowActions(@PathVariable("ruleId") Integer ruleId, @RequestBody List<WorkflowActionDTO> workflowActionDTOs) {
+    public ResponseEntity<List<WorkflowActionResponseDTO>> addActions(@PathVariable Integer ruleId, @RequestBody List<WorkflowActionDTO> request) {
         User user = authUtil.loggedInUser();
-        List<WorkflowActionResponseDTO> workflowActionResponseDTOs = workflowActionService.addWorkflowActions(ruleId, workflowActionDTOs, user);
-        return new ResponseEntity<>(workflowActionResponseDTOs, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(workflowActionService.addActions(ruleId, request, user));
     }
 
 

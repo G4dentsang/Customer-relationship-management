@@ -1,5 +1,6 @@
 package com.b2b.b2b.modules.workflow.listeners;
 
+import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import com.b2b.b2b.modules.workflow.events.DealCreatedEvent;
@@ -28,8 +29,8 @@ public class WorkflowEngineListener {
     @EventListener
     public void handleOnLeadCreatedEvent(LeadCreatedEvent leadCreatedEvent)
     {   logger.info("Listening on LeadCreatedEvent");
-        Integer orgId = leadCreatedEvent.getLead().getCompany().getOrganization().getOrganizationId();
-        List<WorkflowRule> rules = workflowRuleService.getWorkflowRules(orgId, WorkflowTriggerType.LEAD_CREATED, true);
+        Organization org = leadCreatedEvent.getLead().getCompany().getOrganization();
+        List<WorkflowRule> rules = workflowRuleService.getWorkflowRules(org, WorkflowTriggerType.LEAD_CREATED, true);
         if(rules.isEmpty()){
             logger.info("No rules found for lead id {}", leadCreatedEvent.getLead().getLeadName());}
         else{workflowEngineService.run(leadCreatedEvent.getLead(), rules);}
@@ -40,8 +41,8 @@ public class WorkflowEngineListener {
     @EventListener
     public void handleOnDealCreatedEvent(DealCreatedEvent dealCreatedEvent)
     {   logger.info("Listening on DealCreatedEvent");
-        Integer orgId = dealCreatedEvent.getDeal().getCompany().getOrganization().getOrganizationId();
-        List<WorkflowRule> rules = workflowRuleService.getWorkflowRules(orgId, WorkflowTriggerType.DEAL_CREATED, true);
+        Organization org = dealCreatedEvent.getDeal().getCompany().getOrganization();
+        List<WorkflowRule> rules = workflowRuleService.getWorkflowRules(org, WorkflowTriggerType.DEAL_CREATED, true);
         if(rules.isEmpty()){
             logger.info("No rules found for deal {}", dealCreatedEvent.getDeal().getDealName());}
         else{
