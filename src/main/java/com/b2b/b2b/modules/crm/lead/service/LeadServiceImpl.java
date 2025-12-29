@@ -6,6 +6,7 @@ import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
+import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
@@ -16,6 +17,7 @@ import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
 import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.modules.workflow.events.LeadCreatedEvent;
+import com.b2b.b2b.modules.workflow.events.LeadStatusUpdatedEvent;
 import com.b2b.b2b.shared.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,15 +63,21 @@ public class LeadServiceImpl implements LeadService {
         Lead lead = leadRepository.findByIdAndOrganization(leadId, getOrg(user))
                 .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", leadId));
 
+        LeadStatus oldStatus = lead.getLeadStatus();
         mapUpdateDtoToEntity(request, lead);
+        LeadStatus newStatus = request.getLeadStatus();
 
-        if (!lead.getLeadStatus().equals(request.getLeadStatus())) {
+        if (!oldStatus.equals(newStatus)) {
             lead.setLeadStatus(request.getLeadStatus());
             pipelineStageService.promoteToNextStage(lead);
-            log.info("lead status has been promoted to next stage");
+            domainEventPublisher.publishEvent(new LeadStatusUpdatedEvent(lead, oldStatus, newStatus));
+            log.info("lead status has been promoted to next pipeline stage");
         }
-        return leadUtils.createLeadResponseDTO(leadRepository.save(lead));
+
+        Lead savedLead = leadRepository.save(lead);
+        return leadUtils.createLeadResponseDTO(savedLead);
     }
+
 
     @Override
     public List<LeadResponseDTO> findAllByOrganization(User user) {
