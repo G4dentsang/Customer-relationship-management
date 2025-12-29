@@ -27,7 +27,7 @@ public class CompanyController {
     private final ContactService contactService;
 
     @PostMapping
-    public ResponseEntity<CompanyResponseDTO> addCompany(@RequestBody CompanyDTO request) {
+    public ResponseEntity<CompanyResponseDTO> add(@RequestBody CompanyDTO request) {
         User user = authUtil.loggedInUser();
         return ResponseEntity.status(HttpStatus.CREATED).body(companyService.create(request, user));
     }

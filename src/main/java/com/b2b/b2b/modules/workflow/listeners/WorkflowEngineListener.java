@@ -5,10 +5,7 @@ import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
-import com.b2b.b2b.modules.workflow.events.DealCreatedEvent;
-import com.b2b.b2b.modules.workflow.events.DealStatusUpdatedEvent;
-import com.b2b.b2b.modules.workflow.events.LeadCreatedEvent;
-import com.b2b.b2b.modules.workflow.events.LeadStatusUpdatedEvent;
+import com.b2b.b2b.modules.workflow.events.*;
 import com.b2b.b2b.modules.workflow.service.WorkflowEngineService;
 import com.b2b.b2b.modules.workflow.service.WorkflowRuleService;
 import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
@@ -32,42 +29,45 @@ public class WorkflowEngineListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnLeadCreatedEvent(LeadCreatedEvent event) {
-        log.info("Listening on LeadCreatedEvent");
+        log.info("Listening on LeadCreatedEvent for Lead ID: {}", event.getLead().getId());
         processWorkflow(event.getLead(), event.getLead().getCompany().getOrganization(), WorkflowTriggerType.LEAD_CREATED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnLeadStatusUpdatedEvent(LeadStatusUpdatedEvent event) {
-        log.info("Listening on LeadStatusUpdatedEvent");
-
-        if (!event.getOldStatus().equals(event.getNewStatus())) {
-            return;
-        }
+        log.info("Listening on LeadStatusUpdatedEvent for Lead ID: {} ", event.getLead().getId());
         Lead lead = event.getLead();
-        log.info("Workflow Triggered: Lead {} status changed from {} to {}",
-                lead.getId(), event.getOldStatus(), event.getNewStatus());
-
         processWorkflow(lead, lead.getCompany().getOrganization(), WorkflowTriggerType.LEAD_STATUS_UPDATED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleOnDealCreatedEvent(DealCreatedEvent event)
-    {   log.info("Listening on DealCreatedEvent");
+    public void handleOnLeadAssignedEvent(LeadAssignedEvent event) {
+        log.info("Listening on LeadAssignedEvent for Lead ID: {}", event.getLead().getId());
+        Lead lead = event.getLead();
+        processWorkflow(lead, lead.getCompany().getOrganization(), WorkflowTriggerType.LEAD_ASSIGNED);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOnLeadDeletedEvent(LeadDeletedEvent event) {
+        log.info("Listening on LeadDeletedEvent for Lead ID: {}", event.getLead().getId());
+        processWorkflow(event.getLead(), event.getLead().getCompany().getOrganization(), WorkflowTriggerType.LEAD_DELETED);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOnDealCreatedEvent(DealCreatedEvent event) {
+        log.info("Listening on DealCreatedEvent for Deal ID: {}", event.getDeal().getId());
         processWorkflow(event.getDeal(), event.getDeal().getCompany().getOrganization(), WorkflowTriggerType.DEAL_CREATED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnDealStatusUpdatedEvent(DealStatusUpdatedEvent event){
-        log.info("Listening on  dealStatusUpdatedEvent");
-
-        if(!event.getOldStatus().equals(event.getNewStatus())) {
-            return;
-        }
+        log.info("Listening on DealStatusUpdatedEvent  for Deal ID: {}", event.getDeal().getId());
         Deal deal = event.getDeal();
-
         processWorkflow(deal, deal.getCompany().getOrganization(), WorkflowTriggerType.DEAL_STATUS_UPDATED);
     }
 

@@ -37,6 +37,10 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     private LocalDateTime convertedAt;//to deal
     private boolean readyForConversion = false;
     private boolean isConverted = false;
+    //GDPR....
+    private boolean gdpr_is_consent_given = false; // automated email
+    private LocalDateTime gdpr_data_processing_consent; // time terms agreement
+    private LocalDateTime gdpr_erased_at; // time deletion
 
     @ManyToOne
     private Organization organization;
@@ -54,7 +58,7 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     private List<Deal> deals = new ArrayList<>();
 
     @ManyToOne
-    private User owner;
+    private User assignedUser;
 
     public Lead(String leadEmail, String leadName, String leadPhone) {
         this.leadEmail = leadEmail;

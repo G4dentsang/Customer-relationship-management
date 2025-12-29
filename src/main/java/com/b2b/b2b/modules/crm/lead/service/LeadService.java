@@ -10,7 +10,9 @@ import java.util.List;
 public interface LeadService {
     LeadResponseDTO create(CreateLeadRequestDTO request, User user);
     LeadResponseDTO update(Integer id, UpdateLeadRequestDTO updateLeadRequestDTO, User user);
+    void delete(Integer id, User user);
     List<LeadResponseDTO> findAllByOrganization(User user);
     List<LeadResponseDTO> findAllByUser(User user);
     LeadResponseDTO getById(Integer id, User user);
+
 }
