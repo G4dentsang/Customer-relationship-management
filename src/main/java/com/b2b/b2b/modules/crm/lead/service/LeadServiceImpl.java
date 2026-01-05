@@ -65,10 +65,12 @@ public class LeadServiceImpl implements LeadService {
         LeadStatus oldStatus = lead.getLeadStatus();
         User oldOwner = lead.getAssignedUser();
 
-        mapUpdateDtoToEntity(request, lead);
+        updateDtoToEntity(request, lead);
 
         assignUser(request, lead, oldOwner);
-        updateStatus(request, oldStatus, lead);
+        if(request.getLeadStatus() != null && !request.getLeadStatus().equals(oldStatus)) {
+            processStatusChange(request.getLeadStatus(), oldStatus, lead);
+        }
 
         Lead savedLead = leadRepository.save(lead);
         return leadUtils.createLeadResponseDTO(savedLead);
@@ -131,7 +133,7 @@ public class LeadServiceImpl implements LeadService {
                 )));    //might add this to company side
     }
 
-    private void mapUpdateDtoToEntity(UpdateLeadRequestDTO request, Lead lead) {
+    private void updateDtoToEntity(UpdateLeadRequestDTO request, Lead lead) {
         if (request.getLeadName() != null) lead.setLeadName(request.getLeadName());
         if (request.getLeadEmail() != null) lead.setLeadEmail(request.getLeadEmail());
         if (request.getLeadPhone() != null) lead.setLeadPhone(request.getLeadPhone());// need "" string at least
@@ -155,14 +157,22 @@ public class LeadServiceImpl implements LeadService {
         }
     }
 
-    private void updateStatus(UpdateLeadRequestDTO request, LeadStatus oldStatus, Lead lead) {
-        LeadStatus newStatus = request.getLeadStatus();
-        if (!oldStatus.equals(newStatus)) {
-            lead.setLeadStatus(request.getLeadStatus());
-            log.info("Lead {} status changed from {} to {}",
-                    lead.getId(), oldStatus, newStatus);
-            pipelineStageService.promoteToNextStage(lead);
-            domainEventPublisher.publishEvent(new LeadStatusUpdatedEvent(lead, oldStatus, newStatus));
+    private void processStatusChange(LeadStatus newStatus, LeadStatus oldStatus, Lead lead) {
+        lead.setLeadStatus(newStatus);
+        log.info("Lead {} status changed from {} to {}",
+                lead.getId(), oldStatus, newStatus);
+        if (newStatus.getGroupId() == 3) {
+            if (newStatus == LeadStatus.CONVERTED) {
+                lead.setReadyForConversion(true);
+            }
+        } else {
+            if (newStatus.getGroupId() != oldStatus.getGroupId()) {
+                pipelineStageService.promoteToNextStage(lead);
+            }
+
         }
+        domainEventPublisher.publishEvent(new LeadStatusUpdatedEvent(lead, oldStatus, newStatus));
     }
+
+
 }

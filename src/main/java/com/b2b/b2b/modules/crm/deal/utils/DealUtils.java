@@ -15,12 +15,20 @@ public class DealUtils {
                     deal.getCompany().getWebsite(),
                     deal.getCompany().getIndustry()
             );
+            String currentStageName = deal.getPipelineStage().getStageName();
+            Integer currentStageOrder = deal.getPipelineStage().getStageOrder();
+
+            int totalStages = deal.getPipeline().getPipelineStages().size();
+            double progressPercentage = (totalStages > 0) ?  ((double)currentStageOrder / totalStages) * 100 : 0;
 
             return  new DealResponseDTO(
                     deal.getId(),
                     deal.getDealName(),
                     deal.getDealAmount(),
                     deal.getDealStatus(),
+                    currentStageName,
+                    currentStageOrder,
+                    progressPercentage,
                     deal.getCreatedAt(),
                     deal.getClosedAt(),
                     company

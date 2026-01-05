@@ -52,6 +52,24 @@ public class CompanyServiceImpl implements CompanyService {
         return companyUtils.createCompanyResponse(company);
     }
 
+    @Override
+    public CompanyResponseDTO update(Integer id, CompanyDTO request, User user) {
+        Company company = companyRepository.findByIdAndOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "id", id));
+
+        updateDtoToEntity(request, company);
+        return companyUtils.createCompanyResponse(companyRepository.save(company));
+    }
+
+    @Override
+    public CompanyResponseDTO delete(Integer id, User user) {
+        Company company = companyRepository.findByIdAndOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "id", id));
+
+        company.setIsDeleted(true); //soft delete
+        return companyUtils.createCompanyResponse(companyRepository.save(company));
+    }
+
     /********Helper methods********/
 
     private Organization getOrg(User user) {
@@ -67,6 +85,12 @@ public class CompanyServiceImpl implements CompanyService {
     private List<CompanyResponseDTO> toDTOList(List<Company> companies) {
         return companies.stream()
                 .map(companyUtils::createCompanyResponse).toList();
+    }
+
+    private void updateDtoToEntity(CompanyDTO request, Company company) {
+        if (request.getCompanyName() != null) company.setCompanyName(request.getCompanyName());
+        if (request.getCompanyWebsite() != null) company.setWebsite(request.getCompanyWebsite());
+        if (request.getCompanyIndustry() != null) company.setIndustry(request.getCompanyIndustry());// need "" string at least
     }
 
 }

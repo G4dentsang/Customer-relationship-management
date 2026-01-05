@@ -3,6 +3,8 @@ package com.b2b.b2b.modules.crm.deal.controller;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.deal.payloads.DealCreateRequestDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
+import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateDTO;
+import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateStatusRequestDTO;
 import com.b2b.b2b.modules.crm.deal.service.DealService;
 import com.b2b.b2b.shared.AuthUtil;
 import jakarta.validation.Valid;
@@ -44,4 +46,26 @@ public class DealController {
         User user = authUtil.loggedInUser();
         return ResponseEntity.ok(dealService.getById(dealId, user));
     }
+
+    @PatchMapping("/{dealId}")
+    public ResponseEntity<DealResponseDTO> update(@PathVariable Integer dealId, @Valid @RequestBody DealUpdateDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(dealService.update(dealId, request, user));
+    }
+
+    @PatchMapping("/{dealId}/status")
+    public ResponseEntity<DealResponseDTO> status(@PathVariable Integer dealId, @Valid @RequestBody DealUpdateStatusRequestDTO request) {
+        User user = authUtil.loggedInUser();
+        DealUpdateDTO mainDTO =  new DealUpdateDTO();
+        mainDTO.setDealStatus(request.getStatus());
+        return ResponseEntity.ok(dealService.update(dealId, mainDTO, user));
+    }
+
+    @DeleteMapping("/{dealId}")
+    public ResponseEntity<DealResponseDTO> delete(@PathVariable Integer dealId) {
+        User user = authUtil.loggedInUser();
+        dealService.delete(dealId, user);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+    //undo delete button ****
 }

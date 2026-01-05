@@ -3,6 +3,7 @@ package com.b2b.b2b.modules.workflow.listeners;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
+import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import com.b2b.b2b.modules.workflow.events.*;
@@ -69,6 +70,34 @@ public class WorkflowEngineListener {
         log.info("Listening on DealStatusUpdatedEvent  for Deal ID: {}", event.getDeal().getId());
         Deal deal = event.getDeal();
         processWorkflow(deal, deal.getCompany().getOrganization(), WorkflowTriggerType.DEAL_STATUS_UPDATED);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOnDealDeletedEvent(DealDeletedEvent event) {
+        log.info("Listening on DealDeletedEvent for Deal ID: {}", event.getDeal().getId());
+        processWorkflow(event.getDeal(), event.getDeal().getCompany().getOrganization(), WorkflowTriggerType.DEAL_DELETED);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOnPipelineStageChangeEvent(PipelineStageChangeEvent event) {
+
+        if(event.getEntity() instanceof Lead lead){
+            log.info("Lead {} moved from {} to {}",
+                    lead.getLeadName(),
+                    event.getFromStage().getStageName(),
+                    event.getToStage().getStageName());
+            processWorkflow(lead, lead.getOrganization(),WorkflowTriggerType.LEAD_STAGE_CHANGED);
+
+        }
+        if(event.getEntity() instanceof Deal deal){
+            log.info("Deal {} moved from {} to {}",
+                    deal.getDealName(),
+                    event.getFromStage().getStageName(),
+                    event.getToStage().getStageName());
+            processWorkflow(deal, deal.getOrganization(),WorkflowTriggerType.DEAL_STAGE_CHANGED);
+        }
     }
 
     private void processWorkflow(WorkflowTarget target, Organization org, WorkflowTriggerType type) {

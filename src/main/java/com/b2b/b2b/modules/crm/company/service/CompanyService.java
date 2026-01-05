@@ -10,5 +10,7 @@ public interface CompanyService {
     CompanyResponseDTO create(CompanyDTO request, User user);
     List<CompanyResponseDTO> listAll(User user);
     CompanyResponseDTO getById(Integer id, User user);
+    CompanyResponseDTO update(Integer id, CompanyDTO request, User user);
+    CompanyResponseDTO delete(Integer id, User user);
 
 }

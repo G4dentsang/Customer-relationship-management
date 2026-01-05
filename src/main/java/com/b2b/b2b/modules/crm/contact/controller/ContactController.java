@@ -26,19 +26,32 @@ public class ContactController {
     @PostMapping
     public ResponseEntity<ContactResponseDTO> create(@Valid @RequestBody ContactDTO request) {
         User user = authUtil.loggedInUser();
-        return ResponseEntity.status(HttpStatus.CREATED).body(contactService.addContact(request, user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(contactService.add(request, user));
     }
 
     @GetMapping
     public ResponseEntity<List<ContactResponseDTO>> listAll() {
         User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(contactService.getAllContacts(user));
+        return ResponseEntity.ok(contactService.getContacts(user));
     }
 
     @GetMapping("/{contactId}")
     public ResponseEntity<ContactResponseDTO> getById(@PathVariable Integer contactId) {
         User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(contactService.getContact(contactId, user));
+        return ResponseEntity.ok(contactService.get(contactId, user));
+    }
+
+    @PatchMapping("/{contactId}")
+    public ResponseEntity<ContactResponseDTO> update(@Valid @RequestBody ContactDTO request, @PathVariable Integer contactId) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(contactService.update(contactId, request, user));
+    }
+
+    @DeleteMapping("/{contactId}")
+    public ResponseEntity<Void> delete(@PathVariable Integer contactId) {
+        User user = authUtil.loggedInUser();
+        contactService.delete(contactId, user);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("{/contactId}/deals")

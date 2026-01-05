@@ -26,6 +26,7 @@ public class Company {
     private String companyName;
     private String website;
     private String industry;
+    private Boolean isDeleted;
     @ManyToOne
     private Organization organization;
     @OneToMany(mappedBy = "company")

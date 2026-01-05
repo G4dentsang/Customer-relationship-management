@@ -1,6 +1,5 @@
 package com.b2b.b2b.modules.crm.contact.payloads;
 
-import com.b2b.b2b.modules.crm.company.entity.Company;
 import lombok.*;
 
 @Data

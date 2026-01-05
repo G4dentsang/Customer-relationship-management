@@ -4,21 +4,28 @@ import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.crm.deal.entity.Deal;
+import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
+import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageResponseDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.repository.PipelineStageRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
 import com.b2b.b2b.modules.crm.pipelineStage.util.PipelineStageUtils;
+import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
+import com.b2b.b2b.modules.workflow.events.PipelineStageChangeEvent;
 import com.b2b.b2b.shared.AuthUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,6 +33,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PipelineStageServiceImpl implements PipelineStageService
 {
     private final PipelineStageRepository pipelineStageRepository;
@@ -33,6 +41,7 @@ public class PipelineStageServiceImpl implements PipelineStageService
     private final AuthUtil authUtil;
     private final PipelineStageUtils pipelineStageUtils;
     private final ModelMapper modelMapper;
+    private final DomainEventPublisher domainEventPublisher;
 
 
     @Override
@@ -41,12 +50,34 @@ public class PipelineStageServiceImpl implements PipelineStageService
     }
 
     @Override
-    public void promoteToNextStage(Lead lead) {
-       findNextPipelineStage(lead.getPipeline(), lead.getPipelineStage().getStageOrder())
-               .ifPresentOrElse(
-                       nextStage -> lead.setPipelineStage(nextStage),
-                       () -> lead.setReadyForConversion(true)
-               );
+    @Transactional
+    public void promoteToNextStage(PipelineAssignable entity) {
+        PipelineStage oldStage = entity.getPipelineStage();
+        findNextPipelineStage(entity.getPipeline(), oldStage.getStageOrder())
+                .ifPresentOrElse(
+                        nextStage -> {
+                            entity.setPipelineStage(nextStage);
+                            domainEventPublisher.publishEvent(new PipelineStageChangeEvent(entity, oldStage, nextStage));
+                            log.info("{} of id: {} moved from {} to {}",
+                                    entity.getClass().getSimpleName(), entity.getId(),
+                                    oldStage.getStageName(), nextStage.getStageName());
+                        },
+                        () -> handleEndOfPipeline(entity)
+                );
+    }
+
+    private void handleEndOfPipeline(PipelineAssignable entity) {
+        if (entity instanceof Lead lead) {
+            lead.setReadyForConversion(true);
+            log.info("Lead {} is now ready for conversion.", lead.getId());
+        }
+        else if (entity instanceof Deal deal) {
+            if(deal.getDealStatus() != DealStatus.CLOSED_WON){
+                deal.setDealStatus(DealStatus.CLOSED_WON);
+                deal.setClosedAt(LocalDateTime.now());
+            }
+            log.info("Deal {} reached the end of pipeline and is marked WON.", deal.getId());
+        }
     }
 
     @Override

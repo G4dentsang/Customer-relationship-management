@@ -46,4 +46,3 @@ public class PipelineStage {
         this.pipeline = pipeline;
     }
 }
-//workflow rules relation later during workflow module

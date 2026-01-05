@@ -22,12 +22,22 @@ public class LeadUtils {
                 lead.getCompany().getIndustry()
         );
 
+        String currentStageName = lead.getPipelineStage().getStageName();
+        Integer currentStageOrder = lead.getPipelineStage().getStageOrder();
+
+        int totalStages = lead.getPipeline().getPipelineStages().size();
+        double progressPercentage = (totalStages > 0) ?  ((double)currentStageOrder / totalStages) * 100 : 0;
+
+
         return  new LeadResponseDTO(
                 lead.getId(),
                 lead.getLeadName(),
                 lead.getLeadEmail(),
                 lead.getLeadPhone(),
                 lead.getLeadStatus(),
+                currentStageName,
+                currentStageOrder,
+                progressPercentage,
                 lead.getCreatedAt(),
                 org,
                 company);

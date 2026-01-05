@@ -14,6 +14,9 @@ public record LeadResponseDTO(
         String leadEmail,
         String leadPhone,
         LeadStatus leadStatus,
+        String currentStageName,
+        Integer stageOrder,
+        Double progressPercentage,
         LocalDateTime createdAt,
         OrganizationDTO organization,
         CompanyResponseDTO company

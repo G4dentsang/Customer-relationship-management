@@ -44,7 +44,7 @@ public class LeadController {
     }
 
     @PatchMapping("/{leadId}/status")
-    public ResponseEntity<LeadResponseDTO> status(@PathVariable Integer leadId, @Valid @RequestBody UpdateStatusRequestDTO request) {
+    public ResponseEntity<LeadResponseDTO> status(@PathVariable Integer leadId, @Valid @RequestBody LeadUpdateStatusRequestDTO request) {
         User user = authUtil.loggedInUser();
         UpdateLeadRequestDTO mainDTO =  new UpdateLeadRequestDTO();
         mainDTO.setLeadStatus(request.getLeadStatus());
@@ -72,7 +72,7 @@ public class LeadController {
     }
 
     @DeleteMapping("/{leadId}/delete")
-    public ResponseEntity<LeadResponseDTO> delete(@PathVariable Integer leadId) {
+    public ResponseEntity<Void> delete(@PathVariable Integer leadId) {
         User user = authUtil.loggedInUser();
         leadService.delete(leadId, user);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

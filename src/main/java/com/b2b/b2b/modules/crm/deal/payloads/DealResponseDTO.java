@@ -10,6 +10,9 @@ public record DealResponseDTO(
         String dealName,
         Double dealAmount,
         DealStatus dealStatus,
+        String stageName,
+        Integer stageOrder,
+        Double progressPercentage,
         LocalDateTime createdAt,
         LocalDateTime closedAt,
         CompanyResponseDTO company

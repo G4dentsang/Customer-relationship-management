@@ -44,6 +44,12 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getById(companyId, user));
     }
 
+    @PatchMapping("/{companyId}")
+    public ResponseEntity<CompanyResponseDTO> update(@PathVariable Integer companyId, @RequestBody CompanyDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(companyService.update(companyId, request, user));
+    }
+
     @GetMapping("/{companyId}/contacts")
     public ResponseEntity<List<ContactResponseDTO>> getContacts(@PathVariable Integer companyId) {
         User user = authUtil.loggedInUser();
@@ -54,5 +60,11 @@ public class CompanyController {
     public ResponseEntity<List<DealResponseDTO>> getDeals(@PathVariable Integer companyId) {
         User user = authUtil.loggedInUser();
         return ResponseEntity.ok(dealService.getCompanyDeals(companyId, user));
+    }
+
+    @DeleteMapping("/{companyId}")
+    public ResponseEntity<CompanyResponseDTO> delete(@PathVariable Integer companyId) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(companyService.delete(companyId, user));
     }
 }

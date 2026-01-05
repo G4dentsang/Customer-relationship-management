@@ -10,13 +10,17 @@ import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
 import com.b2b.b2b.modules.crm.deal.payloads.DealCreateRequestDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
+import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateDTO;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
 import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
+import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
 import com.b2b.b2b.modules.workflow.events.DealCreatedEvent;
+import com.b2b.b2b.modules.workflow.events.DealDeletedEvent;
+import com.b2b.b2b.modules.workflow.events.DealStatusUpdatedEvent;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.shared.AuthUtil;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,12 +45,13 @@ public class DealServiceImpl implements DealService
     private final PipelineService pipelineService;
     private final AuthUtil authUtil;
     private final ModelMapper modelMapper;
+    private final PipelineStageService pipelineStageService;
 
     @Override
     @Transactional
     public DealResponseDTO create(DealCreateRequestDTO request, User user) {
 
-        Organization org = authUtil.getPrimaryOrganization(user);
+        Organization org = getOrg(user);
         Company company = findCompany(request.getCompanyId(), org);
         Lead lead = findLead(request.getLeadId(), org);
 
@@ -75,9 +82,38 @@ public class DealServiceImpl implements DealService
 
     @Override
     public DealResponseDTO getById(Integer id, User user) {
-        Deal deal = dealRepository.findDealByIdAndOrganization(id,getOrg(user))
+        Deal deal = dealRepository.findByIdAndOrganization(id,getOrg(user))
                 .orElseThrow(()-> new ResourceNotFoundException("Deal", "id", id));
         return dealUtils.createDealResponseDTO(deal);
+    }
+
+    @Override
+    @Transactional
+    public DealResponseDTO update(Integer id, DealUpdateDTO request, User user) {
+        Deal deal = dealRepository.findByIdAndOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Deal", "id", id));
+
+        DealStatus oldStatus = deal.getDealStatus();
+
+        if (request.getDealName() != null) deal.setDealName(request.getDealName());
+        if (request.getDealAmount() != null) deal.setDealAmount(request.getDealAmount());
+
+        if (request.getDealStatus() != null && !request.getDealStatus().equals(oldStatus)) {
+            processStatusChange(deal, request.getDealStatus(), oldStatus);
+        }
+
+        return dealUtils.createDealResponseDTO(dealRepository.save(deal));
+    }
+
+    @Override
+    public void delete(Integer id, User user) {
+        Deal deal = dealRepository.findByIdAndOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Deal", "id", id));
+
+        deal.setDealStatus(DealStatus.SOFT_DELETED);
+        dealRepository.save(deal);
+
+        domainEventPublisher.publishEvent(new DealDeletedEvent(deal));
     }
 
     @Override
@@ -89,6 +125,7 @@ public class DealServiceImpl implements DealService
     public List<DealResponseDTO> getContactDeals(Integer id, User user) {
         return toDTOList(dealRepository.findAllDealsByCompanyContactsIdAndOrganization(id, getOrg(user)));
     }
+
 
     @Override
     @Transactional
@@ -113,10 +150,23 @@ public class DealServiceImpl implements DealService
 
     /********Helper methods********/
 
+    private void processStatusChange(Deal deal, DealStatus newStatus, DealStatus oldStatus){
+        deal.setDealStatus(newStatus);
+        if (newStatus.getGroupId() == 3) {
+            deal.setClosedAt(LocalDateTime.now());
+        }
+        else {
+            if(newStatus.getGroupId() != oldStatus.getGroupId()) {
+                pipelineStageService.promoteToNextStage(deal);
+            }
+        }
+        domainEventPublisher.publishEvent(new DealStatusUpdatedEvent(deal, oldStatus, newStatus));
+    }
+
     private Deal createDealFromLead(Lead lead, Organization org){
         Deal deal = new Deal();
         deal.setDealName(lead.getLeadName());
-        deal.setDealStatus(DealStatus.CREATED);
+        deal.setDealStatus(DealStatus.ACTIVE);
         deal.setCompany(lead.getCompany());
         deal.setLead(lead);
         deal.setOrganization(org);
@@ -158,4 +208,5 @@ public class DealServiceImpl implements DealService
     private Organization getOrg(User user){
         return authUtil.getPrimaryOrganization(user);
     }
+
 }

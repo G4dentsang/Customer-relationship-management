@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UpdateStatusRequestDTO {
+public class LeadUpdateStatusRequestDTO {
     private LeadStatus leadStatus;
 }

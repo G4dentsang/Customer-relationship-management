@@ -31,23 +31,23 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional
-    public ContactResponseDTO addContact(ContactDTO request, User user) {
-
+    public ContactResponseDTO add(ContactDTO request, User user) {
         Company company = companyRepository.findByCompanyNameAndOrganization(request.getCompanyName(), getOrg(user))
                 .orElseThrow(() -> new ResourceNotFoundException("Company", "name", request.getCompanyName()));
+
         Contact contact = convertToEntity(request, company);
-
-        Contact savedContact = contactRepository.save(contact);
-        return contactUtils.createContactResponseDTO(savedContact);
+        return contactUtils.createContactResponseDTO(contactRepository.save(contact));
     }
 
     @Override
-    public ContactResponseDTO getContact(Integer id, User user) {
-        return contactUtils.createContactResponseDTO(contactRepository.findByIdAndCompanyOrganization(id, getOrg(user)));
+    public ContactResponseDTO get(Integer id, User user) {
+        Contact contact = contactRepository.findByIdAndCompanyOrganization(id, getOrg(user))
+                        .orElseThrow(() -> new ResourceNotFoundException("Contact", "id", id));
+         return contactUtils.createContactResponseDTO(contact);
     }
 
     @Override
-    public List<ContactResponseDTO> getAllContacts(User user) {
+    public List<ContactResponseDTO> getContacts(User user) {
         return toDTOList(contactRepository.findAllByCompanyOrganization(getOrg(user)));
     }
 
@@ -57,13 +57,27 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public ContactResponseDTO updateContact(ContactDTO request, User user) {
-        return null;
+    @Transactional
+    public ContactResponseDTO update(Integer id, ContactDTO request, User user) {
+        Contact existingContact = contactRepository.findByIdAndCompanyOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Contact", "id", id));
+
+        if(request.getCompanyName() != null) {
+            Company company = companyRepository.findByCompanyNameAndOrganization(request.getCompanyName(), getOrg(user))
+                    .orElseThrow(() -> new ResourceNotFoundException("Company", "name", request.getCompanyName()));
+            existingContact.setCompany(company);
+        }
+        updateDtoToEntity(request, existingContact);
+
+        return contactUtils.createContactResponseDTO(contactRepository.save(existingContact));
     }
 
+
     @Override
-    public ContactResponseDTO deleteContact(ContactDTO request, User user) {
-        return null;
+    public void delete(Integer id, User user) {
+        Contact contact = contactRepository.findByIdAndCompanyOrganization(id, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Contact", "id", id));
+        contactRepository.delete(contact);
     }
 
     /********Helper methods********/
@@ -81,5 +95,13 @@ public class ContactServiceImpl implements ContactService {
         Contact contact = modelMapper.map(request, Contact.class);
         contact.setCompany(company);
         return contact;
+    }
+
+    private void updateDtoToEntity(ContactDTO request, Contact contact) {
+        if(request.getFirstName() != null) contact.setFirstName(request.getFirstName());
+        if(request.getLastName() != null) contact.setLastName(request.getLastName());
+        if(request.getEmail() != null) contact.setEmail(request.getEmail());
+        if(request.getPhone() != null) contact.setPhone(request.getPhone());
+
     }
 }

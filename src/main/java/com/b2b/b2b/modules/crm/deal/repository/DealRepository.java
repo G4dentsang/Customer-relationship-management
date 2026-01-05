@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface DealRepository extends JpaRepository<Deal, Integer> {
     List<Deal> findAllByOrganization(Organization org);
     List<Deal> findAllByOwnerAndOrganization(User user, Organization org);
-    Optional<Deal> findDealByIdAndOrganization(Integer id, Organization org);
+    Optional<Deal> findByIdAndOrganization(Integer id, Organization org);
     List<Deal> findAllDealsByCompanyIdAndOrganization(Integer id, Organization org);
     List<Deal> findAllDealsByCompanyContactsIdAndOrganization(Integer id, Organization org);
     List<Deal> findAllByLead(Lead lead);

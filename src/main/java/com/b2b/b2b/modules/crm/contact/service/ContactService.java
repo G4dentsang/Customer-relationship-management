@@ -7,10 +7,10 @@ import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import java.util.List;
 
 public interface ContactService {
-    ContactResponseDTO  addContact(ContactDTO request, User user);
-    ContactResponseDTO  updateContact(ContactDTO request, User user);
-    ContactResponseDTO  deleteContact(ContactDTO request, User user);
-    ContactResponseDTO getContact(Integer id, User user);
-    List<ContactResponseDTO> getAllContacts(User user);
+    ContactResponseDTO  add(ContactDTO request, User user);
+    ContactResponseDTO  update(Integer id,ContactDTO request, User user);
+    void  delete(Integer id, User user);
+    ContactResponseDTO get(Integer id, User user);
+    List<ContactResponseDTO> getContacts(User user);
     List<ContactResponseDTO> getCompanyContacts(Integer id, User user);
 }

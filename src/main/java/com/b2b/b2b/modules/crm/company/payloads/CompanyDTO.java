@@ -8,9 +8,7 @@ import lombok.*;
 @Getter
 @Setter
 public class CompanyDTO {
-
             String companyName;
             String companyWebsite;
             String companyIndustry;
-
 }
