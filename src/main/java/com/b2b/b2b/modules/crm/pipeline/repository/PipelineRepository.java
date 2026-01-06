@@ -13,4 +13,7 @@ public interface PipelineRepository extends JpaRepository<Pipeline, Integer>
     Optional<Pipeline> findDefaultPipelineByOrganizationOrganizationIdAndPipelineType(Integer id, PipelineType type);
     List<Pipeline> findAllByOrganization(Organization org);
     Optional<Pipeline> findByIdAndOrganization(Integer id, Organization org);
+    Optional<Pipeline> findByOrganizationAndPipelineTypeAndIsDefaultTrue(Organization org, PipelineType type);
+
+
 }

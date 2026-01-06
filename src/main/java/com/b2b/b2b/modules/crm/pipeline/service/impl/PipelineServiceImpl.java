@@ -4,10 +4,13 @@ import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
+import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.payloads.CreatePipelineRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineResponseDTO;
+import com.b2b.b2b.modules.crm.pipeline.payloads.UpdatePipelineRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
@@ -17,6 +20,7 @@ import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.repository.PipelineStageRepository;
 import com.b2b.b2b.shared.AuthUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +30,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PipelineServiceImpl implements PipelineService {
 
     private final PipelineRepository pipelineRepository;
     private final PipelineStageRepository pipelineStageRepository;
     private final PipelineUtil pipelineUtil;
     private final AuthUtil authUtil;
+    private final LeadRepository leadRepository;
+    private final DealRepository dealRepository;
 
     @Override
     @Transactional
@@ -58,6 +65,54 @@ public class PipelineServiceImpl implements PipelineService {
         Pipeline pipeline = pipelineRepository.findByIdAndOrganization(pipelineId, getOrg(user))
                 .orElseThrow(()-> new ResourceNotFoundException("Pipeline", "id", pipelineId));
         return pipelineUtil.createPipelineResponseDTO(pipeline);
+    }
+
+    @Override
+    @Transactional
+    public PipelineResponseDTO updatePipelineById(Integer id, UpdatePipelineRequestDTO request, User user) {
+        Organization org = getOrg(user);
+        Pipeline pipeline = pipelineRepository.findByIdAndOrganization(id, org)
+                .orElseThrow(() -> new ResourceNotFoundException("Pipeline", "id", id));
+
+        if (request.isDefault() && !pipeline.isDefault()) {
+            pipelineRepository.findByOrganizationAndPipelineTypeAndIsDefaultTrue(org, pipeline.getPipelineType())
+                    .ifPresent(oldDefault -> {
+                        if (!oldDefault.getId().equals(pipeline.getId())) {
+                            oldDefault.setDefault(false);
+                            pipelineRepository.save(oldDefault);
+                            log.info("Pipeline {} is no longer the default {} pipeline for Org {}",
+                                    oldDefault.getId(), pipeline.getPipelineType(), org.getOrganizationId());
+                        }
+                    });
+        }
+        pipeline.setPipelineName(request.getPipelineName());
+        pipeline.setDefault(request.isDefault());
+
+        return pipelineUtil.createPipelineResponseDTO(pipelineRepository.save(pipeline));
+    }
+
+    @Override
+    @Transactional
+    public void inactivatePipelineById(Integer id, User user) {
+        Organization org = getOrg(user);
+        Pipeline pipeline = pipelineRepository.findByIdAndOrganization(id, org)
+                .orElseThrow(() -> new ResourceNotFoundException("Pipeline", "id", id));
+
+        if (pipeline.isDefault()) {
+            throw new IllegalArgumentException("Cannot inactivate the default pipeline.");
+        }
+
+        long leadCount = leadRepository.countByPipeline(pipeline);
+        long dealCount = dealRepository.countByPipeline(pipeline);
+
+        if (leadCount > 0 || dealCount > 0) {
+            throw new IllegalArgumentException((
+                    String.format("Pipeline contains %d leads and %d deals. Migrate them to another pipeline before inactivating.", leadCount, dealCount)
+            ));
+        }
+        pipeline.setActive(false);
+        pipelineRepository.save(pipeline);
+
     }
 
     @Override

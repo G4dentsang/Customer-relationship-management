@@ -25,6 +25,7 @@ public class Pipeline {
     private Integer id;
     private String pipelineName;
     private boolean isDefault;
+    private boolean isActive = true;
     private LocalDateTime createdAt;
     @Enumerated(EnumType.STRING)
     //every org 2 default pipeline

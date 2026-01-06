@@ -14,20 +14,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/app/v1/pipelines")
+@RequestMapping("/app/v1/pipelines/{pipelineId}/stages")
 @RequiredArgsConstructor
 public class PipelineStageController {
     private final AuthUtil authUtil;
     private final PipelineStageService pipelineStageService;
 
-    @PostMapping("/{pipelineId}/stages")
+    @PostMapping()
     public ResponseEntity<List<PipelineStageResponseDTO>> create(@PathVariable Integer pipelineId, @Valid @RequestBody List<PipelineStageRequestDTO> request) {
         User user = authUtil.loggedInUser();
         return ResponseEntity.status(HttpStatus.CREATED).body(pipelineStageService.addPipelineStage(pipelineId, request, user));
     }
 
-    @GetMapping("{pipelineId}/stages")
-    public ResponseEntity<List<PipelineStageResponseDTO>> get(@PathVariable Integer pipelineId) {
+    @GetMapping()
+    public ResponseEntity<List<PipelineStageResponseDTO>> listAll(@PathVariable Integer pipelineId) {
         User user = authUtil.loggedInUser();
         return ResponseEntity.ok(pipelineStageService.getPipelineStage(pipelineId, user));
     }
