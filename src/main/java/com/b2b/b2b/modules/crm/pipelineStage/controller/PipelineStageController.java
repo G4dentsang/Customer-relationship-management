@@ -21,7 +21,7 @@ public class PipelineStageController {
     private final PipelineStageService pipelineStageService;
 
     @PostMapping()
-    public ResponseEntity<List<PipelineStageResponseDTO>> create(@PathVariable Integer pipelineId, @Valid @RequestBody List<PipelineStageRequestDTO> request) {
+    public ResponseEntity<List<PipelineStageResponseDTO>> add(@PathVariable Integer pipelineId, @Valid @RequestBody List<PipelineStageRequestDTO> request) {
         User user = authUtil.loggedInUser();
         return ResponseEntity.status(HttpStatus.CREATED).body(pipelineStageService.addPipelineStage(pipelineId, request, user));
     }
@@ -29,7 +29,19 @@ public class PipelineStageController {
     @GetMapping()
     public ResponseEntity<List<PipelineStageResponseDTO>> listAll(@PathVariable Integer pipelineId) {
         User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(pipelineStageService.getPipelineStage(pipelineId, user));
+        return ResponseEntity.ok(pipelineStageService.getAllPipelineStage(pipelineId, user));
+    }
+
+    @PatchMapping("/{stageId}")
+    public ResponseEntity<List<PipelineStageResponseDTO>> update(@PathVariable Integer pipelineId, @PathVariable Integer stageId , @Valid @RequestBody PipelineStageRequestDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(pipelineStageService.updatePipelineStageById(pipelineId, stageId, request, user));
+    }
+
+    @DeleteMapping("/{stageId}")
+    public ResponseEntity<List<PipelineStageResponseDTO> >  deleteStage(@PathVariable Integer pipelineId, @PathVariable Integer stageId, @RequestParam Integer targetStageId) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(pipelineStageService.deletePipelineStageById(pipelineId, stageId, targetStageId, user));
     }
 
 }

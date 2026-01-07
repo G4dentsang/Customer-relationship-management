@@ -5,6 +5,7 @@ import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,14 +19,20 @@ public interface DealRepository extends JpaRepository<Deal, Integer> {
 
     List<Deal> findAllDealsByCompanyIdAndOrganization(Integer id, Organization org);
     List<Deal> findAllDealsByCompanyContactsIdAndOrganization(Integer id, Organization org);
-    List<Deal> findAllByLead(Lead lead);
 
     Optional<Deal> findByIdAndOrganization(Integer id, Organization org);
-    Long countByPipeline(Pipeline pipeline);
 
-    @Modifying(clearAutomatically = true)
+    Long countByPipeline(Pipeline pipeline);
+    Long countByPipelineStage(PipelineStage pipelineStage);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Deal d SET d.pipeline.id = :targetId, d.pipelineStage.id = :stageId " +
             "WHERE d.pipeline.id = :sourceId AND d.organization.organizationId =:orgId")
     void bulkMigration(Integer sourceId, Integer  targetId, Integer stageId, Integer orgId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Deal d SET d.pipelineStage.id = :targetId " +
+            "WHERE d.pipelineStage.id = :sourceId AND d.organization.organizationId =:orgId")
+    void bulkMigrateBetweenStage(Integer sourceId, Integer targetId, Integer orgId);
 }
 
