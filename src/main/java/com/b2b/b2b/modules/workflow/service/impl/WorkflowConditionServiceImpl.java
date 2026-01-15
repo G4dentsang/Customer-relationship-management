@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.workflow.service.impl;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
+import com.b2b.b2b.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
@@ -58,6 +59,25 @@ public class WorkflowConditionServiceImpl implements WorkflowConditionService
 
         List<WorkflowCondition> savedConditions =   workflowConditionRepository.saveAll(newConditions);
         return toDTOList(savedConditions);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCondition(Integer ruleId, Long conditionId, User user) {
+        Organization org = getOrg(user);
+        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(ruleId, org)
+                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", ruleId));
+
+        if(rule.isActive()) throw new WorkflowMaintenanceException("Cannot remove logic from an ACTIVE rule. Please deactivate first.");
+
+        WorkflowCondition condition = workflowConditionRepository.findByIdAndWorkflowRule(conditionId, rule)
+                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", conditionId));
+
+        rule.getWorkflowConditions().remove(condition);
+        workflowConditionRepository.delete(condition);
+        workflowRuleRepository.save(rule);
+
+        log.info("Condition {} removed from Rule {} by {}", conditionId, ruleId, user.getEmail());
     }
 
     /******************Helper methods************************/

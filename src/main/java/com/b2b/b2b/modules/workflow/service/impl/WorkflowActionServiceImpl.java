@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.workflow.service.impl;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
+import com.b2b.b2b.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.workflow.actions.WorkflowActionHandler;
@@ -9,6 +10,7 @@ import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowActionType;
 import com.b2b.b2b.modules.workflow.payloads.WorkflowActionDTO;
 import com.b2b.b2b.modules.workflow.payloads.WorkflowActionResponseDTO;
+import com.b2b.b2b.modules.workflow.repository.WorkflowActionRepository;
 import com.b2b.b2b.modules.workflow.repository.WorkflowRuleRepository;
 import com.b2b.b2b.modules.workflow.service.WorkflowActionService;
 import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
@@ -32,9 +34,10 @@ public class WorkflowActionServiceImpl implements WorkflowActionService
     private final ModelMapper modelMapper;
     private final WorkflowUtil workflowUtil;
     private final Map<WorkflowActionType, WorkflowActionHandler> handlersMap = new HashMap<>();
+    private final WorkflowActionRepository workflowActionRepository;
 
     public WorkflowActionServiceImpl(WorkflowRuleRepository workflowRuleRepository, AuthUtil authUtil,
-                                     ModelMapper modelMapper, WorkflowUtil workflowUtil, List<WorkflowActionHandler> handlersList) {
+                                     ModelMapper modelMapper, WorkflowUtil workflowUtil, List<WorkflowActionHandler> handlersList, WorkflowActionRepository workflowActionRepository) {
         this.workflowRuleRepository = workflowRuleRepository;
         this.authUtil = authUtil;
         this.modelMapper = modelMapper;
@@ -42,6 +45,7 @@ public class WorkflowActionServiceImpl implements WorkflowActionService
         for(WorkflowActionHandler handler : handlersList){
             handlersMap.put(handler.getType(), handler);
         }
+        this.workflowActionRepository = workflowActionRepository;
     }
 
     @Override
@@ -70,6 +74,23 @@ public class WorkflowActionServiceImpl implements WorkflowActionService
                 }).toList();
 
         return toDTOList(workflowActions);
+    }
+
+    @Override
+    public void deleteAction(Integer ruleId, Long actionId, User user) {
+        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(ruleId, getOrg(user))
+                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", ruleId));
+
+        if(rule.isActive()) throw new WorkflowMaintenanceException("Rule must be inactive to delete logic.");
+
+        WorkflowAction action = workflowActionRepository.findByIdAndWorkflowRule(actionId, rule)
+                .orElseThrow(() -> new ResourceNotFoundException("WorkflowAction", "actionId", actionId));
+
+        rule.getWorkflowActions().remove(action);
+        workflowActionRepository.delete(action);
+        workflowRuleRepository.save(rule);
+        log.info("Action {} removed from Rule {} memory and DB", actionId, ruleId);
+
     }
 
     /**************Helper methods****************/

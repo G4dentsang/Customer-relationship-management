@@ -1,5 +1,6 @@
 package com.b2b.b2b.modules.workflow.service.impl;
 
+import com.b2b.b2b.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
 import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
@@ -10,6 +11,7 @@ import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,11 +24,15 @@ public class WorkflowEngineServiceImpl implements WorkflowEngineService {
     private final WorkflowActionService workflowActionService;
 
     @Override
+    @Transactional
     public void run(WorkflowTarget target, List<WorkflowRule> rules) {
         log.info("Starting workflow engine for target: {} with {} rules", target.getClass().getSimpleName(), rules.size());
 
         for (WorkflowRule rule : rules) {
-
+            if(!rule.isActive()) {
+                throw new WorkflowMaintenanceException(String.format("Workflow rule %s is currently in maintenance. You will be notified once it is reactivated.",
+                        rule.getName()));
+            }
             try {
                 boolean allConditionsMet = workflowConditionService.evaluateCondition(rule.getWorkflowConditions(), target);
 

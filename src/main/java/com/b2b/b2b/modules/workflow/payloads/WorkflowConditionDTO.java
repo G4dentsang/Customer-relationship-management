@@ -10,6 +10,7 @@ import lombok.*;
 @Getter
 @Setter
 public class WorkflowConditionDTO {
+    Integer id;
     @NotBlank
     private String field;
     @NotBlank

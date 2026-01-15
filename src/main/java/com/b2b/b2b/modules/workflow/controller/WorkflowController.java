@@ -43,9 +43,28 @@ public class WorkflowController {
     }
 
     @PostMapping("/{ruleId}/status")
-    public ResponseEntity<WorkflowRuleResponseDTO> updateStatus(@PathVariable Integer ruleId, @RequestParam boolean status) {
+    public ResponseEntity<WorkflowRuleResponseDTO> activate(@PathVariable Integer ruleId, @RequestParam boolean status) {
         User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(workflowRuleService.updateStatus(ruleId, user, status));
+        return ResponseEntity.ok(workflowRuleService.toggleStatus(ruleId, user, status));
+    }
+
+    @PatchMapping("/{ruleId}/metadata")
+    public ResponseEntity<WorkflowRuleResponseDTO> updateMetaData(@PathVariable Integer ruleId, @RequestBody WorkflowRuleUpdateMetaDataDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(workflowRuleService.updateMetaData(ruleId, request, user));
+    }
+
+    @PutMapping("/{ruleId}/logic")
+    public ResponseEntity<WorkflowRuleResponseDTO> updateLogic(@PathVariable Integer ruleId, @RequestBody WorkflowRuleUpdateDTO request) {
+        User user = authUtil.loggedInUser();
+        return ResponseEntity.ok(workflowRuleService.updateLogic(ruleId, request, user));
+    }
+
+    @DeleteMapping("{/ruleId}")
+    public ResponseEntity<Void> delete(@PathVariable Integer ruleId) {
+        User user = authUtil.loggedInUser();
+        workflowRuleService.delete(ruleId, user);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build() ;
     }
 
     @PostMapping("/{ruleId}/conditions")
@@ -54,11 +73,24 @@ public class WorkflowController {
         return ResponseEntity.status(HttpStatus.CREATED).body(workflowConditionService.addConditions(ruleId, request, user));
     }
 
+    @DeleteMapping("/{ruleId}/conditions/{conditionId}")
+    public ResponseEntity<Void> deleteCondition(@PathVariable Integer ruleId, @PathVariable Long conditionId) {
+        User user = authUtil.loggedInUser();
+        workflowConditionService.deleteCondition(ruleId, conditionId, user);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build() ;
+    }
+
     @PostMapping("/{ruleId}/actions")
     public ResponseEntity<List<WorkflowActionResponseDTO>> addActions(@PathVariable Integer ruleId, @RequestBody List<WorkflowActionDTO> request) {
         User user = authUtil.loggedInUser();
         return ResponseEntity.status(HttpStatus.CREATED).body(workflowActionService.addActions(ruleId, request, user));
     }
 
+    @DeleteMapping("/{ruleId}/actions/{actionId}")
+    public ResponseEntity<Void> deleteAction(@PathVariable Integer ruleId, @PathVariable Long actionId) {
+        User user = authUtil.loggedInUser();
+        workflowActionService.deleteAction(ruleId, actionId, user);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build() ;
+    }
 
 }

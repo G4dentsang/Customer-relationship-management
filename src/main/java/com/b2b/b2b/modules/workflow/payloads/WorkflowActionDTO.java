@@ -9,6 +9,7 @@ import lombok.*;
 @Getter
 @Setter
 public class WorkflowActionDTO {
+    Long id;
     private WorkflowActionType workflowActionType;
     private String actionConfigJson;
 }

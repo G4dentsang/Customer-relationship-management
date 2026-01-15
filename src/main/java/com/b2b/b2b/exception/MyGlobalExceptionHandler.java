@@ -24,42 +24,49 @@ public class MyGlobalExceptionHandler {
         });
         return new ResponseEntity<>(errorsResponse, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<APIResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
         String errorMessage = ex.getMessage();
         APIResponse apiResponse = new APIResponse(errorMessage, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(APIException.class)
     public ResponseEntity<APIResponse> handleAPIException(APIException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<APIResponse> handleGeneralException(Exception ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
     @ExceptionHandler(BadResuestException.class) //invalid logic request
     public ResponseEntity<APIResponse> handleBadResuestException(BadResuestException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<APIResponse> handleDuplicateResourceException(DuplicateResourceException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.CONFLICT);
     }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<APIResponse> handleUnauthorizedException(UnauthorizedException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.UNAUTHORIZED);
     }
+
     @ExceptionHandler(ServiceUnavailableException.class)
     public ResponseEntity<APIResponse> handleServiceUnavailableException(ServiceUnavailableException ex) {
         String message = ex.getMessage();
@@ -67,5 +74,10 @@ public class MyGlobalExceptionHandler {
         return new ResponseEntity<>(apiResponse, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-
+    @ExceptionHandler(WorkflowMaintenanceException.class)
+    public ResponseEntity<APIResponse> handleWorkflowMaintenanceException(WorkflowMaintenanceException ex) {
+        String message = ex.getMessage();
+        APIResponse apiResponse = new APIResponse(message, false);
+        return new ResponseEntity<>(apiResponse, HttpStatus.FORBIDDEN);
+    }
 }

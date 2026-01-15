@@ -21,10 +21,14 @@ public class WorkflowRule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @Enumerated(EnumType.STRING)
     private WorkflowTriggerType workflowTriggerType;
+
     private String name;
     private String description;
+    private boolean isActive;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     private Organization organization;
@@ -32,9 +36,6 @@ public class WorkflowRule {
     private List<WorkflowCondition> workflowConditions = new ArrayList<>();
     @OneToMany(mappedBy = "workflowRule",  cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowAction> workflowActions = new ArrayList<>();
-
-    private boolean isActive;
-    private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {

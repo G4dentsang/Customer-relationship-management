@@ -1,9 +1,9 @@
 package com.b2b.b2b.modules.workflow.listeners;
 
+import com.b2b.b2b.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import com.b2b.b2b.modules.workflow.events.*;
@@ -103,14 +103,15 @@ public class WorkflowEngineListener {
     private void processWorkflow(WorkflowTarget target, Organization org, WorkflowTriggerType type) {
 
         try {
-            List<WorkflowRule> rules = workflowRuleService.getWorkflowRules(org, type, true);
+            List<WorkflowRule> rules = workflowRuleService.getAllRulesByTriggerType(org, type);
             if (rules.isEmpty()) {
                 log.info("No active rules for {} on {}", type, target.getClass().getSimpleName());
             }
             workflowEngineService.run(target, rules);
-        } catch (Exception e) {
-            log.error("Workflow Engine failed for {} {}: {}",
-                    target.getClass().getSimpleName(), type, e.getMessage());
+        } catch (WorkflowMaintenanceException ex) {
+            log.warn("Maintenance Alert: {}", ex.getMessage());
+        } catch(Exception ex) {
+            log.error("Workflow Engine failed: {}", ex.getMessage());
         }
     }
 }

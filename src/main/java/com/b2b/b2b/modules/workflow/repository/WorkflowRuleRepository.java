@@ -13,6 +13,7 @@ public interface WorkflowRuleRepository extends JpaRepository<WorkflowRule, Inte
       List<WorkflowRule> findByOrganizationAndWorkflowTriggerTypeAndIsActive(
             Organization org, WorkflowTriggerType  type, Boolean isActive
       );
+      List<WorkflowRule> findByOrganizationAndWorkflowTriggerType(Organization org, WorkflowTriggerType type);
       List<WorkflowRule> findAllByOrganization(Organization org);
       Optional<WorkflowRule>  findByIdAndOrganization(Integer id, Organization org);
 }
