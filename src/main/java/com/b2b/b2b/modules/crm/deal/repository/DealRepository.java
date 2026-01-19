@@ -34,5 +34,10 @@ public interface DealRepository extends JpaRepository<Deal, Integer> {
     @Query("UPDATE Deal d SET d.pipelineStage.id = :targetId " +
             "WHERE d.pipelineStage.id = :sourceId AND d.organization.organizationId =:orgId")
     void bulkMigrateBetweenStage(Integer sourceId, Integer targetId, Integer orgId);
+
+    @Modifying
+    @Query("UPDATE Deal d SET d.assignedUser.userId = :successorId " +
+            "WHERE d.assignedUser.userId = :userId AND d.organization.organizationId =:orgId")
+    void reassignDeals(Integer userId, Integer successorId, Integer orgID);
 }
 

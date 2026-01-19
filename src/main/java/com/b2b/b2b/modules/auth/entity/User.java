@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,11 +47,18 @@ public class User {
 
     private boolean userActive;
     private boolean emailVerified;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
+
     @OneToMany(mappedBy = "user")
     private List<UserOrganization> userOrganizations = new ArrayList<>();
-    @OneToMany(mappedBy = "owner")
+    @OneToMany(mappedBy = "assignedUser")
     private  List<Lead> leads = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
     public User(String userName, String email, String password ) {
         this.email = email;
         this.password = password;

@@ -29,4 +29,9 @@ public interface LeadRepository extends JpaRepository<Lead, Integer> {
     @Query("UPDATE Lead l SET l.pipelineStage.id = :targetId " +
             "WHERE l.pipelineStage.id = :sourceId AND l.organization.organizationId =:orgId")
     void bulkMigrateBetweenStage(Integer sourceId, Integer targetId, Integer orgId);
+
+    @Modifying
+    @Query("UPDATE Lead l SET l.assignedUser.userId = :successorId " +
+            "WHERE l.assignedUser.userId = :userId AND l.organization.organizationId =:orgId")
+    void reassignLeads(Integer userId, Integer successorId, Integer orgID);
 }

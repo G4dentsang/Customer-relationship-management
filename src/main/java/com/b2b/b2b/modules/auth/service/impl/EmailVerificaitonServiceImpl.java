@@ -1,9 +1,10 @@
-package com.b2b.b2b.modules.auth.service;
+package com.b2b.b2b.modules.auth.service.impl;
 
 import com.b2b.b2b.modules.auth.entity.EmailVerificationToken;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.EmailVerificationTokenRepository;
 import com.b2b.b2b.modules.auth.repository.UserRepository;
+import com.b2b.b2b.modules.auth.service.EmailVerificationService;
 import com.b2b.b2b.modules.auth.util.HelperMethods;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;

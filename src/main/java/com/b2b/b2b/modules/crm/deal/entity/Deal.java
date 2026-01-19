@@ -42,7 +42,7 @@ public class Deal implements PipelineAssignable, WorkflowTarget {
     @ManyToOne
     private PipelineStage pipelineStage;
     @ManyToOne
-    private User owner;
+    private User assignedUser;
 
     @PrePersist
     protected void onCreate() {

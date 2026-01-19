@@ -27,6 +27,7 @@ public class UserDetailImpl implements UserDetails {
     @JsonIgnore //ignore the password during serialization into JSON format
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
+    private Integer organizationId;
 
     public static UserDetailImpl build(User user) {
         List<GrantedAuthority> grantedAuthorities = user.getUserOrganizations()
@@ -34,14 +35,22 @@ public class UserDetailImpl implements UserDetails {
                                                     .map(UserOrganization::getRole)
                                                     .map(role -> new SimpleGrantedAuthority(role.getAppRoles().name()))
                                                     .collect(Collectors.toList());
+        Integer orgId = user.getUserOrganizations()
+                .stream()
+                .map(uo -> uo.getOrganization().getOrganizationId())
+                .findFirst()
+                .orElse(null);
+
         return new UserDetailImpl(
                   user.getUserId(),
                   user.getUserName(),
                   user.getEmail(),
                   user.getPassword(),
-                  grantedAuthorities);
+                  grantedAuthorities,
+                  orgId);
 
     }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;

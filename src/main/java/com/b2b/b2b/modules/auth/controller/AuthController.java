@@ -9,8 +9,11 @@ import com.b2b.b2b.modules.auth.security.services.UserDetailImpl;
 import com.b2b.b2b.modules.auth.service.AuthService;
 import com.b2b.b2b.modules.auth.service.EmailVerificationService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -28,21 +31,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/app/v1/auth/")
+@Slf4j
+@RequiredArgsConstructor
 public class AuthController {
 
      private final AuthService authService;
      private final EmailVerificationService emailVerificationService;
      private final AuthenticationManager authenticationManager;
      private final JwtUtils jwtUtils;
-     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-
-    public AuthController(AuthService authService, EmailVerificationService emailVerificationService,
-                          AuthenticationManager authenticationManager, JwtUtils jwtUtils) {
-         this.authService = authService;
-         this.emailVerificationService = emailVerificationService;
-         this.authenticationManager = authenticationManager;
-         this.jwtUtils = jwtUtils;
-    }
 
      @PostMapping("signIn")
      public ResponseEntity<?> signIn(@Valid @RequestBody SignInRequestDTO signInRequestDTO) {

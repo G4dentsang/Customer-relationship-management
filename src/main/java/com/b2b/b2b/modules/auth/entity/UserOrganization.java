@@ -23,12 +23,13 @@ public class UserOrganization {
     private Organization organization;
     @ManyToOne
     private Role role;
-    private boolean isPrimary;
-    public UserOrganization(User user, Organization organization, Role role, boolean isPrimary) {
+    private boolean isAccountOwner;//super admin of an organization, one that can remove sub admin
+    private boolean isDefaultHome; // default home for user across multi organization
+    public UserOrganization(User user, Organization organization, Role role, boolean isAccountOwner) {
         this.user = user;
         this.organization = organization;
         this.role = role;
-        this.isPrimary = isPrimary;
+        this.isAccountOwner = isAccountOwner;
     }
 
 }
