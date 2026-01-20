@@ -1,6 +1,5 @@
 package com.b2b.b2b.modules.crm.pipeline.controller;
 
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.pipeline.payloads.CreatePipelineRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineMigrationRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineResponseDTO;
@@ -27,39 +26,33 @@ public class PipelineController {
 
     @PostMapping
     public ResponseEntity<PipelineResponseDTO> create(@RequestBody CreatePipelineRequestDTO request) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.status(HttpStatus.CREATED).body(pipelineService.createPipeline(request, user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(pipelineService.createPipeline(request));
     }
 
     @GetMapping
     public ResponseEntity<List<PipelineResponseDTO>> listAll() {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(pipelineService.getAllPipeline(user));
+        return ResponseEntity.ok(pipelineService.getAllPipeline());
     }
 
     @GetMapping("/{pipelineId}")
     public ResponseEntity<PipelineResponseDTO> get(@PathVariable Integer pipelineId) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(pipelineService.getPipelineById(pipelineId, user));
+        return ResponseEntity.ok(pipelineService.getPipelineById(pipelineId));
     }
 
     @PatchMapping("/{pipelineId}")
     public ResponseEntity<PipelineResponseDTO> update(@PathVariable Integer pipelineId, @Valid @RequestBody UpdatePipelineRequestDTO request) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(pipelineService.updatePipelineById(pipelineId, request, user));
+        return ResponseEntity.ok(pipelineService.updatePipelineById(pipelineId, request));
     }
 
     @DeleteMapping("/{pipelineId}")
     public ResponseEntity<Void> inactivate(@PathVariable Integer pipelineId) {
-        User user = authUtil.loggedInUser();
-        pipelineService.inactivatePipelineById(pipelineId, user);
+        pipelineService.inactivatePipelineById(pipelineId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/{pipelineId}/migrate-and-inactivate")
     public ResponseEntity<Void> migrateAndInactivate(@PathVariable Integer pipelineId, @Valid @RequestBody PipelineMigrationRequestDTO request) {
-        User user = authUtil.loggedInUser();
-        migrationService.migrateAndInactivate(pipelineId, request, user);
+        migrationService.migrateAndInactivate(pipelineId, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

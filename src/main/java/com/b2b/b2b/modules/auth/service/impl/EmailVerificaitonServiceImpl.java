@@ -57,7 +57,7 @@ public class EmailVerificaitonServiceImpl implements EmailVerificationService
         User user = emailVerificationToken.getUser();
         user.setEmailVerified(true);
         user.setUserActive(true);
-        user.setCreatedAt(LocalDate.now());
+        user.setCreatedAt(LocalDateTime.now());
         userRepository.save(user);
         emailVerificationToken.setUsed(true);
         emailVerificationTokenRepository.save(emailVerificationToken);

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @Data
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class UserDetailImpl implements UserDetails {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -28,6 +29,7 @@ public class UserDetailImpl implements UserDetails {
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
     private Integer organizationId;
+    private User user;
 
     public static UserDetailImpl build(User user) {
         List<GrantedAuthority> grantedAuthorities = user.getUserOrganizations()
@@ -47,7 +49,8 @@ public class UserDetailImpl implements UserDetails {
                   user.getEmail(),
                   user.getPassword(),
                   grantedAuthorities,
-                  orgId);
+                  orgId,
+                  user);
 
     }
 
@@ -65,5 +68,6 @@ public class UserDetailImpl implements UserDetails {
     public String getUsername() {
         return userName;
     }
+
 
 }

@@ -4,6 +4,7 @@ import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
@@ -17,19 +18,16 @@ import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
-import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
 import com.b2b.b2b.modules.workflow.events.DealCreatedEvent;
 import com.b2b.b2b.modules.workflow.events.DealDeletedEvent;
-import com.b2b.b2b.modules.workflow.events.DealStatusUpdatedEvent;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.shared.AuthUtil;
+import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,22 +42,27 @@ public class DealServiceImpl implements DealService
     private final DomainEventPublisher domainEventPublisher;
     private final PipelineService pipelineService;
     private final AuthUtil authUtil;
-    private final ModelMapper modelMapper;
-    private final PipelineStageService pipelineStageService;
+    private final OrganizationRepository organizationRepository;
+    private final Helpers helpers;
 
     @Override
     @Transactional
-    public DealResponseDTO create(DealCreateRequestDTO request, User user) {
-
-        Organization org = getOrg(user);
-        Company company = findCompany(request.getCompanyId(), org);
-        Lead lead = findLead(request.getLeadId(), org);
+    public DealResponseDTO create(DealCreateRequestDTO request) {
+        Integer orgId = OrganizationContext.getOrgId();
+        Integer comId = request.getCompanyId();
+        Integer leadId = request.getLeadId();
+        Organization org = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
+        Company company = companyRepository.findById(comId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "id", comId));
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", leadId));
 
         if (lead.isConverted()) {
             throw new APIException("This Lead has already been converted to a deal.");
         }
 
-        Deal deal = convertToEntity(request, org, company, lead);
+        Deal deal = helpers.convertToEntity(request, org, company, lead);
         pipelineService.assignDefaultPipeline(deal, PipelineType.DEAL);
 
         lead.setConverted(true);
@@ -71,26 +74,27 @@ public class DealServiceImpl implements DealService
     }
 
     @Override
-    public List<DealResponseDTO> findAllByOrganization(User user) {
-        return toDTOList(dealRepository.findAllByOrganization(getOrg(user)));
+    public List<DealResponseDTO> findAll() {
+        return helpers.toDTOList(dealRepository.findAll());
     }
 
     @Override
-    public List<DealResponseDTO> findAllByUser(User user) {
-        return toDTOList(dealRepository.findAllByOwnerAndOrganization(user, getOrg(user)));
+    public List<DealResponseDTO> findAllByOwner() {
+        User owner = authUtil.loggedInUser();
+        return helpers.toDTOList(dealRepository.findAllByAssignedUser(owner));
     }
 
     @Override
-    public DealResponseDTO getById(Integer id, User user) {
-        Deal deal = dealRepository.findByIdAndOrganization(id,getOrg(user))
+    public DealResponseDTO getById(Integer id) {
+        Deal deal = dealRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Deal", "id", id));
         return dealUtils.createDealResponseDTO(deal);
     }
 
     @Override
     @Transactional
-    public DealResponseDTO update(Integer id, DealUpdateDTO request, User user) {
-        Deal deal = dealRepository.findByIdAndOrganization(id, getOrg(user))
+    public DealResponseDTO update(Integer id, DealUpdateDTO request) {
+        Deal deal = dealRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Deal", "id", id));
 
         DealStatus oldStatus = deal.getDealStatus();
@@ -99,15 +103,15 @@ public class DealServiceImpl implements DealService
         if (request.getDealAmount() != null) deal.setDealAmount(request.getDealAmount());
 
         if (request.getDealStatus() != null && !request.getDealStatus().equals(oldStatus)) {
-            processStatusChange(deal, request.getDealStatus(), oldStatus);
+            helpers.processStatusChange(deal, request.getDealStatus(), oldStatus);
         }
 
         return dealUtils.createDealResponseDTO(dealRepository.save(deal));
     }
 
     @Override
-    public void delete(Integer id, User user) {
-        Deal deal = dealRepository.findByIdAndOrganization(id, getOrg(user))
+    public void delete(Integer id) {
+        Deal deal = dealRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Deal", "id", id));
 
         deal.setDealStatus(DealStatus.SOFT_DELETED);
@@ -117,27 +121,28 @@ public class DealServiceImpl implements DealService
     }
 
     @Override
-    public List<DealResponseDTO> getCompanyDeals(Integer companyId, User user) {
-        return toDTOList(dealRepository.findAllDealsByCompanyIdAndOrganization(companyId, getOrg(user)));
+    public List<DealResponseDTO> getCompanyDeals(Integer companyId) {
+        return helpers.toDTOList(dealRepository.findAllByCompanyId(companyId));
     }
 
     @Override
-    public List<DealResponseDTO> getContactDeals(Integer id, User user) {
-        return toDTOList(dealRepository.findAllDealsByCompanyContactsIdAndOrganization(id, getOrg(user)));
+    public List<DealResponseDTO> getContactDeals(Integer id) {
+        return helpers.toDTOList(dealRepository.findAllByCompanyContactsId(id));
     }
 
 
     @Override
     @Transactional
-    public DealResponseDTO convertFromLead(Integer id, User user) {
-
-        Organization org = getOrg(user);
-        Lead lead = leadRepository.findByIdAndOrganization(id, org)
+    public DealResponseDTO convertFromLead(Integer id) {
+        Integer orgId = OrganizationContext.getOrgId();
+        Organization org = organizationRepository.findById(orgId)
+                .orElseThrow(()-> new ResourceNotFoundException("Organization", "id", orgId));
+        Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", id));
 
-        validateLeadForConversion(lead);
+        helpers.validateLeadForConversion(lead);
 
-        Deal deal = createDealFromLead(lead, org);
+        Deal deal = helpers.createDealFromLead(lead, org);
         pipelineService.assignDefaultPipeline(deal, PipelineType.DEAL);
         Deal savedDeal = dealRepository.save(deal);
 
@@ -147,66 +152,4 @@ public class DealServiceImpl implements DealService
         domainEventPublisher.publishEvent(new DealCreatedEvent(savedDeal));
         return dealUtils.createDealResponseDTO(savedDeal);
     }
-
-    /********Helper methods********/
-
-    private void processStatusChange(Deal deal, DealStatus newStatus, DealStatus oldStatus){
-        deal.setDealStatus(newStatus);
-        if (newStatus.getGroupId() == 3) {
-            deal.setClosedAt(LocalDateTime.now());
-        }
-        else {
-            if(newStatus.getGroupId() != oldStatus.getGroupId()) {
-                pipelineStageService.promoteToNextStage(deal);
-            }
-        }
-        domainEventPublisher.publishEvent(new DealStatusUpdatedEvent(deal, oldStatus, newStatus));
-    }
-
-    private Deal createDealFromLead(Lead lead, Organization org){
-        Deal deal = new Deal();
-        deal.setDealName(lead.getLeadName());
-        deal.setDealStatus(DealStatus.ACTIVE);
-        deal.setCompany(lead.getCompany());
-        deal.setLead(lead);
-        deal.setOrganization(org);
-        return deal;
-    }
-
-    private void validateLeadForConversion(Lead lead){
-        if(!lead.isReadyForConversion()){
-            throw new APIException("Lead is not in final stage; cannot convert.");
-        }
-        if(lead.isConverted()){
-            throw new APIException("Lead is already converted");
-        }
-    }
-
-    private Company findCompany(Integer id, Organization org) {
-        return companyRepository.findByIdAndOrganization(id, org)
-                .orElseThrow(() -> new ResourceNotFoundException("Company", "id", id));
-    }
-
-    private Lead findLead(Integer id, Organization org) {
-        return leadRepository.findByIdAndOrganization(id, org)
-                .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", id));
-    }
-
-    private List<DealResponseDTO> toDTOList(List<Deal> deals) {
-        return deals.stream()
-                .map(dealUtils::createDealResponseDTO).toList();
-    }
-
-    private Deal convertToEntity(DealCreateRequestDTO request, Organization org, Company company, Lead lead) {
-        Deal deal = modelMapper.map(request, Deal.class);
-        deal.setOrganization(org);
-        deal.setLead(lead);
-        deal.setCompany(company);
-        return deal;
-    }
-
-    private Organization getOrg(User user){
-        return authUtil.getPrimaryOrganization(user);
-    }
-
 }

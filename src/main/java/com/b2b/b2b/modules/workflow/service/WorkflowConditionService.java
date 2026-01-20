@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface WorkflowConditionService {
     boolean evaluateCondition(List<WorkflowCondition> conditions, WorkflowTarget target);
-    List<WorkflowConditionResponseDTO> addConditions(Integer ruleId, List<WorkflowConditionDTO> conditions, User user);
-    void deleteCondition(Integer ruleId, Long conditionId, User user);
+    List<WorkflowConditionResponseDTO> addConditions(Integer ruleId, List<WorkflowConditionDTO> conditions);
+    void deleteCondition(Integer ruleId, Long conditionId);
 }

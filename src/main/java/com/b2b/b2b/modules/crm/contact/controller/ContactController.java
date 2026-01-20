@@ -1,6 +1,5 @@
 package com.b2b.b2b.modules.crm.contact.controller;
 
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactDTO;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import com.b2b.b2b.modules.crm.contact.service.ContactService;
@@ -20,44 +19,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ContactController {
     private final ContactService contactService;
-    private final AuthUtil authUtil;
     private final DealService dealService;
 
     @PostMapping
     public ResponseEntity<ContactResponseDTO> create(@Valid @RequestBody ContactDTO request) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.status(HttpStatus.CREATED).body(contactService.add(request, user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(contactService.add(request));
     }
 
     @GetMapping
     public ResponseEntity<List<ContactResponseDTO>> listAll() {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(contactService.getContacts(user));
+        return ResponseEntity.ok(contactService.getContacts());
     }
 
     @GetMapping("/{contactId}")
     public ResponseEntity<ContactResponseDTO> getById(@PathVariable Integer contactId) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(contactService.get(contactId, user));
+        return ResponseEntity.ok(contactService.get(contactId));
     }
 
     @PatchMapping("/{contactId}")
     public ResponseEntity<ContactResponseDTO> update(@Valid @RequestBody ContactDTO request, @PathVariable Integer contactId) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(contactService.update(contactId, request, user));
+        return ResponseEntity.ok(contactService.update(contactId, request));
     }
 
     @DeleteMapping("/{contactId}")
     public ResponseEntity<Void> delete(@PathVariable Integer contactId) {
-        User user = authUtil.loggedInUser();
-        contactService.delete(contactId, user);
+        contactService.delete(contactId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("{/contactId}/deals")
     public ResponseEntity<List<DealResponseDTO>> getDeals(@PathVariable Integer contactId) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(dealService.getContactDeals(contactId, user));
+        return ResponseEntity.ok(dealService.getContactDeals(contactId));
     }
 
 }

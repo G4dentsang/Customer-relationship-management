@@ -10,6 +10,7 @@ import com.b2b.b2b.modules.auth.service.UserManagementService;
 import com.b2b.b2b.modules.auth.util.UserUtils;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
+import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,29 +38,8 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     @Transactional
-    public MemberResponseDTO acceptInvitation(AcceptInviteRequestDTO request) {
-        Invitation invitation = invitationRepository.findByToken(request.getToken())
-                .orElseThrow(() -> new ResourceNotFoundException("Invitation", "token", request.getToken()));
-        if(invitation.isAccepted() || invitation.getExpiryDate().isBefore(LocalDateTime.now())) throw new BadResuestException("Invitation is invalid or expired.");
-
-        User newUser = new  User(invitation.getEmail(), passwordEncoder.encode(request.getPassword()), request.getUsername());
-        newUser.setUserActive(true);
-        newUser.setEmailVerified(true);
-        User savedUser = userRepository.save(newUser);
-
-        boolean isFirstOrg = !userOrgRepository.existsByUser(savedUser);
-        UserOrganization userOrganization = new UserOrganization(savedUser, invitation.getOrganization(), invitation.getRole(), false);
-        userOrganization.setDefaultHome(isFirstOrg);
-        userOrgRepository.save(userOrganization);
-
-        invitation.setAccepted(true);
-        invitationRepository.save(invitation);
-        return userUtils.createMemberResponseDTO(savedUser, invitation.getRole());
-    }
-
-    @Override
-    @Transactional
-    public MessageResponse inviteMember(InviteMemberRequestDTO request, Integer adminOrgId) {
+    public MessageResponse inviteMember(InviteMemberRequestDTO request) {
+        Integer adminOrgId = OrganizationContext.getOrgId();
         String userEmail = request.getEmail();
         if(userRepository.existsByEmail(userEmail)) throw new BadResuestException("User with this email already exists.");
 
@@ -78,9 +58,31 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    public List<MemberResponseDTO> getMembersByOrganizationId(Integer orgId) {
-        List<UserOrganization> userOrgs = userOrgRepository.findByOrganization_OrganizationId(orgId);
-        return userOrgs.stream()
+    @Transactional
+    public MemberResponseDTO acceptInvitation(AcceptInviteRequestDTO request) {
+        Invitation invitation = invitationRepository.findByToken(request.getToken()).orElseThrow(() -> new ResourceNotFoundException("Invitation", "token", request.getToken()));
+        if (invitation.isAccepted() || invitation.getExpiryDate().isBefore(LocalDateTime.now()))
+            throw new BadResuestException("Invitation is invalid or expired.");
+
+        User newUser = new User(invitation.getEmail(), passwordEncoder.encode(request.getPassword()), request.getUsername());
+        newUser.setUserActive(true);
+        newUser.setEmailVerified(true);
+        User savedUser = userRepository.save(newUser);
+
+        boolean isFirstOrg = !userOrgRepository.existsByUser(savedUser);
+        UserOrganization userOrganization = new UserOrganization(savedUser, invitation.getOrganization(), invitation.getRole(), false);
+        userOrganization.setDefaultHome(isFirstOrg);
+        userOrgRepository.save(userOrganization);
+
+        invitation.setAccepted(true);
+        invitationRepository.save(invitation);
+        return userUtils.createMemberResponseDTO(savedUser, invitation.getRole());
+    }
+
+    @Override
+    public List<MemberResponseDTO> getMembersByOrganization() {
+        List<UserOrganization> mappings = userOrgRepository.findAll();
+        return mappings.stream()
                 .map(userOrg -> userUtils.createMemberResponseDTO(
                         userOrg.getUser(),
                         userOrg.getRole()
@@ -88,19 +90,16 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    public MemberResponseDTO getMemberByUserId(Integer userId, Integer orgId) {
-        UserOrganization user = userOrgRepository.findByUser_UserIdAndOrganization_OrganizationId(userId, orgId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-        return userUtils.createMemberResponseDTO(user.getUser(), user.getRole());
+    public MemberResponseDTO getMemberByUserId(Integer userId) {
+        UserOrganization member = userOrgRepository.findByUser_UserId(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        return userUtils.createMemberResponseDTO(member.getUser(), member.getRole());
     }
 
     @Override
     @Transactional
-    public void updateRole(Integer userId, AppRoles newRole, Integer orgId) {
-        UserOrganization user = userOrgRepository.findByUser_UserIdAndOrganization_OrganizationId(userId, orgId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-        Role role = roleRepository.findByAppRoles(newRole)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "app Role", newRole.name()));
+    public void updateRole(Integer userId, AppRoles newRole) {
+        UserOrganization user = userOrgRepository.findByUser_UserId(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        Role role = roleRepository.findByAppRoles(newRole).orElseThrow(() -> new ResourceNotFoundException("Role", "app Role", newRole.name()));
 
         user.setRole(role);
         userOrgRepository.save(user);
@@ -109,16 +108,17 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     @Transactional
-    public void deactivateAndReassign(Integer userId, Integer successorId, Integer orgId) {
-        UserOrganization userOrg = userOrgRepository.findByUser_UserIdAndOrganization_OrganizationId(userId, orgId)
+    public void deactivateAndReassign(Integer userId, Integer successorId) {
+        UserOrganization userOrg = userOrgRepository.findByUser_UserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-        boolean successor = userOrgRepository.existsByUser_UserIdAndOrganization_OrganizationId(successorId, orgId);
+        boolean successor = userOrgRepository.existsByUser_UserId(successorId);
 
-        if(userOrg.isAccountOwner()) throw new BadResuestException("Cannot deactivate the Account Owner. Transfer ownership first.");
-        if(!successor) throw new BadResuestException("Successor must belong to the same organization.");
+        if (userOrg.isAccountOwner())
+            throw new BadResuestException("Cannot deactivate the Account Owner. Transfer ownership first.");
+        if (!successor) throw new BadResuestException("Successor must belong to the same organization.");
 
-        leadRepository.reassignLeads(userId,successorId, orgId);
-        dealRepository.reassignDeals(userId, successorId, orgId);
+        leadRepository.reassignLeads(userId, successorId);
+        dealRepository.reassignDeals(userId, successorId);
 
         User user = userOrg.getUser();
         user.setUserActive(false);
@@ -128,18 +128,18 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     @Transactional
-    public void transferOwnerShip(Integer newOwnerId, Integer currentOwnerId, Integer orgId) {
-        UserOrganization currentOwner = userOrgRepository.findByUser_UserIdAndOrganization_OrganizationId(currentOwnerId, orgId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", currentOwnerId));
+    public void transferOwnerShip(Integer newAccOwnerId) {
+        Integer orgId = OrganizationContext.getOrgId();
+        UserOrganization currentAccOwner = userOrgRepository.findByIsAccountOwnerTrue().orElseThrow(() -> new ResourceNotFoundException("AccountOwner", "orgId", orgId));
 
-        if(!currentOwner.isAccountOwner()) throw new UnauthorizedException("Only the current Account Owner can transfer ownership.");
+        if (!currentAccOwner.isAccountOwner())
+            throw new UnauthorizedException("Only the current Account Owner can transfer ownership.");
 
-        UserOrganization newOwner = userOrgRepository.findByUser_UserIdAndOrganization_OrganizationId(newOwnerId, orgId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", newOwnerId));
+        UserOrganization newAccOwner = userOrgRepository.findByUser_UserId(newAccOwnerId).orElseThrow(() -> new ResourceNotFoundException("NewAccOwner", "userId", newAccOwnerId));
 
-        currentOwner.setAccountOwner(false);
-        newOwner.setAccountOwner(true);
-        userOrgRepository.saveAll(List.of(currentOwner, newOwner));
+        currentAccOwner.setAccountOwner(false);
+        newAccOwner.setAccountOwner(true);
+        userOrgRepository.saveAll(List.of(currentAccOwner, newAccOwner));
 
     }
 

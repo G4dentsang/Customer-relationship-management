@@ -1,8 +1,6 @@
 package com.b2b.b2b.modules.crm.pipeline.service.impl;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
@@ -10,7 +8,7 @@ import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineMigrationRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
 import com.b2b.b2b.modules.crm.pipeline.service.MigrationService;
-import com.b2b.b2b.shared.AuthUtil;
+import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,27 +19,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class MigrationServiceImpl implements MigrationService
 {
-    private final AuthUtil authUtil;
     private final PipelineRepository pipelineRepository;
     private final LeadRepository leadRepository;
     private final DealRepository dealRepository;
 
     @Override
     @Transactional
-    public void migrateAndInactivate(Integer sourceId, PipelineMigrationRequestDTO request, User user) {
+    public void migrateAndInactivate(Integer sourceId, PipelineMigrationRequestDTO request) {
 
-        Organization org = authUtil.getPrimaryOrganization(user);
-        Pipeline source = pipelineRepository.findByIdAndOrganization(sourceId, org)
+        Pipeline source = pipelineRepository.findById(sourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Source Pipeline", "id", sourceId));
-        Pipeline target = pipelineRepository.findByIdAndOrganization(request.getTargetPipelineId(), org)
+        Pipeline target = pipelineRepository.findById(request.getTargetPipelineId())
                 .orElseThrow(() -> new ResourceNotFoundException("Target Pipeline", "id", request.getTargetPipelineId()));
 
         validateMigration(request, source, target);
 
         if (source.getPipelineType() == PipelineType.LEAD) {
-            leadRepository.bulkMigration(sourceId, target.getId(), request.getTargetStageId(), org.getOrganizationId());
+            leadRepository.bulkMigration(sourceId, target.getId(), request.getTargetStageId());
         } else {
-            dealRepository.bulkMigration(sourceId, target.getId(), request.getTargetStageId(), org.getOrganizationId());
+            dealRepository.bulkMigration(sourceId, target.getId(), request.getTargetStageId());
         }
 
         source.setActive(false);

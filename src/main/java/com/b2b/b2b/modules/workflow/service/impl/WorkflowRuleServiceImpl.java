@@ -4,18 +4,17 @@ import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
 import com.b2b.b2b.modules.workflow.payloads.*;
-import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
-import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import com.b2b.b2b.modules.workflow.repository.WorkflowRuleRepository;
 import com.b2b.b2b.modules.workflow.service.WorkflowRuleService;
 import com.b2b.b2b.modules.workflow.util.WorkflowUtil;
 import com.b2b.b2b.shared.AuthUtil;
+import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +27,8 @@ public class WorkflowRuleServiceImpl implements WorkflowRuleService {
     private final WorkflowRuleRepository workflowRuleRepository;
     private final WorkflowUtil workflowUtil;
     private final AuthUtil authUtil;
-    private final ModelMapper modelMapper;
+    private final OrganizationRepository organizationRepository;
+    private final Helpers helpers;
 
     @Override
     public List<WorkflowRule> getActiveWorkflowRules(Organization org, WorkflowTriggerType type, Boolean isActive) {
@@ -41,33 +41,36 @@ public class WorkflowRuleServiceImpl implements WorkflowRuleService {
     }
 
     @Override
-    public List<WorkflowRuleResponseDTO> getAllWorkflowRules(User user) {
-        return toDTOList(workflowRuleRepository.findAllByOrganization(getOrg(user)));
+    public List<WorkflowRuleResponseDTO> getAllWorkflowRules() {
+        return helpers.toDTORuleList(workflowRuleRepository.findAll());
     }
 
     @Override
-    public WorkflowRuleResponseDTO getWorkflowRule(Integer id, User user) {
-        WorkflowRule response = workflowRuleRepository.findByIdAndOrganization(id, getOrg(user))
+    public WorkflowRuleResponseDTO getWorkflowRule(Integer id) {
+        WorkflowRule response = workflowRuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
         return workflowUtil.createWorkflowRuleResponseDTO(response);
     }
 
     @Override
     @Transactional
-    public WorkflowRuleResponseDTO create(WorkflowRuleCreateDTO request, User user) {
-        WorkflowRule rule = convertToEntity(request);
+    public WorkflowRuleResponseDTO create(WorkflowRuleCreateDTO request) {
+        Organization org = organizationRepository.findById(OrganizationContext.getOrgId())
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", OrganizationContext.getOrgId()));
+        WorkflowRule rule = helpers.convertToEntity(request);
 
-        rule.setOrganization(getOrg(user));
-        bindConditions(rule, request);
-        bindActions(rule, request);
+        rule.setOrganization(org);
+        helpers.bindConditions(rule, request);
+        helpers.bindActions(rule, request);
 
         return workflowUtil.createWorkflowRuleResponseDTO(workflowRuleRepository.save(rule));
     }
 
     @Override
     @Transactional
-    public WorkflowRuleResponseDTO toggleStatus(Integer id, User user, Boolean status) {
-        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(id, getOrg(user))
+    public WorkflowRuleResponseDTO toggleStatus(Integer id, Boolean status) {
+        User user = authUtil.loggedInUser();
+        WorkflowRule rule = workflowRuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
 
         if (rule.isActive() == (status)) {
@@ -90,8 +93,8 @@ public class WorkflowRuleServiceImpl implements WorkflowRuleService {
     }
 
     @Override
-    public WorkflowRuleResponseDTO updateMetaData(Integer id, WorkflowRuleUpdateMetaDataDTO request, User user) {
-        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(id, getOrg(user))
+    public WorkflowRuleResponseDTO updateMetaData(Integer id, WorkflowRuleUpdateMetaDataDTO request) {
+        WorkflowRule rule = workflowRuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
         rule.setName(request.getName());
         rule.setDescription(request.getDescription());
@@ -99,103 +102,31 @@ public class WorkflowRuleServiceImpl implements WorkflowRuleService {
     }
 
     @Override
-    public WorkflowRuleResponseDTO updateLogic(Integer id, WorkflowRuleUpdateDTO request, User user) {
-        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(id, getOrg(user))
+    public WorkflowRuleResponseDTO updateLogic(Integer id, WorkflowRuleUpdateDTO request) {
+        WorkflowRule rule = workflowRuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
         if (rule.isActive())
             throw new WorkflowMaintenanceException("Workflow is currently LIVE. You must deactivate it before saving logic changes.");
 
         rule.setWorkflowTriggerType(request.getWorkflowTriggerType());
-        syncConditions(rule, request.getWorkflowConditions());
-        syncActions(rule, request.getWorkflowActions());
+        helpers.syncConditions(rule, request.getWorkflowConditions());
+        helpers.syncActions(rule, request.getWorkflowActions());
 
         return workflowUtil.createWorkflowRuleResponseDTO(workflowRuleRepository.save(rule));
     }
 
     @Override
     @Transactional
-    public void delete(Integer id, User user) {
-        WorkflowRule rule = workflowRuleRepository.findByIdAndOrganization(id, getOrg(user))
+    public void delete(Integer id) {
+        WorkflowRule rule = workflowRuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
         if (rule.isActive())
             throw new WorkflowMaintenanceException("Cannot delete an ACTIVE rule. Please deactivate it first.");
         workflowRuleRepository.delete(rule);
         //notificationService.broadcastToTeam(("Workflow " + rule.getName() + " is deleted by " + user.getEmail);
-        log.info("Workflow Rule '{}' and all associated logic deleted by {}", rule.getName(), user.getEmail());
+        log.info("Workflow Rule '{}' and all associated logic deleted by {}", rule.getName(), authUtil.loggedInUser().getEmail());
         log.info("notification is send"); //to remove later after postman
 
-    }
-
-    private void syncConditions(WorkflowRule rule, List<WorkflowConditionDTO> request) {
-        List<WorkflowCondition> existing = rule.getWorkflowConditions();
-        for (WorkflowConditionDTO condition : request) {
-            if (condition.getId() != null) {
-                existing.stream()
-                        .filter(c -> c.getId().equals(condition.getId()))
-                        .findFirst()
-                        .ifPresent(entity -> {
-                            entity.setField(condition.getField());
-                            entity.setWorkflowConditionOperator(condition.getWorkflowConditionOperator());
-                            entity.setExpectedValue(condition.getExpectedValue());
-                        });
-            }
-        }
-    }
-
-    private void syncActions(WorkflowRule rule, List<WorkflowActionDTO> request) {
-        List<WorkflowAction> existing = rule.getWorkflowActions();
-        for (WorkflowActionDTO action : request) {
-            if (action.getId() != null) {
-                existing.stream()
-                        .filter(c -> c.getId().equals(action.getId()))
-                        .findFirst()
-                        .ifPresent(entity -> {
-                            entity.setActionType(action.getWorkflowActionType());
-                            entity.setActionConfigJson(action.getActionConfigJson());
-                        });
-            }
-        }
-    }
-
-    /******************Helper methods************************/
-
-    private Organization getOrg(User user) {
-        return authUtil.getPrimaryOrganization(user);
-    }
-
-    private List<WorkflowRuleResponseDTO> toDTOList(List<WorkflowRule> rules) {
-        return rules.stream().map(workflowUtil::createWorkflowRuleResponseDTO).toList();
-    }
-
-    private WorkflowRule convertToEntity(WorkflowRuleCreateDTO request) {
-        WorkflowRule workflowRule = new WorkflowRule();
-        workflowRule.setName(request.getName());
-        workflowRule.setDescription(request.getDescription());
-        workflowRule.setWorkflowTriggerType(request.getWorkflowTriggerType());
-        workflowRule.setActive(request.isActive());
-        return workflowRule;
-    }
-
-    private void bindConditions(WorkflowRule rule, WorkflowRuleCreateDTO request) {
-        List<WorkflowCondition> conditions = request.getWorkflowConditions()
-                .stream()
-                .map(c -> {
-                    WorkflowCondition condition = modelMapper.map(c, WorkflowCondition.class);
-                    condition.setWorkflowRule(rule);
-                    return condition;
-                }).toList();
-        rule.setWorkflowConditions(conditions);
-    }
-
-    private void bindActions(WorkflowRule rule, WorkflowRuleCreateDTO request) {
-        List<WorkflowAction> actions = request.getWorkflowActions()
-                .stream()
-                .map(a -> {
-                    WorkflowAction workflowAction = modelMapper.map(a, WorkflowAction.class);
-                    workflowAction.setWorkflowRule(rule);
-                    return workflowAction;
-                }).toList();
-        rule.setWorkflowActions(actions);
     }
 
 }

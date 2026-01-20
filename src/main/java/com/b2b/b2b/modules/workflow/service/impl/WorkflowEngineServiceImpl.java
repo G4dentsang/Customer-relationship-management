@@ -2,7 +2,6 @@ package com.b2b.b2b.modules.workflow.service.impl;
 
 import com.b2b.b2b.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
-import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
 import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
 import com.b2b.b2b.modules.workflow.service.WorkflowActionService;
 import com.b2b.b2b.modules.workflow.service.WorkflowConditionService;

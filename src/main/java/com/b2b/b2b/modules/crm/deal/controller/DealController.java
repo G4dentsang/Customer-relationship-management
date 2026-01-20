@@ -1,12 +1,10 @@
 package com.b2b.b2b.modules.crm.deal.controller;
 
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.deal.payloads.DealCreateRequestDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateStatusRequestDTO;
 import com.b2b.b2b.modules.crm.deal.service.DealService;
-import com.b2b.b2b.shared.AuthUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,53 +17,44 @@ import java.util.List;
 @RequestMapping("app/v1/deals")
 @RequiredArgsConstructor
 public class DealController {
-
-    private final AuthUtil authUtil;
     private final DealService dealService;
 
     @PostMapping
     public ResponseEntity<DealResponseDTO> createDeal(@Valid @RequestBody DealCreateRequestDTO request) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.status(HttpStatus.CREATED).body(dealService.create(request, user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(dealService.create(request));
     }
 
     @GetMapping
     public ResponseEntity<List<DealResponseDTO>> listAll() {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(dealService.findAllByOrganization(user));
+        return ResponseEntity.ok(dealService.findAll());
     }
 
     @GetMapping("/my-deals")
     public ResponseEntity<List<DealResponseDTO>> listMine() {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(dealService.findAllByUser(user));
+        return ResponseEntity.ok(dealService.findAllByOwner());
     }
 
     @GetMapping("/{dealId}")
     public ResponseEntity<DealResponseDTO> get(@PathVariable Integer dealId) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(dealService.getById(dealId, user));
+        return ResponseEntity.ok(dealService.getById(dealId));
     }
 
     @PatchMapping("/{dealId}")
     public ResponseEntity<DealResponseDTO> update(@PathVariable Integer dealId, @Valid @RequestBody DealUpdateDTO request) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(dealService.update(dealId, request, user));
+        return ResponseEntity.ok(dealService.update(dealId, request));
     }
 
     @PatchMapping("/{dealId}/status")
     public ResponseEntity<DealResponseDTO> status(@PathVariable Integer dealId, @Valid @RequestBody DealUpdateStatusRequestDTO request) {
-        User user = authUtil.loggedInUser();
         DealUpdateDTO mainDTO =  new DealUpdateDTO();
         mainDTO.setDealStatus(request.getStatus());
-        return ResponseEntity.ok(dealService.update(dealId, mainDTO, user));
+        return ResponseEntity.ok(dealService.update(dealId, mainDTO));
     }
 
     @DeleteMapping("/{dealId}")
     public ResponseEntity<DealResponseDTO> delete(@PathVariable Integer dealId) {
-        User user = authUtil.loggedInUser();
-        dealService.delete(dealId, user);
+        dealService.delete(dealId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-    //undo delete button ****
+    /* undo delete button */
 }

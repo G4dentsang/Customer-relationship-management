@@ -1,9 +1,8 @@
 package com.b2b.b2b.modules.crm.pipeline.service.impl;
 
-import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
@@ -16,16 +15,12 @@ import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
 import com.b2b.b2b.modules.crm.pipeline.util.PipelineUtil;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
-import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
-import com.b2b.b2b.modules.crm.pipelineStage.repository.PipelineStageRepository;
-import com.b2b.b2b.shared.AuthUtil;
+import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -34,54 +29,54 @@ import java.util.List;
 public class PipelineServiceImpl implements PipelineService {
 
     private final PipelineRepository pipelineRepository;
-    private final PipelineStageRepository pipelineStageRepository;
     private final PipelineUtil pipelineUtil;
-    private final AuthUtil authUtil;
     private final LeadRepository leadRepository;
     private final DealRepository dealRepository;
+    private final OrganizationRepository organizationRepository;
+    private final Helpers helpers;
 
     @Override
     @Transactional
-    public PipelineResponseDTO createPipeline(CreatePipelineRequestDTO request, User user) {
-        Organization org = getOrg(user);
-        Pipeline pipeline = pipelineRepository.save(convertToEntity(request, org));
+    public PipelineResponseDTO createPipeline(CreatePipelineRequestDTO request) {
+        Organization org = organizationRepository.findById(OrganizationContext.getOrgId())
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", OrganizationContext.getOrgId()));
+        Pipeline pipeline = pipelineRepository.save(helpers.convertToEntity(request, org));
 
-        if (hasCustomStages(request)) {
-            createCustomStages(pipeline, request.getStages());
+        if (helpers.hasCustomStages(request)) {
+            helpers.createCustomStages(pipeline, request.getStages());
         } else {
-            createDefaultStage(pipeline);
+            helpers.createDefaultStage(pipeline);
         }
 
         return pipelineUtil.createPipelineResponseDTO(pipeline);
     }
 
     @Override
-    public List<PipelineResponseDTO> getAllPipeline( User user) {
-        return toDTOList(pipelineRepository.findAllByOrganization(getOrg(user)));
+    public List<PipelineResponseDTO> getAllPipeline() {
+        return helpers.toDTOList(pipelineRepository.findAll());
     }
 
     @Override
-    public PipelineResponseDTO getPipelineById(Integer pipelineId, User user) {
-        Pipeline pipeline = pipelineRepository.findByIdAndOrganization(pipelineId, getOrg(user))
+    public PipelineResponseDTO getPipelineById(Integer pipelineId) {
+        Pipeline pipeline = pipelineRepository.findById(pipelineId)
                 .orElseThrow(()-> new ResourceNotFoundException("Pipeline", "id", pipelineId));
         return pipelineUtil.createPipelineResponseDTO(pipeline);
     }
 
     @Override
     @Transactional
-    public PipelineResponseDTO updatePipelineById(Integer id, UpdatePipelineRequestDTO request, User user) {
-        Organization org = getOrg(user);
-        Pipeline pipeline = pipelineRepository.findByIdAndOrganization(id, org)
+    public PipelineResponseDTO updatePipelineById(Integer id, UpdatePipelineRequestDTO request) {
+        Pipeline pipeline = pipelineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pipeline", "id", id));
 
         if (request.isDefault() && !pipeline.isDefault()) {
-            pipelineRepository.findByOrganizationAndPipelineTypeAndIsDefaultTrue(org, pipeline.getPipelineType())
+            pipelineRepository.findByPipelineTypeAndIsDefaultTrue(pipeline.getPipelineType())
                     .ifPresent(oldDefault -> {
                         if (!oldDefault.getId().equals(pipeline.getId())) {
                             oldDefault.setDefault(false);
                             pipelineRepository.save(oldDefault);
                             log.info("Pipeline {} is no longer the default {} pipeline for Org {}",
-                                    oldDefault.getId(), pipeline.getPipelineType(), org.getOrganizationId());
+                                    oldDefault.getId(), pipeline.getPipelineType(), OrganizationContext.getOrgId());
                         }
                     });
         }
@@ -93,9 +88,8 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public void inactivatePipelineById(Integer id, User user) {
-        Organization org = getOrg(user);
-        Pipeline pipeline = pipelineRepository.findByIdAndOrganization(id, org)
+    public void inactivatePipelineById(Integer id) {
+        Pipeline pipeline = pipelineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pipeline", "id", id));
 
         if (pipeline.isDefault()) {
@@ -118,69 +112,12 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(readOnly = true)
     public <T extends PipelineAssignable> void assignDefaultPipeline(T entity, PipelineType type) {
-        Integer orgId = entity.getOrganization().getOrganizationId();
-        Pipeline pipeline = pipelineRepository.findDefaultPipelineByOrganizationOrganizationIdAndPipelineType(orgId, type)
+        Pipeline pipeline = pipelineRepository.findByPipelineTypeAndIsDefaultTrue(type)
                 .orElseThrow(() -> new ResourceNotFoundException("Default Pipeline ", "type", type.name()));
 
-        PipelineStage pipelineStage = findFirstStage(pipeline);
+        PipelineStage pipelineStage = helpers.findFirstStage(pipeline);
 
         entity.setPipeline(pipeline);
         entity.setPipelineStage(pipelineStage);
-    }
-
-    /********Helper methods********/
-
-    private Organization getOrg(User user){
-        return authUtil.getPrimaryOrganization(user);
-    }
-
-    private List<PipelineResponseDTO> toDTOList(List<Pipeline> pipelines){
-        return pipelines.stream().map(pipelineUtil::createPipelineResponseDTO).toList();
-    }
-
-    private Pipeline convertToEntity(CreatePipelineRequestDTO request, Organization org) {
-        Pipeline pipeline = new Pipeline();
-        pipeline.setPipelineName(request.getPipelineName());
-        pipeline.setPipelineType(request.getPipelineType());
-        pipeline.setDefault(request.isDefault());
-        pipeline.setOrganization(org);
-        return pipeline;
-    }
-
-    private boolean hasCustomStages(CreatePipelineRequestDTO request) {
-        return request.getStages() != null && !request.getStages().isEmpty();
-    }
-
-    private void createCustomStages(Pipeline pipeline, List<PipelineStageRequestDTO> stagesDTOs) {
-        List<PipelineStage> stages = new ArrayList<>();
-
-        for (int i = 0; i < stagesDTOs.size(); i++) {
-            PipelineStageRequestDTO dto = stagesDTOs.get(i);
-            PipelineStage pipelineStage = new PipelineStage();
-            pipelineStage.setStageName(dto.getStageName());
-            pipelineStage.setStageDescription(dto.getStageDescription());
-            pipelineStage.setPipeline(pipeline);
-
-            int stageOder = (dto.getStageOrder() != null) ? dto.getStageOrder() : i;
-            pipelineStage.setStageOrder(stageOder);
-
-            stages.add(pipelineStage);
-        }
-        pipelineStageRepository.saveAll(stages);
-    }
-
-    public void createDefaultStage(Pipeline pipeline) {
-        PipelineStage pipelineStage = new PipelineStage();
-        pipelineStage.setStageName("Default Stage");
-        pipelineStage.setStageOrder(0);
-        pipelineStage.setPipeline(pipeline);
-        pipelineStageRepository.save(pipelineStage);
-    }
-
-    private PipelineStage findFirstStage(Pipeline pipeline) {
-        return pipeline.getPipelineStages()
-                .stream()
-                .min(Comparator.comparingInt(PipelineStage::getStageOrder))
-                .orElseThrow(()-> new APIException("Pipeline " + pipeline.getPipelineName() + " has no stage defined"));
     }
 }

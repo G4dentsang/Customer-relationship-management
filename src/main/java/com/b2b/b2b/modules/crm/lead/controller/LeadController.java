@@ -1,6 +1,5 @@
 package com.b2b.b2b.modules.crm.lead.controller;
 
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.service.DealService;
 import com.b2b.b2b.modules.crm.lead.payloads.*;
@@ -27,61 +26,52 @@ public class LeadController {
 
     @PostMapping
     public ResponseEntity<LeadResponseDTO> create(@Valid @RequestBody CreateLeadRequestDTO request) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.status(HttpStatus.CREATED).body(leadService.create(request, user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(leadService.create(request));
     }
 
     @GetMapping
     public ResponseEntity<List<LeadResponseDTO>> listAll() {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(leadService.findAllByOrganization(user));
+        return ResponseEntity.ok(leadService.findAllByOrganization());
     }
 
     @PatchMapping("/{leadId}")
     public ResponseEntity<LeadResponseDTO> update(@PathVariable Integer leadId, @Valid @RequestBody UpdateLeadRequestDTO request) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(leadService.update(leadId, request, user));
+        return ResponseEntity.ok(leadService.update(leadId, request));
     }
 
     @PatchMapping("/{leadId}/status")
     public ResponseEntity<LeadResponseDTO> status(@PathVariable Integer leadId, @Valid @RequestBody LeadUpdateStatusRequestDTO request) {
-        User user = authUtil.loggedInUser();
         UpdateLeadRequestDTO mainDTO =  new UpdateLeadRequestDTO();
         mainDTO.setLeadStatus(request.getLeadStatus());
-        return ResponseEntity.ok(leadService.update(leadId, mainDTO, user));
+        return ResponseEntity.ok(leadService.update(leadId, mainDTO));
     }
 
     @PatchMapping("/{leadId}/assign")
     public ResponseEntity<LeadResponseDTO> assign(@PathVariable Integer leadId, @Valid @RequestBody AssignUserRequestDTO request) {
-        User user = authUtil.loggedInUser();
         UpdateLeadRequestDTO mainDTO =  new UpdateLeadRequestDTO();
         mainDTO.setOwner(request.getNewOwner());
-        return ResponseEntity.ok(leadService.update(leadId, mainDTO, user));
+        return ResponseEntity.ok(leadService.update(leadId, mainDTO));
     }
 
     @GetMapping("/my-leads") //userOwned
     public ResponseEntity<List<LeadResponseDTO>> listMine() {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(leadService.findAllByUser(user));
+        return ResponseEntity.ok(leadService.findMyList());
     }
 
     @GetMapping("/{leadId}")
     public ResponseEntity<LeadResponseDTO> get(@PathVariable Integer leadId) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(leadService.getById(leadId, user));
+        return ResponseEntity.ok(leadService.getById(leadId));
     }
 
     @DeleteMapping("/{leadId}/delete")
     public ResponseEntity<Void> delete(@PathVariable Integer leadId) {
-        User user = authUtil.loggedInUser();
-        leadService.delete(leadId, user);
+        leadService.delete(leadId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/{leadId}/convert")
     public ResponseEntity<DealResponseDTO> convert(@PathVariable Integer leadId) {
-        User user = authUtil.loggedInUser();
-        return ResponseEntity.ok(dealService.convertFromLead(leadId, user));
+        return ResponseEntity.ok(dealService.convertFromLead(leadId));
     }
 
 

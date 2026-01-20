@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 
 @Entity
@@ -13,6 +16,14 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@FilterDef(
+        name = "organizationFilter",
+        parameters = @ParamDef(name = "orgId", type = Integer.class)
+)
+@Filter(
+        name = "organizationFilter",
+        condition = "organization_id = :orgId"
+)
 public class Contact {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

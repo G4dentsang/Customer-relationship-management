@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @AllArgsConstructor
@@ -12,6 +15,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "user_organization")
+@FilterDef(
+        name = "organizationFilter",
+        parameters = @ParamDef(name = "orgId", type = Integer.class)
+)
+@Filter(
+        name = "organizationFilter",
+        condition = "organization_id = :orgId"
+)
 public class UserOrganization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
