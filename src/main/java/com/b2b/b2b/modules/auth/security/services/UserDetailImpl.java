@@ -13,12 +13,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class UserDetailImpl implements UserDetails {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -30,6 +26,16 @@ public class UserDetailImpl implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
     private Integer organizationId;
     private User user;
+
+    public UserDetailImpl(Integer id, String userName, String email, String password, Collection<? extends GrantedAuthority> authorities, Integer organizationId, User user) {
+        this.id = id;
+        this.userName = userName;
+        this.email = email;
+        this.password = password;
+        this.authorities = authorities;
+        this.organizationId = organizationId;
+        this.user = user;
+    }
 
     public static UserDetailImpl build(User user) {
         List<GrantedAuthority> grantedAuthorities = user.getUserOrganizations()
@@ -69,5 +75,23 @@ public class UserDetailImpl implements UserDetails {
         return userName;
     }
 
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
 
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
 }
