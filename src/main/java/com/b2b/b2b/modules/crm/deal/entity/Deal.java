@@ -44,6 +44,7 @@ public class Deal implements PipelineAssignable, WorkflowTarget {
     @NotBlank(message = "Deal name is required")
     @Size(max = 100)
     private String dealName;
+
     @Column(name = "deal_amount", precision = 15, scale = 2, nullable = false)
     private BigDecimal dealAmount = BigDecimal.ZERO;
 
