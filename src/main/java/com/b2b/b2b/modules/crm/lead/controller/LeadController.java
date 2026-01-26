@@ -51,7 +51,7 @@ public class LeadController {
     @PatchMapping("/{leadId}/assign")
     public ResponseEntity<LeadResponseDTO> assign(@PathVariable Integer leadId, @Valid @RequestBody AssignUserRequestDTO request) {
         UpdateLeadRequestDTO mainDTO =  new UpdateLeadRequestDTO();
-        mainDTO.setOwner(request.getNewOwner());
+        mainDTO.setOwnerId(request.getNewOwnerId());
         return ResponseEntity.ok(leadService.update(leadId, mainDTO));
     }
 

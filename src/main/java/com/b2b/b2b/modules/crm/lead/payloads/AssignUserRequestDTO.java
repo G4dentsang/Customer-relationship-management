@@ -1,13 +1,12 @@
 package com.b2b.b2b.modules.crm.lead.payloads;
 
-import com.b2b.b2b.modules.auth.entity.User;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Getter
 @Setter
 public class AssignUserRequestDTO {
-    private User newOwner;
+    @NotNull(message = "New owner ID is required")
+    private Integer newOwnerId;
 }

@@ -25,7 +25,7 @@ public class LeadSpecifications {
                 predicates.add(criteriaBuilder.or(name, email, phone));
             }
 
-            if(filter.getLeadStatus() != null && !filter.getLeadStatus().isEmpty()){
+            if(filter.getLeadStatus() != null){
                 predicates.add(criteriaBuilder.equal(root.get("leadStatus"), filter.getLeadStatus()));
             }
 

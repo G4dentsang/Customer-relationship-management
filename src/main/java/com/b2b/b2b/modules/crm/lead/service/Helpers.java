@@ -64,9 +64,9 @@ class Helpers {
     }
 
     void assignUser(UpdateLeadRequestDTO request, Lead lead, User oldOwner) {
-        if (request.getOwner().getUserId() != null) {
-            User newOwner = userRepository.findById(request.getOwner().getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getOwner().getUserId()));
+        if (request.getOwnerId() != null) {
+            User newOwner = userRepository.findById(request.getOwnerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getOwnerId()));
             if (oldOwner == null || !oldOwner.equals(newOwner)) {
                 lead.setAssignedUser(newOwner);
                 log.info("Lead {} assigned to {}",

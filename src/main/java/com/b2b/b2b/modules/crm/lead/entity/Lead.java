@@ -9,6 +9,7 @@ import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,38 +39,71 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String leadName;
-    private String leadEmail;
-    private String leadPhone;
-    @Enumerated(EnumType.STRING)
-    private LeadStatus leadStatus = LeadStatus.NEW;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;//lead
-    private LocalDateTime convertedAt;//to deal
-    private boolean readyForConversion = false;
-    private boolean isConverted = false;
-    //GDPR....
-    private boolean gdpr_is_consent_given = false; // automated email
-    private LocalDateTime gdpr_data_processing_consent; // time terms agreement
-    private LocalDateTime gdpr_erased_at; // time deletion
 
-    @ManyToOne
-    @JoinColumn(name = "organization_id")
+    @NotBlank(message = "Lead name is required")
+    @Size(max = 100)
+    @Column(name = "lead_name", nullable = false, length = 100)
+    private String leadName;
+
+    @Email(message = "Please provide a valid email address")
+    @Size(max = 255)
+    @NotBlank(message = "Email is required")
+    @Column(name = "lead_email",  nullable = false, length = 255)
+    private String leadEmail;
+
+    @Pattern(regexp = "^\\+?[0-9.]{7,15}$", message = "Invalid phone number format")
+    @Column(name = "lead_phone", length = 20)
+    private String leadPhone;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lead_status", nullable = false, length = 50)
+    private LeadStatus leadStatus = LeadStatus.NEW;
+
+    @Column(name = "created_at", nullable = false, updatable = false, length = 100)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "converted_at")
+    private LocalDateTime convertedAt;
+
+    @Column(nullable = false)
+    private boolean readyForConversion = false;
+
+    @Column(nullable = false)
+    private boolean isConverted = false;
+
+    /*******************GDPR Fields*********************/
+    @Column(name = "gdpr_consent_given", nullable = false)
+    private boolean gdprConsentGiven = false; // automated email
+
+    private LocalDateTime gdprDataProcessingConsent; // time terms agreement
+    private LocalDateTime gdprErasedAt; // time deletion
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id", nullable = false)
+    @NotNull(message = "Organization is required")
     private Organization organization;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
     private Company company;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pipeline_id")
     private Pipeline pipeline;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pipeline_stage_id")
     private PipelineStage pipelineStage;
 
     @OneToMany(mappedBy = "lead")
     private List<Deal> deals = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_user_id")
     private User assignedUser;
 
     public Lead(String leadEmail, String leadName, String leadPhone) {
@@ -81,9 +115,11 @@ public class Lead implements PipelineAssignable, WorkflowTarget {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
     }
 
     public void markAsConverted(){
+        if(this.isConverted) return; //Idempotency check
         this.leadStatus = LeadStatus.CONVERTED;
         this.isConverted = true;
         this.convertedAt = LocalDateTime.now();

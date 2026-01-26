@@ -1,24 +1,23 @@
 package com.b2b.b2b.modules.crm.lead.payloads;
 
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Data
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class UpdateLeadRequestDTO {
-    @Size(min = 1, max = 50)
+    @Size(max = 100)
     private String leadName;
-    @Size(min = 1, max = 50)
+
     @Email
+    @Size(max = 255)
     private String leadEmail;
-    @Size(min = 1, max = 20)
+
+    @Pattern(regexp = "^\\+?[0-9.]{7,15}$", message = "Invalid phone number format")
     private String leadPhone;
+
     private LeadStatus leadStatus;
-    private User owner;
+    private Integer ownerId;
 }

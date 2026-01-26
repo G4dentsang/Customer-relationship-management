@@ -21,8 +21,8 @@ public class DealSpecifications {
                 predicates.add(criteriaBuilder.or(name));
             }
 
-            if(filter.getDealstatus() != null){
-                predicates.add(criteriaBuilder.equal(root.get("dealStatus"), filter.getDealstatus()));
+            if(filter.getDealStatus() != null){
+                predicates.add(criteriaBuilder.equal(root.get("dealStatus"), filter.getDealStatus()));
             }
 
             if(filter.getPipelineId() != null){

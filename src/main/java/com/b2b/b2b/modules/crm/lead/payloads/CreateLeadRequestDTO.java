@@ -2,29 +2,32 @@ package com.b2b.b2b.modules.crm.lead.payloads;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-
+import org.hibernate.validator.constraints.URL;
 
 
 @Data
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class CreateLeadRequestDTO {
-    @NotBlank
-    @Size(min = 1, max = 50)
+    @NotBlank(message = "Lead name cannot be empty")
+    @Size(max = 100)
     private String leadName;
-    @NotBlank
-    @Size(min = 1, max = 50)
-    @Email
+
+    @NotBlank(message = "Email is required")
+    @Size(max = 255)
+    @Email(message = "Please provide a valid email address")
     private String leadEmail;
-    @Size(min = 1, max = 20)
+
+    @Pattern(regexp = "^\\+?[0-9.]{7,15}$", message = "Invalid phone number format")
     private String leadPhone;
-    @Size(min = 1, max = 50)
+
+    @Size(max = 100)
     private String companyName;
+
+    @URL(message = "Invalid website URL")
     private String website;
-    @Size(min = 1, max = 50)
+
+    @Size(max = 50)
     private String industry;
 }
