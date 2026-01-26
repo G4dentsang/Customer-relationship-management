@@ -7,9 +7,9 @@ import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import com.b2b.b2b.modules.crm.contact.util.ContactUtils;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -18,8 +18,8 @@ class Helpers {
     private final ContactUtils contactUtils;
     private final ModelMapper modelMapper;
 
-    List<ContactResponseDTO> toDTOList(List<Contact> contacts) {
-        return contacts.stream().map(contactUtils::createContactResponseDTO).toList();
+    Page<ContactResponseDTO> toDTOList(Page<Contact> contacts) {
+        return contacts.map(contactUtils::createContactResponseDTO);
     }
 
     Contact convertToEntity(ContactDTO request, Company company) {

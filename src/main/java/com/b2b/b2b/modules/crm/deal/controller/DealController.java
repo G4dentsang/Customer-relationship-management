@@ -1,17 +1,18 @@
 package com.b2b.b2b.modules.crm.deal.controller;
 
-import com.b2b.b2b.modules.crm.deal.payloads.DealCreateRequestDTO;
-import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
-import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateDTO;
-import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateStatusRequestDTO;
+import com.b2b.b2b.config.AppConstants;
+import com.b2b.b2b.modules.crm.deal.payloads.*;
 import com.b2b.b2b.modules.crm.deal.service.DealService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("app/v1/deals")
@@ -25,13 +26,13 @@ public class DealController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DealResponseDTO>> listAll() {
-        return ResponseEntity.ok(dealService.findAll());
+    public ResponseEntity<Page<DealResponseDTO>> listAll(DealFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(dealService.findAll(filter, pageable));
     }
 
     @GetMapping("/my-deals")
-    public ResponseEntity<List<DealResponseDTO>> listMine() {
-        return ResponseEntity.ok(dealService.findAllByOwner());
+    public ResponseEntity<Page<DealResponseDTO>> listMine(DealFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(dealService.findAllByOwner(filter, pageable));
     }
 
     @GetMapping("/{dealId}")

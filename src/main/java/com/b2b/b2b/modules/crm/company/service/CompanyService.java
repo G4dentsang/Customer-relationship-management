@@ -1,13 +1,15 @@
 package com.b2b.b2b.modules.crm.company.service;
 
 import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
+import com.b2b.b2b.modules.crm.company.payloads.CompanyFilterDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 public interface CompanyService {
     CompanyResponseDTO create(CompanyDTO request);
-    List<CompanyResponseDTO> listAll();
+    Page<CompanyResponseDTO> listAll(CompanyFilterDTO filter, Pageable pageable);
     CompanyResponseDTO getById(Integer id);
     CompanyResponseDTO update(Integer id, CompanyDTO request);
     CompanyResponseDTO delete(Integer id);

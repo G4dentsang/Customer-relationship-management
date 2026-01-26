@@ -7,12 +7,16 @@ import com.b2b.b2b.modules.auth.entity.*;
 import com.b2b.b2b.modules.auth.payloads.*;
 import com.b2b.b2b.modules.auth.repository.*;
 import com.b2b.b2b.modules.auth.service.UserManagementService;
+import com.b2b.b2b.modules.auth.util.UserSpecifications;
 import com.b2b.b2b.modules.auth.util.UserUtils;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,13 +84,13 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    public List<MemberResponseDTO> getMembersByOrganization() {
-        List<UserOrganization> mappings = userOrgRepository.findAll();
-        return mappings.stream()
-                .map(userOrg -> userUtils.createMemberResponseDTO(
+    public Page<MemberResponseDTO> getMembersByOrganization(UserFilterDTO filter, Pageable pageable) {
+        Specification<UserOrganization> spec = UserSpecifications.createSearch(filter);
+        Page<UserOrganization> mappings = userOrgRepository.findAll(spec,pageable);
+        return mappings.map(userOrg -> userUtils.createMemberResponseDTO(
                         userOrg.getUser(),
                         userOrg.getRole()
-                )).toList();
+                ));
     }
 
     @Override

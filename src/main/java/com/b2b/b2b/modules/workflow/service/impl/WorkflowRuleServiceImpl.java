@@ -15,6 +15,8 @@ import com.b2b.b2b.shared.AuthUtil;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,8 +43,8 @@ public class WorkflowRuleServiceImpl implements WorkflowRuleService {
     }
 
     @Override
-    public List<WorkflowRuleResponseDTO> getAllWorkflowRules() {
-        return helpers.toDTORuleList(workflowRuleRepository.findAll());
+    public Page<WorkflowRuleResponseDTO> getAllWorkflowRules(Pageable pageable) {
+        return helpers.toDTORuleList(workflowRuleRepository.findAll(pageable));
     }
 
     @Override

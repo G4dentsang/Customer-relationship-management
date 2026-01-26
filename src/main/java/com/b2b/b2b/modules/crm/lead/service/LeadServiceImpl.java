@@ -8,9 +8,11 @@ import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
+import com.b2b.b2b.modules.crm.lead.payloads.LeadFilterDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
+import com.b2b.b2b.modules.crm.lead.util.LeadSpecifications;
 import com.b2b.b2b.modules.crm.lead.util.LeadUtils;
 import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
@@ -19,10 +21,13 @@ import com.b2b.b2b.shared.AuthUtil;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -90,13 +95,16 @@ public class LeadServiceImpl implements LeadService {
     }
 
     @Override
-    public List<LeadResponseDTO> findAllByOrganization() {
-        return helpers.toDTOList(leadRepository.findAll());
+    public Page<LeadResponseDTO> findAllByOrganization(LeadFilterDTO filter, Pageable pageable) {
+        Specification<Lead> spec = LeadSpecifications.createSearch(filter);
+        return helpers.toDTOList(leadRepository.findAll(spec,pageable));
     }
 
     @Override
-    public List<LeadResponseDTO> findMyList() {
-        return helpers.toDTOList(leadRepository.findAllByAssignedUser(authUtil.loggedInUser()));
+    public Page<LeadResponseDTO> findMyList(LeadFilterDTO filter, Pageable pageable) {
+        if(filter.getOwnerId() == null) filter.setOwnerId(authUtil.loggedInUserId());
+        Specification<Lead> spec = LeadSpecifications.createSearch(filter);
+        return helpers.toDTOList(leadRepository.findAll(spec, pageable));
     }
 
     @Override

@@ -3,16 +3,17 @@ package com.b2b.b2b.modules.crm.deal.service;
 import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
 import com.b2b.b2b.modules.crm.deal.payloads.DealCreateRequestDTO;
+import com.b2b.b2b.modules.crm.deal.payloads.DealFilterDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealUpdateDTO;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
+import com.b2b.b2b.modules.crm.deal.utils.DealSpecifications;
 import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
@@ -25,10 +26,12 @@ import com.b2b.b2b.shared.AuthUtil;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -74,14 +77,16 @@ public class DealServiceImpl implements DealService
     }
 
     @Override
-    public List<DealResponseDTO> findAll() {
-        return helpers.toDTOList(dealRepository.findAll());
+    public Page<DealResponseDTO> findAll(DealFilterDTO filter, Pageable pageable) {
+        Specification<Deal> spec = DealSpecifications.createSearch(filter);
+        return helpers.toDTOList(dealRepository.findAll(spec, pageable));
     }
 
     @Override
-    public List<DealResponseDTO> findAllByOwner() {
-        User owner = authUtil.loggedInUser();
-        return helpers.toDTOList(dealRepository.findAllByAssignedUser(owner));
+    public Page<DealResponseDTO> findAllByOwner(DealFilterDTO filter, Pageable pageable) {
+        if(filter.getOwnerId() == null) filter.setOwnerId(authUtil.loggedInUserId());
+        Specification<Deal> spec = DealSpecifications.createSearch(filter);
+        return helpers.toDTOList(dealRepository.findAll(spec, pageable));
     }
 
     @Override
@@ -121,13 +126,13 @@ public class DealServiceImpl implements DealService
     }
 
     @Override
-    public List<DealResponseDTO> getCompanyDeals(Integer companyId) {
-        return helpers.toDTOList(dealRepository.findAllByCompanyId(companyId));
+    public Page<DealResponseDTO> getCompanyDeals(Integer companyId, Pageable pageable) {
+        return helpers.toDTOList(dealRepository.findAllByCompanyId(companyId, pageable));
     }
 
     @Override
-    public List<DealResponseDTO> getContactDeals(Integer id) {
-        return helpers.toDTOList(dealRepository.findAllByCompanyContactsId(id));
+    public Page<DealResponseDTO> getContactDeals(Integer id, Pageable pageable) {
+        return helpers.toDTOList(dealRepository.findAllByCompanyContactsId(id, pageable));
     }
 
 

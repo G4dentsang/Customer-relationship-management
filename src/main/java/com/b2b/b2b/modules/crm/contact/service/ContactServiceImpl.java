@@ -5,14 +5,18 @@ import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.contact.entity.Contact;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactDTO;
+import com.b2b.b2b.modules.crm.contact.payloads.ContactFilterDTO;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
 import com.b2b.b2b.modules.crm.contact.repository.ContactRepository;
+import com.b2b.b2b.modules.crm.contact.util.ContactSpecifications;
 import com.b2b.b2b.modules.crm.contact.util.ContactUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -65,12 +69,13 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public List<ContactResponseDTO> getContacts() {
-        return helpers.toDTOList(contactRepository.findAll());
+    public Page<ContactResponseDTO> getContacts(ContactFilterDTO filter, Pageable pageable) {
+        Specification<Contact> spec = ContactSpecifications.createSearch(filter);
+        return helpers.toDTOList(contactRepository.findAll(spec,pageable));
     }
 
     @Override
-    public List<ContactResponseDTO> getCompanyContacts(Integer id) {
-        return helpers.toDTOList(contactRepository.findAllByCompanyId(id));
+    public Page<ContactResponseDTO> getCompanyContacts(Integer id, Pageable pageable) {
+        return helpers.toDTOList(contactRepository.findAllByCompanyId(id, pageable));
     }
 }

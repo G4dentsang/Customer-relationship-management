@@ -10,6 +10,7 @@ import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.repository.PipelineStageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ class Helpers {
     private final PipelineUtil pipelineUtil;
     private final PipelineStageRepository pipelineStageRepository;
 
-    List<PipelineResponseDTO> toDTOList(List<Pipeline> pipelines) {
-        return pipelines.stream().map(pipelineUtil::createPipelineResponseDTO).toList();
+    Page<PipelineResponseDTO> toDTOList(Page<Pipeline> pipelines) {
+        return pipelines.map(pipelineUtil::createPipelineResponseDTO);
     }
 
     Pipeline convertToEntity(CreatePipelineRequestDTO request, Organization org) {

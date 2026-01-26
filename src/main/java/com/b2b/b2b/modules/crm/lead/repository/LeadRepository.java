@@ -1,18 +1,16 @@
 package com.b2b.b2b.modules.crm.lead.repository;
 
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
 
-public interface LeadRepository extends JpaRepository<Lead, Integer> {
+public interface LeadRepository extends JpaRepository<Lead, Integer>, JpaSpecificationExecutor<Lead> {
 
-    List<Lead> findAllByAssignedUser(User user);
     Long countByPipeline(Pipeline pipeline);
     Long countByPipelineStage(PipelineStage pipelineStage);
 

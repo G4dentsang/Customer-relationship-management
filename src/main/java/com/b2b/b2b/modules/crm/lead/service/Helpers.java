@@ -19,9 +19,9 @@ import com.b2b.b2b.modules.workflow.events.LeadStatusUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 
 @Component
 @Slf4j
@@ -49,9 +49,8 @@ class Helpers {
         if (request.getLeadPhone() != null) lead.setLeadPhone(request.getLeadPhone());// need "" string at least
     }
 
-    List<LeadResponseDTO> toDTOList(List<Lead> leads) {
-        return leads.stream()
-                .map(leadUtils::createLeadResponseDTO).toList();
+    Page<LeadResponseDTO> toDTOList(Page<Lead> leads) {
+        return leads.map(leadUtils::createLeadResponseDTO);
     }
 
     Company getOrCreateCompany(CreateLeadRequestDTO request, Organization org) {

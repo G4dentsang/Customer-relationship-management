@@ -37,6 +37,9 @@ public class Company {
     private String companyName;
     private String website;
     private String industry;
+    private String city;
+    private String state;
+    private String country;
     private Boolean isDeleted;
     @ManyToOne
     private Organization organization;

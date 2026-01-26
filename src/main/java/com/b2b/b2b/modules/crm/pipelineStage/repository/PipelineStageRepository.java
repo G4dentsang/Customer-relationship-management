@@ -2,7 +2,10 @@ package com.b2b.b2b.modules.crm.pipelineStage.repository;
 
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 

@@ -15,7 +15,6 @@ public interface PipelineStageService {
     List<PipelineStageResponseDTO> updatePipelineStageById(Integer pipelineId, Integer stageId, PipelineStageRequestDTO request);
     List<PipelineStageResponseDTO>  deletePipelineStageById(Integer pipelineId, Integer stageId, Integer targetStageId);
     Optional<PipelineStage> findNextPipelineStage(Pipeline  pipeline, Integer currentOrder);
-
     void promoteToNextStage(PipelineAssignable entity);
 
 }

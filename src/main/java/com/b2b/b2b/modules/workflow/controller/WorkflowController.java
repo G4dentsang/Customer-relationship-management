@@ -1,11 +1,16 @@
 package com.b2b.b2b.modules.workflow.controller;
 
+import com.b2b.b2b.config.AppConstants;
 import com.b2b.b2b.modules.workflow.payloads.*;
 import com.b2b.b2b.modules.workflow.service.WorkflowActionService;
 import com.b2b.b2b.modules.workflow.service.WorkflowConditionService;
 import com.b2b.b2b.modules.workflow.service.WorkflowRuleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +32,12 @@ public class WorkflowController {
     }
 
     @GetMapping
-    public ResponseEntity<List<WorkflowRuleResponseDTO>> get() {
-        return ResponseEntity.ok(workflowRuleService.getAllWorkflowRules());
+    public ResponseEntity<Page<WorkflowRuleResponseDTO>> listAll(@PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(workflowRuleService.getAllWorkflowRules(pageable));
     }
 
     @GetMapping("/{ruleId}")
-    public ResponseEntity<WorkflowRuleResponseDTO> getById(@PathVariable Integer ruleId) {
+    public ResponseEntity<WorkflowRuleResponseDTO> get(@PathVariable Integer ruleId) {
         return ResponseEntity.ok(workflowRuleService.getWorkflowRule(ruleId));
     }
 

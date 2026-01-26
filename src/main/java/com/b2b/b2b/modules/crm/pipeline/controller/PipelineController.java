@@ -1,19 +1,20 @@
 package com.b2b.b2b.modules.crm.pipeline.controller;
 
-import com.b2b.b2b.modules.crm.pipeline.payloads.CreatePipelineRequestDTO;
-import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineMigrationRequestDTO;
-import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineResponseDTO;
-import com.b2b.b2b.modules.crm.pipeline.payloads.UpdatePipelineRequestDTO;
+import com.b2b.b2b.config.AppConstants;
+import com.b2b.b2b.modules.crm.pipeline.payloads.*;
 import com.b2b.b2b.modules.crm.pipeline.service.MigrationService;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
 import com.b2b.b2b.shared.AuthUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("app/v1/pipelines")
@@ -30,8 +31,8 @@ public class PipelineController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PipelineResponseDTO>> listAll() {
-        return ResponseEntity.ok(pipelineService.getAllPipeline());
+    public ResponseEntity<Page<PipelineResponseDTO>> listAll(PipelineFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(pipelineService.getAllPipeline(filter, pageable));
     }
 
     @GetMapping("/{pipelineId}")

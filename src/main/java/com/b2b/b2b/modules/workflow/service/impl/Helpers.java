@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -99,8 +100,8 @@ class Helpers {
         }
     }
 
-    List<WorkflowRuleResponseDTO> toDTORuleList(List<WorkflowRule> rules) {
-        return rules.stream().map(workflowUtil::createWorkflowRuleResponseDTO).toList();
+    Page<WorkflowRuleResponseDTO> toDTORuleList(Page<WorkflowRule> rules) {
+        return rules.map(workflowUtil::createWorkflowRuleResponseDTO);
     }
 
     List<WorkflowConditionResponseDTO> toDTOConditionList(List<WorkflowCondition> conditions) {

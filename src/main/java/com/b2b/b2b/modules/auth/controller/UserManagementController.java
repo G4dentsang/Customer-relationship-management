@@ -1,16 +1,20 @@
 package com.b2b.b2b.modules.auth.controller;
 
+import com.b2b.b2b.config.AppConstants;
 import com.b2b.b2b.modules.auth.entity.AppRoles;
 import com.b2b.b2b.modules.auth.payloads.*;
 import com.b2b.b2b.modules.auth.service.UserManagementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/management/users")
@@ -31,8 +35,8 @@ public class UserManagementController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MemberResponseDTO>> getAllUsers() {
-        return ResponseEntity.ok(userManagementService.getMembersByOrganization());
+    public ResponseEntity<Page<MemberResponseDTO>> getAllUsers(UserFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "username", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(userManagementService.getMembersByOrganization(filter, pageable));
     }
 
     @GetMapping("/{userId}")

@@ -14,10 +14,10 @@ import com.b2b.b2b.modules.workflow.events.DealStatusUpdatedEvent;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -60,9 +60,8 @@ class Helpers {
     }
 
 
-    List<DealResponseDTO> toDTOList(List<Deal> deals) {
-        return deals.stream()
-                .map(dealUtils::createDealResponseDTO).toList();
+    Page<DealResponseDTO> toDTOList(Page<Deal> deals) {
+        return deals.map(dealUtils::createDealResponseDTO);
     }
 
     Deal convertToEntity(DealCreateRequestDTO request, Organization org, Company company, Lead lead) {

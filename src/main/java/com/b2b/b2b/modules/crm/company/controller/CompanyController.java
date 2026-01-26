@@ -1,6 +1,8 @@
 package com.b2b.b2b.modules.crm.company.controller;
 
+import com.b2b.b2b.config.AppConstants;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
+import com.b2b.b2b.modules.crm.company.payloads.CompanyFilterDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.company.service.CompanyService;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
@@ -8,11 +10,14 @@ import com.b2b.b2b.modules.crm.contact.service.ContactService;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.service.DealService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("app/v1/companies")
@@ -29,8 +34,8 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CompanyResponseDTO>> listAll() {
-        return ResponseEntity.ok(companyService.listAll());
+    public ResponseEntity<Page<CompanyResponseDTO>> listAll(CompanyFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "companyName", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(companyService.listAll(filter, pageable));
     }
 
     @GetMapping("/{companyId}")
@@ -44,13 +49,13 @@ public class CompanyController {
     }
 
     @GetMapping("/{companyId}/contacts")
-    public ResponseEntity<List<ContactResponseDTO>> getContacts(@PathVariable Integer companyId) {
-        return ResponseEntity.ok(contactService.getCompanyContacts(companyId));
+    public ResponseEntity<Page<ContactResponseDTO>> getContacts(@PathVariable Integer companyId,@PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "lastName", direction = Sort.Direction.DESC) Pageable pageable ) {
+        return ResponseEntity.ok(contactService.getCompanyContacts(companyId, pageable));
     }
 
     @GetMapping("/{companyId}/deals")
-    public ResponseEntity<List<DealResponseDTO>> getDeals(@PathVariable Integer companyId) {
-        return ResponseEntity.ok(dealService.getCompanyDeals(companyId));
+    public ResponseEntity<Page<DealResponseDTO>> getDeals(@PathVariable Integer companyId, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(dealService.getCompanyDeals(companyId, pageable));
     }
 
     @DeleteMapping("/{companyId}")

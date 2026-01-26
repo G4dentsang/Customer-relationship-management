@@ -58,7 +58,14 @@ jobs:
       # Deploy Docker container locally on the EC2 self-hosted runner
       - name: Deploy to EC2
         run: |
-          docker pull ${{ secrets.DOCKER_USERNAME }}/b2b-app:latest
+          # Stop and remove the old container
           docker stop b2b-app || true
           docker rm b2b-app || true
+          
+          docker image prune -a -f
+          
+          docker pull ${{ secrets.DOCKER_USERNAME }}/b2b-app:latest
           docker run -d -p 8080:8080 --name b2b-app ${{ secrets.DOCKER_USERNAME }}/b2b-app:latest
+
+      - name: Final system cleanup
+        run: docker system prune -f

@@ -8,20 +8,23 @@ import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.payloads.CreatePipelineRequestDTO;
+import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineFilterDTO;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineResponseDTO;
 import com.b2b.b2b.modules.crm.pipeline.payloads.UpdatePipelineRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
+import com.b2b.b2b.modules.crm.pipeline.util.PipelineSpecifications;
 import com.b2b.b2b.modules.crm.pipeline.util.PipelineUtil;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -52,8 +55,9 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public List<PipelineResponseDTO> getAllPipeline() {
-        return helpers.toDTOList(pipelineRepository.findAll());
+    public Page<PipelineResponseDTO> getAllPipeline(PipelineFilterDTO filter, Pageable pageable) {
+        Specification<Pipeline> spec = PipelineSpecifications.createSearch(filter);
+        return helpers.toDTOList(pipelineRepository.findAll(spec, pageable));
     }
 
     @Override

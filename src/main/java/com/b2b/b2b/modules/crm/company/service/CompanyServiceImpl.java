@@ -6,14 +6,18 @@ import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
+import com.b2b.b2b.modules.crm.company.payloads.CompanyFilterDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
+import com.b2b.b2b.modules.crm.company.util.CompanySpecifications;
 import com.b2b.b2b.modules.crm.company.util.CompanyUtils;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +45,9 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public List<CompanyResponseDTO> listAll() {
-        return helpers.toDTOList(companyRepository.findAll());
+    public Page<CompanyResponseDTO> listAll(CompanyFilterDTO filter, Pageable pageable) {
+        Specification<Company> spec = CompanySpecifications.createSearch(filter);
+        return helpers.toDTOList(companyRepository.findAll(spec, pageable));
     }
 
     @Override

@@ -4,17 +4,19 @@ import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
 
-public interface DealRepository extends JpaRepository<Deal, Integer> {
+public interface DealRepository extends JpaRepository<Deal, Integer>, JpaSpecificationExecutor<Deal> {
 
-    List<Deal> findAllByAssignedUser(User user);
-    List<Deal> findAllByCompanyId(Integer id);
-    List<Deal> findAllByCompanyContactsId(Integer id);
+    Page<Deal> findAllByAssignedUser(User user, Pageable pageable);
+    Page<Deal> findAllByCompanyId(Integer id, Pageable pageable);
+    Page<Deal> findAllByCompanyContactsId(Integer id, Pageable pageable);
 
     Long countByPipeline(Pipeline pipeline);
     Long countByPipelineStage(PipelineStage pipelineStage);

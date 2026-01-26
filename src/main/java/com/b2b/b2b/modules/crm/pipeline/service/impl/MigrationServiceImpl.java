@@ -8,7 +8,6 @@ import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineMigrationRequestDTO;
 import com.b2b.b2b.modules.crm.pipeline.repository.PipelineRepository;
 import com.b2b.b2b.modules.crm.pipeline.service.MigrationService;
-import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

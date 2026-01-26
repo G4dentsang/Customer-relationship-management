@@ -7,9 +7,9 @@ import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.company.util.CompanyUtils;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,9 +23,8 @@ class Helpers {
         return company;
     }
 
-    List<CompanyResponseDTO> toDTOList(List<Company> companies) {
-        return companies.stream()
-                .map(companyUtils::createCompanyResponse).toList();
+    Page<CompanyResponseDTO> toDTOList(Page<Company> companies) {
+        return companies.map(companyUtils::createCompanyResponse);
     }
 
     void updateDtoToEntity(CompanyDTO request, Company company) {
