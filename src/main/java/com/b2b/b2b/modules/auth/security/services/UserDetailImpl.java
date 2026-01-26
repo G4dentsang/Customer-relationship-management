@@ -3,7 +3,8 @@ package com.b2b.b2b.modules.auth.security.services;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.entity.UserOrganization;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -94,4 +95,6 @@ public class UserDetailImpl implements UserDetails {
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
+
+
 }
