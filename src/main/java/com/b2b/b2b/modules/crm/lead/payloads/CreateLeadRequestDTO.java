@@ -23,7 +23,7 @@ public class CreateLeadRequestDTO {
     private String leadPhone;
 
     @Size(max = 100)
-    private String companyName;
+    private Integer companyId;
 
     @URL(message = "Invalid website URL")
     private String website;

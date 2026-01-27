@@ -54,13 +54,16 @@ class Helpers {
     }
 
     Company getOrCreateCompany(CreateLeadRequestDTO request, Organization org) {
-        return companyRepository.findByCompanyName(request.getCompanyName())
-                .orElseGet(() -> companyRepository.save(new Company(
-                        request.getCompanyName(),
-                        request.getWebsite(),
-                        request.getIndustry(),
-                        org
-                )));    //might add this to company side
+        if (request.getCompanyId() != null) {
+            return companyRepository.findById(request.getCompanyId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
+        } else {
+            Company company = new Company();
+            company.setWebsite(request.getWebsite());
+            company.setIndustry(request.getIndustry());
+            company.setOrganization(org);
+            return companyRepository.save(company);
+        }
     }
 
     void assignUser(UpdateLeadRequestDTO request, Lead lead, User oldOwner) {

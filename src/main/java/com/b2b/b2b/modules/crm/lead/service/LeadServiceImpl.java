@@ -42,6 +42,7 @@ public class LeadServiceImpl implements LeadService {
     private final OrganizationRepository organizationRepository;
     private final Helpers helpers;
 
+
     @Override
     @Transactional
     public LeadResponseDTO create(CreateLeadRequestDTO request) {
