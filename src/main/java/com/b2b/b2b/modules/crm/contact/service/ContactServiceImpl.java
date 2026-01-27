@@ -31,8 +31,8 @@ public class ContactServiceImpl implements ContactService {
     @Override
     @Transactional
     public ContactResponseDTO add(ContactDTO request) {
-        Company company = companyRepository.findByCompanyName(request.getCompanyName())
-                .orElseThrow(() -> new ResourceNotFoundException("Company", "name", request.getCompanyName()));
+        Company company = companyRepository.findById(request.getCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
 
         Contact contact = helpers.convertToEntity(request, company);
         return contactUtils.createContactResponseDTO(contactRepository.save(contact));
@@ -44,9 +44,9 @@ public class ContactServiceImpl implements ContactService {
         Contact existingContact = contactRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Contact", "id", id));
 
-        if(request.getCompanyName() != null) {
-            Company company = companyRepository.findByCompanyName(request.getCompanyName())
-                    .orElseThrow(() -> new ResourceNotFoundException("Company", "name", request.getCompanyName()));
+        if(request.getCompanyId() != null) {
+            Company company = companyRepository.findById(request.getCompanyId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
             existingContact.setCompany(company);
         }
         helpers.updateDtoToEntity(request, existingContact);

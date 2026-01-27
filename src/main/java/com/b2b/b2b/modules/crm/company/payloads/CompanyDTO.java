@@ -1,14 +1,21 @@
 package com.b2b.b2b.modules.crm.company.payloads;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.validator.constraints.URL;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
 public class CompanyDTO {
-            String companyName;
-            String companyWebsite;
-            String companyIndustry;
+
+    @NotBlank(message = "Company name is required")
+    @Size(max = 100)
+    String companyName;
+
+    @URL(message = "Invalid website URL")
+    String companyWebsite;
+
+    @NotBlank(message = "Company's industry is required")
+    @Size(max = 100)
+    String companyIndustry;
 }

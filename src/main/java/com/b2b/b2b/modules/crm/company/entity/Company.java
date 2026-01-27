@@ -5,6 +5,8 @@ import com.b2b.b2b.modules.crm.contact.entity.Contact;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
+import org.hibernate.validator.constraints.URL;
 
 
 import java.util.ArrayList;
@@ -33,16 +36,38 @@ import java.util.List;
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "company_id", nullable = false)
     private Integer id;
+
+    @NotBlank(message = "Company name is required")
+    @Size(max = 100)
+    @Column(name = "company_name", nullable = false, length = 100)
     private String companyName;
+
+    @URL(message = "Invalid website URL")
+    @Column(name = "company_website", length = 255)
     private String website;
+
+    @NotBlank(message = "Company's industry is required")
+    @Column(name = "company_industry", nullable = false, length = 255)
     private String industry;
+
+    @Column(name = "company_city", length = 100)
     private String city;
+
+    @Column(name = "company_state", length = 100)
     private String state;
+
+    @Column(name = "company_country", length = 100)
     private String country;
+
+    @Column(name = "is_Deleted")
     private Boolean isDeleted;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
+
     @OneToMany(mappedBy = "company")
     private List<Deal> deals = new ArrayList<>();
     @OneToMany(mappedBy = "company")

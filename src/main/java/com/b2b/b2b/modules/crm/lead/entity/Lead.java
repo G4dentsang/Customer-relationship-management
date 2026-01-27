@@ -38,6 +38,7 @@ import java.util.List;
 public class Lead implements PipelineAssignable, WorkflowTarget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "lead_id", nullable = false)
     private Integer id;
 
     @NotBlank(message = "Lead name is required")

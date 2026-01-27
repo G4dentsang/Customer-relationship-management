@@ -39,6 +39,7 @@ import java.time.LocalDateTime;
 public class Deal implements PipelineAssignable, WorkflowTarget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "deal_id", nullable = false)
     private Integer id;
 
     @NotBlank(message = "Deal name is required")
