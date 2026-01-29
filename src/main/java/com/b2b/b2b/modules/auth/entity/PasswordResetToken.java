@@ -9,20 +9,14 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class EmailVerificationToken {
+public class PasswordResetToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "password_r_token",unique = true, nullable = false)
     private Long id;
     private String token;
     @OneToOne
     private User user;
     private LocalDateTime expiryDate;
-    private boolean used;
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-    }
 
 }

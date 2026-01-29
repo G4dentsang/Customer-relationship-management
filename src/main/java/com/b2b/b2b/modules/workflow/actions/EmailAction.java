@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.workflow.actions;
 
-import com.b2b.b2b.modules.auth.service.EmailVerificationService;
+import com.b2b.b2b.modules.auth.service.EmailService;
 import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
 import com.b2b.b2b.modules.workflow.enums.WorkflowActionType;
 import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EmailAction implements WorkflowActionHandler
 {
-    private final EmailVerificationService emailVerificationService;//should change name to email service more general use cases
+    private final EmailService emailService;//should change name to email service more general use cases
     @Override
     public WorkflowActionType getType() {
         return WorkflowActionType.SEND_EMAIL;

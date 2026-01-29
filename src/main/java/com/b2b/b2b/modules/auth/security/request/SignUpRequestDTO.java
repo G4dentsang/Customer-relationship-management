@@ -12,17 +12,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SignUpRequestDTO {
-    @NotBlank
-    @Size(max = 20)
+    @NotBlank(message = "User name is required")
+    @Size(max = 100, message = "User name is too long, keep it under 100 characters")
     private String userName;
 
-    @NotBlank
-    @Size(max = 120)
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 charanters long")
     private String password;
 
-    @NotBlank
-    @Size(max = 50)
-    @Email
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
+
+    @NotBlank(message = "Organization name is required")
     private String organizationName;
 }

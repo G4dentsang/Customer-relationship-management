@@ -9,7 +9,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class SignInRequestDTO {
+public class LogInRequestDTO {
     @NotBlank
     private String identifier;
 

@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.auth.security.services;
 
 import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.auth.entity.UserOrganization;
 import com.b2b.b2b.modules.auth.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +18,26 @@ public class UserDetailServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        User user = userRepository.findByUserName(identifier)
+        User user = fetchUser(identifier);
+        Integer defaultOrgId = user.getUserOrganizations().stream()
+                .filter(UserOrganization::isDefaultHome)
+                .map(uo -> uo.getOrganization().getOrganizationId())
+                .findFirst()
+                .orElseThrow(() -> new UsernameNotFoundException("User has no default home organization"));
+
+        return UserDetailImpl.build(user, defaultOrgId);
+
+    }
+
+    @Transactional
+    public UserDetails loadUserByUsernameAndOrg(String identifier, Integer orgId) throws UsernameNotFoundException {
+        User user = fetchUser(identifier);
+        return UserDetailImpl.build(user, orgId);
+    }
+
+    private User fetchUser(String identifier) {
+        return userRepository.findByUserName(identifier)
                 .or(()-> userRepository.findByEmail(identifier))
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + identifier));
-
-        return UserDetailImpl.build(user);
-
     }
 }

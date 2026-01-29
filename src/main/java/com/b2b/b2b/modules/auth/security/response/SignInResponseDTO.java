@@ -12,4 +12,5 @@ public class SignInResponseDTO {
     private String userName;
     private String email;
     private List<String> role;
+    private Integer organizationId;
 }

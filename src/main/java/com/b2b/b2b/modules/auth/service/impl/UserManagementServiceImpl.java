@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.auth.service.impl;
 
-import com.b2b.b2b.exception.BadResuestException;
+import com.b2b.b2b.exception.BadRequestException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.exception.UnauthorizedException;
 import com.b2b.b2b.modules.auth.entity.*;
@@ -45,7 +45,7 @@ public class UserManagementServiceImpl implements UserManagementService {
     public MessageResponse inviteMember(InviteMemberRequestDTO request) {
         Integer adminOrgId = OrganizationContext.getOrgId();
         String userEmail = request.getEmail();
-        if(userRepository.existsByEmail(userEmail)) throw new BadResuestException("User with this email already exists.");
+        if(userRepository.existsByEmail(userEmail)) throw new BadRequestException("User with this email already exists.");
 
         Organization organization = organizationRepository.findById(adminOrgId).
                 orElseThrow(() -> new ResourceNotFoundException("Organization", "id", adminOrgId));
@@ -66,7 +66,7 @@ public class UserManagementServiceImpl implements UserManagementService {
     public MemberResponseDTO acceptInvitation(AcceptInviteRequestDTO request) {
         Invitation invitation = invitationRepository.findByToken(request.getToken()).orElseThrow(() -> new ResourceNotFoundException("Invitation", "token", request.getToken()));
         if (invitation.isAccepted() || invitation.getExpiryDate().isBefore(LocalDateTime.now()))
-            throw new BadResuestException("Invitation is invalid or expired.");
+            throw new BadRequestException("Invitation is invalid or expired.");
 
         User newUser = new User(invitation.getEmail(), passwordEncoder.encode(request.getPassword()), request.getUsername());
         newUser.setUserActive(true);
@@ -118,8 +118,8 @@ public class UserManagementServiceImpl implements UserManagementService {
         boolean successor = userOrgRepository.existsByUser_UserId(successorId);
 
         if (userOrg.isAccountOwner())
-            throw new BadResuestException("Cannot deactivate the Account Owner. Transfer ownership first.");
-        if (!successor) throw new BadResuestException("Successor must belong to the same organization.");
+            throw new BadRequestException("Cannot deactivate the Account Owner. Transfer ownership first.");
+        if (!successor) throw new BadRequestException("Successor must belong to the same organization.");
 
         leadRepository.reassignLeads(userId, successorId);
         dealRepository.reassignDeals(userId, successorId);

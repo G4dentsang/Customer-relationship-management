@@ -35,7 +35,7 @@ public class UserOrganization {
     @ManyToOne
     private Role role;
     private boolean isAccountOwner;//super admin of an organization, one that can remove sub admin
-    private boolean isDefaultHome; // default home for user across multi organization
+    private boolean isDefaultHome;
     public UserOrganization(User user, Organization organization, Role role, boolean isAccountOwner) {
         this.user = user;
         this.organization = organization;

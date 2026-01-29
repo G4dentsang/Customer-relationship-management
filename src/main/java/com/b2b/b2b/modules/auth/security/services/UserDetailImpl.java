@@ -1,7 +1,6 @@
 package com.b2b.b2b.modules.auth.security.services;
 
 import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.auth.entity.UserOrganization;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,46 +18,41 @@ import java.util.stream.Collectors;
 public class UserDetailImpl implements UserDetails {
     @Serial
     private static final long serialVersionUID = 1L;
+
     private Integer id;
     private String userName;
     private String email;
+
     @JsonIgnore //ignore the password during serialization into JSON format
+
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
-    private Integer organizationId;
-    private User user;
+    private Integer activeOrganizationId;
 
-    public UserDetailImpl(Integer id, String userName, String email, String password, Collection<? extends GrantedAuthority> authorities, Integer organizationId, User user) {
+    public UserDetailImpl(Integer id, String userName, String email, String password,
+                          Collection<? extends GrantedAuthority> authorities, Integer activeOrganizationId) {
         this.id = id;
         this.userName = userName;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
-        this.organizationId = organizationId;
-        this.user = user;
+        this.activeOrganizationId = activeOrganizationId;
     }
 
-    public static UserDetailImpl build(User user) {
-        List<GrantedAuthority> grantedAuthorities = user.getUserOrganizations()
-                                                    .stream()
-                                                    .map(UserOrganization::getRole)
-                                                    .map(role -> new SimpleGrantedAuthority(role.getAppRoles().name()))
-                                                    .collect(Collectors.toList());
-        Integer orgId = user.getUserOrganizations()
+    public static UserDetailImpl build(User user, Integer targetOrgId) {
+        List<GrantedAuthority> authorities = user.getUserOrganizations()
                 .stream()
-                .map(uo -> uo.getOrganization().getOrganizationId())
-                .findFirst()
-                .orElse(null);
+                .filter(uo -> uo.getOrganization().getOrganizationId().equals(targetOrgId))
+                .map(uo -> new SimpleGrantedAuthority(uo.getRole().getAppRoles().name()))
+                .collect(Collectors.toList());
 
         return new UserDetailImpl(
-                  user.getUserId(),
-                  user.getUserName(),
-                  user.getEmail(),
-                  user.getPassword(),
-                  grantedAuthorities,
-                  orgId,
-                  user);
-
+                user.getUserId(),
+                user.getUserName(),
+                user.getEmail(),
+                user.getPassword(),
+                authorities,
+                targetOrgId);
     }
 
     @Override
@@ -95,6 +89,5 @@ public class UserDetailImpl implements UserDetails {
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
-
 
 }

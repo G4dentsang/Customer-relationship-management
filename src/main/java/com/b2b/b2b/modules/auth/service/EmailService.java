@@ -1,9 +1,10 @@
 package com.b2b.b2b.modules.auth.service;
 
-import com.b2b.b2b.modules.auth.entity.EmailVerificationToken;
 import com.b2b.b2b.modules.auth.entity.User;
 
-public interface EmailVerificationService {
+public interface EmailService {
     void sendVerificationEmail(User user);
     void verifyToken(String token);
+    void resendVerificationEmail(String email);
+    void sendResetPasswordEmail(String email, String token);
 }

@@ -49,6 +49,10 @@ public class User {
     private boolean emailVerified;
     private LocalDateTime createdAt;
 
+    private Integer failedLoginAttempts = 0;
+    private boolean accountNonLocked = true;
+    private LocalDateTime lockTime;
+
     @OneToMany(mappedBy = "user")
     private List<UserOrganization> userOrganizations = new ArrayList<>();
     @OneToMany(mappedBy = "assignedUser")

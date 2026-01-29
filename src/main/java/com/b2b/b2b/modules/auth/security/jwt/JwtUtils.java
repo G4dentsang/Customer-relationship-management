@@ -1,14 +1,12 @@
 package com.b2b.b2b.modules.auth.security.jwt;
 
 import com.b2b.b2b.modules.auth.security.services.UserDetailImpl;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +20,7 @@ import java.util.Date;
 
 
 @Component
+@Slf4j
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
@@ -31,42 +30,96 @@ public class JwtUtils {
     @Value("${spring.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
-    @Value("${spring.ecom.app.jwtCookieName}")
+    @Value("${spring.come.app.jwtCookieName}")
     private String jwtCookie;
 
-    public String getJwtTokenFromCookie(HttpServletRequest request) {
-        Cookie cookie = WebUtils.getCookie(request, jwtCookie);
-        if(cookie != null) {
-            return cookie.getValue();
-        }else {
-            return null;
-        }
+    @Value("${spring.come.app.jwtRefreshCookieName}")
+    private String jwtRefreshCookie;
+
+    // --- Access Token Methods ---
+
+    public String getJwtTokenFromCookies(HttpServletRequest request) {
+        return getCookieValueByName(request, jwtCookie);
     }
 
-    public ResponseCookie generateJwtToken(UserDetailImpl userPrincipal) {
-        String jwt = generateTokenFromUsername(userPrincipal.getUsername());
-        return ResponseCookie.from(jwtCookie, jwt)
-                .path("/app/v1")
-                .maxAge(24*60*60) //1day
-                .httpOnly(false) //true in prod
-                .secure(false) //true in prod
-                .sameSite("Lax")//Strict in prod
-                .build();
+
+    public ResponseCookie generateJwtCookies(UserDetailImpl userPrincipal) {
+        String jwt = generateTokenFromUsername(userPrincipal.getUsername(), userPrincipal.getActiveOrganizationId());
+        return generateCookie(jwtCookie, jwt, "/app/v1");
+
     }
 
-    public String generateTokenFromUsername(String username) {
+    public String generateTokenFromUsername(String username,  Integer activeOrganizationId) {
         return Jwts.builder()
                 .subject(username)
+                .claim("activeOrgId", activeOrganizationId)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key())
                 .compact();
     }
 
+    // --- Refresh Token Methods ---
+
+    public String getJwtRefreshTokenFromCookies(HttpServletRequest request) {
+        return getCookieValueByName(request, jwtCookie);
+    }
+
+    public ResponseCookie generateRefreshJwtCookies(String refreshToken) {
+        return generateCookie(jwtCookie, refreshToken, "/app/v1/auth/refreshToken" );
+    }
+
+    // ---Cleaning Cookie ----
+
+    public ResponseCookie getCleanJwtCookie() {
+        return ResponseCookie.from(jwtCookie,null)
+                .path("/app/v1")
+                .build();
+    }
+
+    public ResponseCookie getCleanJwtRefreshCookie() {
+        return ResponseCookie.from(jwtRefreshCookie,null)
+                .path("/app/v1/auth/refreshToken")
+                .build();
+    }
+
+    // --- Helper Methods ---
+
+    private String getCookieValueByName(HttpServletRequest request, String cookieName) {
+        Cookie cookie = WebUtils.getCookie(request, cookieName);
+        return (cookie != null) ? cookie.getValue() : null;
+    }
+
+    private ResponseCookie generateCookie(String name, String value, String path) {
+        return ResponseCookie.from(name, value)
+                .path(path)
+                .maxAge(24 * 60 * 60) //1day
+                .httpOnly(false) //true in prod
+                .secure(false) //true in prod HTTPS
+                .sameSite("Lax")// strict in prod
+                .build();
+    }
+
+    private Key key() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    }
+
+    public Integer getOrgIdFromJwtToken(String token) {
+        return Jwts.parser()
+                .verifyWith((SecretKey) key())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("orgId", Integer.class);
+    }
+
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser()
-                 .verifyWith((SecretKey) key()).build()
-                 .parseSignedClaims(token).getPayload().getSubject();
+                .verifyWith((SecretKey) key())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
     }
 
     public boolean validateJwtToken(String jwtToken) {
@@ -84,13 +137,5 @@ public class JwtUtils {
         }
         return false;
 
-    }
-    private Key key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-    }
-    public ResponseCookie getCleanJwtCookie() {
-        return ResponseCookie.from(jwtCookie,null)
-                .path("/app/v1")
-                .build();
     }
 }
