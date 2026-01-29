@@ -3,7 +3,6 @@ package com.b2b.b2b.modules.auth.service.impl;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.exception.TokenRefreshException;
 import com.b2b.b2b.modules.auth.entity.RefreshToken;
-import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.RefreshTokenRepository;
 import com.b2b.b2b.modules.auth.service.RefreshTokenService;
 import com.b2b.b2b.shared.AuthUtil;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

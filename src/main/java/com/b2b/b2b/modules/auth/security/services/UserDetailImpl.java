@@ -24,10 +24,10 @@ public class UserDetailImpl implements UserDetails {
     private String email;
 
     @JsonIgnore //ignore the password during serialization into JSON format
-
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
     private Integer activeOrganizationId;
+    private User user;
 
     public UserDetailImpl(Integer id, String userName, String email, String password,
                           Collection<? extends GrantedAuthority> authorities, Integer activeOrganizationId) {

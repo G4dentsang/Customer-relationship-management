@@ -16,7 +16,7 @@ public class OrganizationInterceptor implements HandlerInterceptor
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication != null && authentication.getPrincipal() instanceof UserDetailImpl userDetail)
         {
-            OrganizationContext.setOrgId(userDetail.getOrganizationId());
+            OrganizationContext.setOrgId(userDetail.getActiveOrganizationId());
         }
         return true;
     }
