@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.Comparator;
 import java.util.List;
 
-@Component
+@Component("pipelineStageHelpers")
 @RequiredArgsConstructor
 class Helpers {
 

@@ -4,6 +4,7 @@ import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.crm.contact.entity.Contact;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
+import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -11,9 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 import org.hibernate.validator.constraints.URL;
 
 
@@ -25,15 +23,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@FilterDef(
-        name = "organizationFilter",
-        parameters = @ParamDef(name = "orgId", type = Integer.class)
-)
-@Filter(
-        name = "organizationFilter",
-        condition = "organization_id = :orgId"
-)
-public class Company {
+public class Company extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "company_id", nullable = false)

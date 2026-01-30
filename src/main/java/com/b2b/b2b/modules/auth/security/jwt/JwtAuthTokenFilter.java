@@ -18,6 +18,8 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+///* the class intercepts jwt access & refresh token  every request,
+/// sets the new authentication to securityContextHolder
 public class JwtAuthTokenFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final UserDetailServiceImpl userDetailsService;
@@ -26,6 +28,20 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
+
+            String path = request.getServletPath();
+            ///***** let endpoint pass jwt validation
+            if (path.equals("/app/v1/auth/register-organization") ||
+                    path.equals("/app/v1/auth/logIn") ||
+                    path.equals("/app/v1/auth/forget-password") ||
+                    path.equals("/app/v1/auth/verify-email") ||
+                    path.equals("/app/v1/auth/refresh-token") ||
+                    path.equals("/app/v1/auth/resend-verification"))
+            {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String jwt = parseJwt(request);
 
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {

@@ -7,6 +7,7 @@ public interface RefreshTokenService {
     RefreshToken findByToken(String refreshToken);
     RefreshToken createRefreshToken(Integer userId, Integer activeOrgId);
     void verifyExpiration(RefreshToken refreshToken);
+    void logoutAllSession(Integer userId);
     void updateActiveOrg(Integer userId, Integer activeOrgId);
 
 }

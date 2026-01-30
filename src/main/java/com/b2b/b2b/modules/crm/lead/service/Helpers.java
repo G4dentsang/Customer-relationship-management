@@ -23,7 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 
-@Component
+@Component("leadHelpers")
 @Slf4j
 @RequiredArgsConstructor
 //package-private

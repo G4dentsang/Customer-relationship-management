@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService
         createDefaultOrganizationPipelinesWithStages(organization);
         linkUserToOrganization(adminUser, organization);
 
-        //  emailService.sendVerificationEmail(user);
+        emailService.sendVerificationEmail(adminUser);
     }
 
     private void createDefaultOrganizationPipelinesWithStages(Organization organization) {

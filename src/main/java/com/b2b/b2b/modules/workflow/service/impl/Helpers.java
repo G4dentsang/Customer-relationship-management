@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@Component("workflowHelpers")
 @RequiredArgsConstructor
 @Slf4j
 class Helpers {

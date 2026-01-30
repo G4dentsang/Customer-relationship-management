@@ -32,22 +32,23 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/app/v1/auth/")
+@RequestMapping("/app/v1/auth")
 @Slf4j
 @RequiredArgsConstructor
 public class AuthController {
 
-     private final AuthService authService;
-     private final EmailService emailService;
-     private final AuthenticationManager authenticationManager;
-     private final JwtUtils jwtUtils;
-     private final PasswordResetService passwordResetService;
+    private final AuthService authService;
+    private final EmailService emailService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
+    private final PasswordResetService passwordResetService;
     private final UserRepository userRepository;
     private final LoginAttemptService loginAttemptService;
     private final RefreshTokenService refreshTokenService;
@@ -55,7 +56,7 @@ public class AuthController {
     private final AuthUtil authUtil;
     private final OrganizationRepository organizationRepository;
 
-    @PostMapping("logIn")
+    @PostMapping("/logIn")
     public ResponseEntity<?> logIn(@Valid @RequestBody LogInRequestDTO request) {
         String identifier = request.getIdentifier();
 
@@ -70,6 +71,9 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.LOCKED).body(new MessageResponse("Account is locked due to more than 5 many failed attempts. Try again later in 15min."));
             }
         }
+        if(!user.isEmailVerified()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Please verify your email address."));
+        }
 
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getIdentifier(), request.getPassword()));
@@ -77,6 +81,7 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             UserDetailImpl userDetails = (UserDetailImpl) authentication.getPrincipal();
+            System.out.print(userDetails.getId());
             //Access JWT token
             ResponseCookie jwtCookie = jwtUtils.generateJwtCookies(userDetails);
 
@@ -108,6 +113,7 @@ public class AuthController {
     }
 
     @PostMapping("/refreshToken")
+    @Transactional
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String refreshToken = jwtUtils.getJwtRefreshTokenFromCookies(request);
 
@@ -120,13 +126,20 @@ public class AuthController {
 
         UserDetailImpl userDetails = UserDetailImpl.build(tokenFromDB.getUser(), tokenFromDB.getCurrentActiveOrgId());
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookies(userDetails);
+        log.info("NEW Access Token: {}", jwtCookie.toString());
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+        RefreshToken newRToken = refreshTokenService.createRefreshToken(userDetails.getId(), userDetails.getActiveOrganizationId());
+        ResponseCookie jwtRefreshCookie = jwtUtils.generateRefreshJwtCookies(newRToken.getToken());
+        log.info("NEW Refresh Token: {}", jwtRefreshCookie.toString());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, jwtRefreshCookie.toString())
                 .body(new MessageResponse("Token refreshed for Org ID: " + tokenFromDB.getCurrentActiveOrgId()));
     }
 
 
-    @PostMapping("register-organization")
+    @PostMapping("/register-organization")
     public ResponseEntity<APIResponse> registerOrganization(@Valid @RequestBody SignUpRequestDTO request) {
        authService.registerOrganizationAndAdmin(request);
        return ResponseEntity
@@ -134,8 +147,8 @@ public class AuthController {
                .body(new APIResponse("Organization created successfully with you as admin. Please verify email before login.",true));
     }
 
-    @PostMapping("verify-email")
-    public ResponseEntity<APIResponse> verifyEmail(@RequestParam String token) {
+    @GetMapping("/verify-email")
+    public ResponseEntity<APIResponse> verifyEmail(@RequestParam("token") String token) {
          emailService.verifyToken(token);
          return ResponseEntity.ok(new APIResponse("Email verified successfully, you can now log in.", true));
     }
@@ -159,6 +172,7 @@ public class AuthController {
     }
 
     @PostMapping("/switch-org/{orgId}")
+    @Transactional
     public ResponseEntity<?> switchOrg(@PathVariable("orgId") Integer orgId) {
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
@@ -176,13 +190,32 @@ public class AuthController {
                 .body(new MessageResponse("Switched to organization: " + orgId));
     }
 
-    @PostMapping("signOut")
-    public ResponseEntity<?> signOut() {
-        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new MessageResponse("You are successfully logged out"));
+    @PostMapping("/logOut")
+    public ResponseEntity<?> logOut(HttpServletRequest request) {
+        Integer userId = authUtil.loggedInUserId();
+
+        if (userId == null) {
+            String refreshToken = jwtUtils.getJwtRefreshTokenFromCookies(request);
+
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Refresh token is missing"));
+            } else {
+                userId = refreshTokenService.findByToken(refreshToken).getUser().getUserId();
+            }
+        }
+
+        refreshTokenService.logoutAllSession(userId);
+
+        ResponseCookie jwtCookie = jwtUtils.getCleanJwtCookie();
+        ResponseCookie refreshCookie = jwtUtils.getCleanJwtRefreshCookie();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body(new MessageResponse("You are successfully logged out"));
     }
 
-    @GetMapping("user")
+    @GetMapping("/user")
     public ResponseEntity<?> currentUserDetailsLoggedIn(Authentication authentication) {
         UserDetailImpl userDetails = (UserDetailImpl) authentication.getPrincipal();
 

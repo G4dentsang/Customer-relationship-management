@@ -62,24 +62,28 @@ public class JwtUtils {
     // --- Refresh Token Methods ---
 
     public String getJwtRefreshTokenFromCookies(HttpServletRequest request) {
-        return getCookieValueByName(request, jwtCookie);
+        return getCookieValueByName(request, jwtRefreshCookie);
     }
 
     public ResponseCookie generateRefreshJwtCookies(String refreshToken) {
-        return generateCookie(jwtCookie, refreshToken, "/app/v1/auth/refreshToken" );
+        return generateCookie(jwtRefreshCookie, refreshToken, "/app/v1" );
     }
 
     // ---Cleaning Cookie ----
 
     public ResponseCookie getCleanJwtCookie() {
-        return ResponseCookie.from(jwtCookie,null)
+        return ResponseCookie.from(jwtCookie,"")
                 .path("/app/v1")
+                .maxAge(0)
+                .httpOnly(true)
                 .build();
     }
 
     public ResponseCookie getCleanJwtRefreshCookie() {
-        return ResponseCookie.from(jwtRefreshCookie,null)
-                .path("/app/v1/auth/refreshToken")
+        return ResponseCookie.from(jwtRefreshCookie,"")
+                .path("/app/v1")
+                .maxAge(0)
+                .httpOnly(true)
                 .build();
     }
 

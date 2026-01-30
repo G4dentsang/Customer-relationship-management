@@ -3,26 +3,27 @@ package com.b2b.b2b.modules.auth.service.impl;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.exception.TokenRefreshException;
 import com.b2b.b2b.modules.auth.entity.RefreshToken;
+import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.RefreshTokenRepository;
+import com.b2b.b2b.modules.auth.repository.UserRepository;
 import com.b2b.b2b.modules.auth.service.RefreshTokenService;
-import com.b2b.b2b.shared.AuthUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
-    private final AuthUtil authUtil;
+    private final UserRepository userRepository;
     @Value("${app.jwtRefreshExpirationMs}")
     private Long refreshTokenDurationMs;
-
-    public RefreshTokenServiceImpl(RefreshTokenRepository refreshTokenRepository, AuthUtil authUtil) {
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.authUtil = authUtil;
-    }
 
     @Override
     public RefreshToken findByToken(String token) {
@@ -31,10 +32,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
+    @Transactional
     public RefreshToken createRefreshToken(Integer userId, Integer activeOrgId) {
         RefreshToken refreshToken = new RefreshToken();
-
-        refreshToken.setUser(authUtil.loggedInUser());
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusSeconds(refreshTokenDurationMs));
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setCurrentActiveOrgId(activeOrgId);
@@ -48,6 +50,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             refreshTokenRepository.delete(token);
             throw new TokenRefreshException(token.getToken(), "Refresh token was expired. Please login again");
         }
+    }
+
+    @Override
+    @Transactional
+    public void logoutAllSession(Integer userId) {
+        refreshTokenRepository.deleteAllByUser_UserId(userId);
+        log.info("All sessions revoked for User ID: {}", userId);
     }
 
     @Override

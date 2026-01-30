@@ -55,7 +55,18 @@ public class WebSecurityConfig {
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/app/v1/auth/**").permitAll()
+                .requestMatchers(
+                        "/app/v1/auth/register-organization",
+                        "/app/v1/auth/logIn",
+                        "/app/v1/auth/forget-password",
+                        "/app/v1/auth/verify-email",
+                        "/app/v1/auth/resend-verification"
+                ).permitAll()
+                .requestMatchers(
+                        "/app/v1/auth/logOut",
+                        "/app/v1/auth/switch-org/{orgId}",
+                        "/app/v1/auth/user"
+                ).authenticated()
                 .anyRequest().authenticated()
         );
         http.authenticationProvider(daoAuthenticationProvider());

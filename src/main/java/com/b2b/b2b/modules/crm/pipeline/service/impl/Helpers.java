@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Component
+@Component("pipelineHelpers")
 @RequiredArgsConstructor
 class Helpers {
 

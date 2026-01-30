@@ -2,14 +2,12 @@ package com.b2b.b2b.modules.workflow.entity;
 
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
+import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,15 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@FilterDef(
-        name = "organizationFilter",
-        parameters = @ParamDef(name = "orgId", type = Integer.class)
-)
-@Filter(
-        name = "organizationFilter",
-        condition = "organization_id = :orgId"
-)
-public class WorkflowRule {
+public class WorkflowRule extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

@@ -56,7 +56,7 @@ public class WorkflowController {
         return ResponseEntity.ok(workflowRuleService.updateLogic(ruleId, request));
     }
 
-    @DeleteMapping("{/ruleId}")
+    @DeleteMapping("/{ruleId}")
     public ResponseEntity<Void> delete(@PathVariable Integer ruleId) {
         workflowRuleService.delete(ruleId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build() ;

@@ -51,7 +51,7 @@ public class ContactController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("{/contactId}/deals")
+    @GetMapping("/{contactId}/deals")
     public ResponseEntity<Page<DealResponseDTO>> getDeals(@PathVariable Integer contactId, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(dealService.getContactDeals(contactId, pageable));
     }

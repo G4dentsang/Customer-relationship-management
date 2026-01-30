@@ -1,29 +1,19 @@
 package com.b2b.b2b.modules.workflow.entity;
 
 import com.b2b.b2b.modules.workflow.enums.WorkflowActionType;
+import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@FilterDef(
-        name = "organizationFilter",
-        parameters = @ParamDef(name = "orgId", type = Integer.class)
-)
-@Filter(
-        name = "organizationFilter",
-        condition = "organization_id = :orgId"
-)
-public class WorkflowAction {
+public class WorkflowAction extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

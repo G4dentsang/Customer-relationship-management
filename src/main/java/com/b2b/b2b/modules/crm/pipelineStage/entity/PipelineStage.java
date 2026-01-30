@@ -3,16 +3,15 @@ package com.b2b.b2b.modules.crm.pipelineStage.entity;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,15 +21,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@FilterDef(
-        name = "organizationFilter",
-        parameters = @ParamDef(name = "orgId", type = Integer.class)
-)
-@Filter(
-        name = "organizationFilter",
-        condition = "organization_id = :orgId"
-)
-public class PipelineStage {
+public class PipelineStage extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pipline_stage_id",  nullable = false)
@@ -45,7 +36,7 @@ public class PipelineStage {
     @Column(name = "stage_desc",  length = 255)
     private String stageDescription;
 
-    @NotBlank(message = "Pipeline stage order is required")
+    @NotNull(message = "Pipeline stage order is required")
     @Column(name = "stage_order", nullable = false)
     private Integer stageOrder;
 

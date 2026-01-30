@@ -30,8 +30,8 @@ public class EmailServiceImpl implements EmailService
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${spring.mail.properties.domain_name}")
-    private String domainName;
+  // @Value("${spring.mail.properties.domain_name}")
+    private final String domainName = "tenzin.gadentsang2024@campus-eni.fr";
 
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final JavaMailSender emailSender;
@@ -42,14 +42,14 @@ public class EmailServiceImpl implements EmailService
     public void sendVerificationEmail(User user) {
         String token = UUID.randomUUID().toString();
         EmailVerificationToken emailVerificationToken = new EmailVerificationToken();
-        emailVerificationToken.setToken(passwordEncoder.encode(token));
+        emailVerificationToken.setToken(token);
         emailVerificationToken.setUser(user);
         emailVerificationToken.setUsed(false);
         emailVerificationToken.setExpiryDate(LocalDateTime.now().plusHours(24));
 
         emailVerificationTokenRepository.save(emailVerificationToken);
 
-        String verificationUrl = HelperMethods.getEmailVerificationToken(domainName, token);
+        String verificationUrl = HelperMethods.getEmailVerificationToken(token);
         try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -59,10 +59,11 @@ public class EmailServiceImpl implements EmailService
                     "<a href='" + verificationUrl + "'>Verify Account</a>";
 
             helper.setTo(user.getEmail());
-            helper.setSubject("Verification CRM account");
+            helper.setSubject("Verification your CRM account");
             helper.setText(htmlContent, true);
             helper.setFrom(domainName);
             emailSender.send(mimeMessage);
+            log.info("Verification Email Sent to: {}", user.getEmail());
         } catch (MessagingException me) {
             log.error("Error sending verification URL email to {} ", user.getEmail(), me);
         }
@@ -73,7 +74,7 @@ public class EmailServiceImpl implements EmailService
     @Override
     @Transactional
     public void verifyToken(String token) {
-        EmailVerificationToken emailVerificationToken = emailVerificationTokenRepository.findByToken(passwordEncoder.encode(token))
+        EmailVerificationToken emailVerificationToken = emailVerificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new ResourceNotFoundException("verification-token", "token", token));
 
         if (emailVerificationToken.isUsed()) {
@@ -113,7 +114,7 @@ public class EmailServiceImpl implements EmailService
 
     @Override
     public void sendResetPasswordEmail(String email, String token) {
-        String resetPasswordUrl = HelperMethods.getEmailResetPasswordToken(domainName, token);
+        String resetPasswordUrl = HelperMethods.getEmailResetPasswordToken(token);
         try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");

@@ -57,7 +57,7 @@ public class WorkflowActionServiceImpl implements WorkflowActionService
     @Override
     public List<WorkflowActionResponseDTO> addActions(Integer id, List<WorkflowActionDTO> request) {
         WorkflowRule workflowRule = workflowRuleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("workflow", "Id", id));
 
         List<WorkflowAction> workflowActions = request.stream()
                 .map(a -> {

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 
-@Component
+@Component("companyHelpers")
 @RequiredArgsConstructor
 class Helpers {
     private final ModelMapper modelMapper;

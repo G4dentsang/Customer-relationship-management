@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
-@Component
+@Component("dealHelpers")
 @RequiredArgsConstructor
 class Helpers {
     private final PipelineStageService pipelineStageService;

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +56,9 @@ public class User {
     private List<UserOrganization> userOrganizations = new ArrayList<>();
     @OneToMany(mappedBy = "assignedUser")
     private  List<Lead> leads = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<RefreshToken> refreshToken = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
