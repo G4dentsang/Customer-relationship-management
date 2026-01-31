@@ -1,24 +1,28 @@
 package com.b2b.b2b.modules.auth.service.impl;
 
+import com.b2b.b2b.exception.AccountLockedException;
 import com.b2b.b2b.exception.InvalidTokenException;
+import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.exception.TokenExpiredException;
 import com.b2b.b2b.modules.auth.entity.PasswordResetToken;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.UserRepository;
 import com.b2b.b2b.modules.auth.repository.PasswordResetTokenRepository;
 import com.b2b.b2b.modules.auth.service.EmailService;
+import com.b2b.b2b.modules.auth.service.LoginAttemptService;
 import com.b2b.b2b.modules.auth.service.PasswordResetService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PasswordResetServiceImpl implements PasswordResetService
 {
 
@@ -26,29 +30,37 @@ public class PasswordResetServiceImpl implements PasswordResetService
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
+    private final LoginAttemptService loginAttemptService;
 
     @Override
     @Transactional
     public void requestPasswordReset(String email) {
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if(optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            String token =  UUID.randomUUID().toString();
-            PasswordResetToken resetToken = new PasswordResetToken();
-            resetToken.setToken(passwordEncoder.encode(token));
-            resetToken.setUser(user);
-            resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
-            passwordResetTokenRepository.save(resetToken);
-            emailService.sendResetPasswordEmail(user.getEmail(), token);
-
+        User userDB = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+        if (!userDB.isAccountNonLocked()) {
+            if (loginAttemptService.isAccUnlockedWhenTimeExpired(userDB)) {
+                log.info("Account unlocked for user: {} ", userDB.getEmail());
+            } else {
+                throw new AccountLockedException("Account is locked. Try again in 15 min");
+            }
         }
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setUser(userDB);
+        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+        passwordResetTokenRepository.save(resetToken);
+        emailService.sendResetPasswordEmail(userDB.getEmail(), token);
     }
+
 
     @Override
     @Transactional
     public void resetPassword(String token, String newPassword) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(passwordEncoder.encode(token))
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
                 .orElseThrow(() -> new InvalidTokenException("Invalid password reset link."));
+
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new TokenExpiredException("Reset link expired. Please request a new one.");
         }

@@ -128,6 +128,7 @@ public class EmailServiceImpl implements EmailService
             helper.setText(htmlContent, true);
             helper.setFrom(domainName);
             emailSender.send(mimeMessage);
+            log.info("Reset-link Email Sent to: {}", email);
 
         } catch (MessagingException me) {
             log.error("Error sending reset password URL email to {} ", email, me);

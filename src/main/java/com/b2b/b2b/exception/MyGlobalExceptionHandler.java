@@ -83,6 +83,13 @@ public class MyGlobalExceptionHandler {
         return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<APIResponse> handleAccountLockedException(Exception ex) {
+        String message = ex.getMessage();
+        APIResponse apiResponse = new APIResponse(message, false);
+        return new ResponseEntity<>(apiResponse, HttpStatus.LOCKED);
+    }
+
     @ExceptionHandler(BadRequestException.class) //invalid logic request
     public ResponseEntity<APIResponse> handleBadResuestException(BadRequestException ex) {
         String message = ex.getMessage();

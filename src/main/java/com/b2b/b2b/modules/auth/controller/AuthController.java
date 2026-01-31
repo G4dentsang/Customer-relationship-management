@@ -68,7 +68,7 @@ public class AuthController {
             if (loginAttemptService.isAccUnlockedWhenTimeExpired(user)) {
                 log.info("Account unlocked for user: {} ", identifier);
             } else {
-                return ResponseEntity.status(HttpStatus.LOCKED).body(new MessageResponse("Account is locked due to more than 5 many failed attempts. Try again later in 15min."));
+                return ResponseEntity.status(HttpStatus.LOCKED).body(new MessageResponse("Account is locked due to more than 5 failed attempts. Try again later in 15min."));
             }
         }
         if(!user.isEmailVerified()){
@@ -148,7 +148,7 @@ public class AuthController {
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<APIResponse> verifyEmail(@RequestParam("token") String token) {
+    public ResponseEntity<APIResponse> verifyEmail(@RequestParam String token) {
          emailService.verifyToken(token);
          return ResponseEntity.ok(new APIResponse("Email verified successfully, you can now log in.", true));
     }
@@ -162,13 +162,13 @@ public class AuthController {
     @PostMapping("/forget-password")
     public ResponseEntity<APIResponse> forgetPassword(@RequestParam String email){
         passwordResetService.requestPasswordReset(email);
-        return ResponseEntity.accepted().body(new APIResponse("Password reset link has been send, if email is valid.", true));
+        return ResponseEntity.accepted().body(new APIResponse("If a matching account exists, a reset link has been sent.", true));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<APIResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request){
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
-        return ResponseEntity.ok(new APIResponse("Password has been successfully reset.", true));
+        return ResponseEntity.ok(new APIResponse("Password has been successfully reset. Please login", true));
     }
 
     @PostMapping("/switch-org/{orgId}")
