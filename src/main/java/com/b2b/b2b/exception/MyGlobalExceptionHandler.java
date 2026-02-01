@@ -27,6 +27,13 @@ public class MyGlobalExceptionHandler {
         return new ResponseEntity<>(errorsResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<APIResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        String errorMessage = ex.getMessage();
+        APIResponse apiResponse = new APIResponse(errorMessage, false);
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<APIResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
         String errorMessage = ex.getMessage();
@@ -49,28 +56,28 @@ public class MyGlobalExceptionHandler {
     }
 
     @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<APIResponse> handleRateLimitExceededException(APIException ex) {
+    public ResponseEntity<APIResponse> handleRateLimitExceededException(RateLimitExceededException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.REQUEST_TIMEOUT);
     }
 
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<APIResponse> handleInvalidTokenException(APIException ex) {
+    public ResponseEntity<APIResponse> handleInvalidTokenException(InvalidTokenException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<APIResponse> handleTokenExpiredException(APIException ex) {
+    public ResponseEntity<APIResponse> handleTokenExpiredException(TokenExpiredException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(TokenRefreshException.class)
-    public ResponseEntity<APIResponse> handleTokenRefreshException(APIException ex) {
+    public ResponseEntity<APIResponse> handleTokenRefreshException(TokenRefreshException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
@@ -84,7 +91,7 @@ public class MyGlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccountLockedException.class)
-    public ResponseEntity<APIResponse> handleAccountLockedException(Exception ex) {
+    public ResponseEntity<APIResponse> handleAccountLockedException(AccountLockedException ex) {
         String message = ex.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.LOCKED);

@@ -16,7 +16,7 @@ public class UserSpecifications {
             List<Predicate> predicates = new ArrayList<>();
             if (filter.getSearchText() != null && !filter.getSearchText().isEmpty()) {
                 String likePattern = "%" + filter.getSearchText().toLowerCase() + "%";
-                Predicate name = criteriaBuilder.like(root.get("username"), likePattern);
+                Predicate name = criteriaBuilder.like(root.get("userName"), likePattern);
                 Predicate email = criteriaBuilder.like(root.get("email"), likePattern);
                 predicates.add(criteriaBuilder.or(name, email));
             }

@@ -2,6 +2,7 @@ package com.b2b.b2b.modules.auth.service.impl;
 
 import com.b2b.b2b.exception.*;
 import com.b2b.b2b.modules.auth.entity.EmailVerificationToken;
+import com.b2b.b2b.modules.auth.entity.Invitation;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.EmailVerificationTokenRepository;
 import com.b2b.b2b.modules.auth.repository.UserRepository;
@@ -49,7 +50,7 @@ public class EmailServiceImpl implements EmailService
 
         emailVerificationTokenRepository.save(emailVerificationToken);
 
-        String verificationUrl = HelperMethods.getEmailVerificationToken(token);
+        String verificationUrl = HelperMethods.getEmailVerificationLink(token);
         try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -63,7 +64,6 @@ public class EmailServiceImpl implements EmailService
             helper.setText(htmlContent, true);
             helper.setFrom(domainName);
             emailSender.send(mimeMessage);
-            log.info("Verification Email Sent to: {}", user.getEmail());
         } catch (MessagingException me) {
             log.error("Error sending verification URL email to {} ", user.getEmail(), me);
         }
@@ -114,7 +114,7 @@ public class EmailServiceImpl implements EmailService
 
     @Override
     public void sendResetPasswordEmail(String email, String token) {
-        String resetPasswordUrl = HelperMethods.getEmailResetPasswordToken(token);
+        String resetPasswordUrl = HelperMethods.getEmailResetPasswordLink(token);
         try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -128,10 +128,34 @@ public class EmailServiceImpl implements EmailService
             helper.setText(htmlContent, true);
             helper.setFrom(domainName);
             emailSender.send(mimeMessage);
-            log.info("Reset-link Email Sent to: {}", email);
 
         } catch (MessagingException me) {
             log.error("Error sending reset password URL email to {} ", email, me);
         }
+    }
+
+    @Override
+    public void sendInvitationEmail(Invitation invitation) {
+        String verificationUrl = HelperMethods.getInvitationEmailLink(invitation.getToken());
+        try {
+            MimeMessage mimeMessage = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+
+            String htmlContent = String.format("<h3>Welcome to %s!</h3>" +
+                            "<p>You have been invited to join as a <b>%s</b>.</p>" +
+                            "<p>Please click the link below to set up your account:</p>" +
+                            "<a href='%s' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Accept Invitation</a>",
+                    invitation.getOrganization().getOrganizationName(), invitation.getRole().getAppRoles().name(), verificationUrl);
+
+            helper.setTo(invitation.getEmail());
+            helper.setSubject("CRM Accept Account Invitation");
+            helper.setText(htmlContent, true);
+            helper.setFrom(domainName);
+            emailSender.send(mimeMessage);
+
+        } catch (MessagingException me) {
+            log.error("Error sending verification URL email to {} ", invitation.getEmail(), me);
+        }
+
     }
 }

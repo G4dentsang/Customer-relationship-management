@@ -4,6 +4,9 @@ import com.b2b.b2b.config.AppConstants;
 import com.b2b.b2b.modules.auth.entity.AppRoles;
 import com.b2b.b2b.modules.auth.payloads.*;
 import com.b2b.b2b.modules.auth.service.UserManagementService;
+import com.b2b.b2b.shared.APIResponse;
+import com.b2b.b2b.shared.AppResponse;
+import com.b2b.b2b.shared.PaginatedResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/v1/management/users")
+@RequestMapping("/app/v1/management/users")
 @Slf4j
 @RequiredArgsConstructor
 public class UserManagementController {
@@ -35,8 +38,10 @@ public class UserManagementController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<MemberResponseDTO>> getAllUsers(UserFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "username", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(userManagementService.getMembersByOrganization(filter, pageable));
+    public ResponseEntity<AppResponse<PaginatedResponse<MemberResponseDTO>>> getAllUsers(UserFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "user.userName", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<MemberResponseDTO> userPage = userManagementService.getMembersByOrganization(filter, pageable);
+        PaginatedResponse<MemberResponseDTO> data = new PaginatedResponse<>(userPage);
+        return ResponseEntity.ok(new AppResponse<>(true, "Users retrieved successfully", data));
     }
 
     @GetMapping("/{userId}")
@@ -45,21 +50,21 @@ public class UserManagementController {
     }
 
     @PatchMapping("/{userId}/role")
-    public ResponseEntity<Void> updateRole(@PathVariable Integer userId, @RequestParam AppRoles role) {
+    public ResponseEntity<APIResponse> updateRole(@PathVariable Integer userId, @RequestParam AppRoles role) {
         userManagementService.updateRole(userId, role);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.ok(new APIResponse("Successfully updated role to : " + role, true));
     }
 
     @PostMapping("/{userId}/deactivate")
-    public ResponseEntity<Void> deactivateUser(@PathVariable Integer userId, @RequestBody DeactivateMemberRequestDTO request) {
+    public ResponseEntity<APIResponse> deactivateUser(@PathVariable Integer userId, @RequestBody DeactivateMemberRequestDTO request) {
         userManagementService.deactivateAndReassign(userId, request.getSuccessorId());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.ok(new APIResponse("User successfully deactivated" , true));
     }
 
-    @PostMapping("/transfer-owner")
-    public ResponseEntity<Void> transferAccOwner(@RequestParam Integer newOwnerId) {
+    @PostMapping("/transfer-org-owner")
+    public ResponseEntity<APIResponse> transferAccOwner(@RequestParam Integer newOwnerId) {
         userManagementService.transferOwnerShip(newOwnerId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.ok(new APIResponse("Account Ownership successfully transferred", true));
     }
 
 }

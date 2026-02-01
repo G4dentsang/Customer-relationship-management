@@ -6,17 +6,22 @@ import com.b2b.b2b.exception.UnauthorizedException;
 import com.b2b.b2b.modules.auth.entity.*;
 import com.b2b.b2b.modules.auth.payloads.*;
 import com.b2b.b2b.modules.auth.repository.*;
+import com.b2b.b2b.modules.auth.security.services.UserDetailImpl;
+import com.b2b.b2b.modules.auth.service.EmailService;
 import com.b2b.b2b.modules.auth.service.UserManagementService;
 import com.b2b.b2b.modules.auth.util.UserSpecifications;
 import com.b2b.b2b.modules.auth.util.UserUtils;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
+import com.b2b.b2b.shared.APIResponse;
+import com.b2b.b2b.shared.AuthUtil;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,24 +44,23 @@ public class UserManagementServiceImpl implements UserManagementService {
     private final InvitationRepository invitationRepository;
     private final LeadRepository leadRepository;
     private final DealRepository dealRepository;
+    private final EmailService emailService;
+    private final AuthUtil authUtil;
 
     @Override
     @Transactional
     public MessageResponse inviteMember(InviteMemberRequestDTO request) {
-        Integer adminOrgId = OrganizationContext.getOrgId();
-        String userEmail = request.getEmail();
-        if(userRepository.existsByEmail(userEmail)) throw new BadRequestException("User with this email already exists.");
-
-        Organization organization = organizationRepository.findById(adminOrgId).
-                orElseThrow(() -> new ResourceNotFoundException("Organization", "id", adminOrgId));
+        UserDetailImpl userDetail = (UserDetailImpl)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer orgId = userDetail.getOrganizationId();
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
         Role role = roleRepository.findByAppRoles(request.getRole())
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "id", adminOrgId));
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "id", orgId));
         String token = UUID.randomUUID().toString();
 
-        Invitation invitation = new Invitation(role, organization, token, userEmail);
+        Invitation invitation = new Invitation(role, organization, token, request.getEmail());
         invitationRepository.save(invitation);
-        //trigger email
-        //emailService.sendInvitationEmail(invitation.getEmail(), token);
+        emailService.sendInvitationEmail(invitation);
         log.info("email is send to invite user: {}", invitation.getEmail());
         return new MessageResponse("Invitation sent successfully to " + request.getEmail());
     }
@@ -68,14 +72,21 @@ public class UserManagementServiceImpl implements UserManagementService {
         if (invitation.isAccepted() || invitation.getExpiryDate().isBefore(LocalDateTime.now()))
             throw new BadRequestException("Invitation is invalid or expired.");
 
-        User newUser = new User(invitation.getEmail(), passwordEncoder.encode(request.getPassword()), request.getUsername());
+        User newUser = new User();
+        newUser.setUserName(request.getUsername());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setEmail(invitation.getEmail());
         newUser.setUserActive(true);
         newUser.setEmailVerified(true);
         User savedUser = userRepository.save(newUser);
 
-        boolean isFirstOrg = !userOrgRepository.existsByUser(savedUser);
+        boolean isFirstOrg = userOrgRepository.existsByUser(savedUser);
         UserOrganization userOrganization = new UserOrganization(savedUser, invitation.getOrganization(), invitation.getRole(), false);
-        userOrganization.setDefaultHome(isFirstOrg);
+
+        if(!isFirstOrg) {
+            userOrganization.setDefaultHome(false);
+        }
+        userOrganization.setDefaultHome(true);
         userOrgRepository.save(userOrganization);
 
         invitation.setAccepted(true);
@@ -95,27 +106,48 @@ public class UserManagementServiceImpl implements UserManagementService {
 
     @Override
     public MemberResponseDTO getMemberByUserId(Integer userId) {
-        UserOrganization member = userOrgRepository.findByUser_UserId(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        UserDetailImpl userDetail = (UserDetailImpl)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer orgId = userDetail.getOrganizationId();
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
+
+        UserOrganization member = userOrgRepository.findByUser_UserIdAndOrganization(userId, organization)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
         return userUtils.createMemberResponseDTO(member.getUser(), member.getRole());
     }
 
     @Override
     @Transactional
     public void updateRole(Integer userId, AppRoles newRole) {
-        UserOrganization user = userOrgRepository.findByUser_UserId(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+        UserDetailImpl userDetail = (UserDetailImpl)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer orgId = userDetail.getOrganizationId();
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
+
+        UserOrganization userOrg = userOrgRepository.findByUser_UserIdAndOrganization(userId, organization)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
         Role role = roleRepository.findByAppRoles(newRole).orElseThrow(() -> new ResourceNotFoundException("Role", "app Role", newRole.name()));
 
-        user.setRole(role);
-        userOrgRepository.save(user);
-
+        userOrg.setRole(role);
+        userOrgRepository.save(userOrg);
     }
 
     @Override
     @Transactional
     public void deactivateAndReassign(Integer userId, Integer successorId) {
-        UserOrganization userOrg = userOrgRepository.findByUser_UserId(userId)
+        UserDetailImpl userDetail = (UserDetailImpl)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer orgId = userDetail.getOrganizationId();
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
+
+        UserOrganization userOrg = userOrgRepository.findByUser_UserIdAndOrganization(userId, organization)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-        boolean successor = userOrgRepository.existsByUser_UserId(successorId);
+
+        boolean successor = userOrgRepository.existsByUser_UserIdAndOrganization(successorId, organization );
 
         if (userOrg.isAccountOwner())
             throw new BadRequestException("Cannot deactivate the Account Owner. Transfer ownership first.");
@@ -133,17 +165,31 @@ public class UserManagementServiceImpl implements UserManagementService {
     @Override
     @Transactional
     public void transferOwnerShip(Integer newAccOwnerId) {
-        Integer orgId = OrganizationContext.getOrgId();
-        UserOrganization currentAccOwner = userOrgRepository.findByIsAccountOwnerTrue().orElseThrow(() -> new ResourceNotFoundException("AccountOwner", "orgId", orgId));
+        UserDetailImpl userDetail = (UserDetailImpl)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer orgId = userDetail.getOrganizationId();
+        Integer currentUserId = userDetail.getId();
+
+        if(currentUserId.equals(newAccOwnerId)) {
+            throw new IllegalArgumentException("You are already the Account Owner.");
+        }
+
+        UserOrganization currentAccOwner = userOrgRepository.findByOrganization_OrganizationIdAndUser_UserId(orgId, currentUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("AccountOwner", "currentUSerId", currentUserId));
 
         if (!currentAccOwner.isAccountOwner())
             throw new UnauthorizedException("Only the current Account Owner can transfer ownership.");
 
-        UserOrganization newAccOwner = userOrgRepository.findByUser_UserId(newAccOwnerId).orElseThrow(() -> new ResourceNotFoundException("NewAccOwner", "userId", newAccOwnerId));
+        UserOrganization newAccOwner = userOrgRepository.findByOrganization_OrganizationIdAndUser_UserId(orgId, newAccOwnerId)
+                .orElseThrow(() -> new ResourceNotFoundException("NewAccOwner", "userId", newAccOwnerId));
 
         currentAccOwner.setAccountOwner(false);
         newAccOwner.setAccountOwner(true);
+        newAccOwner.setRole(currentAccOwner.getRole());
+
         userOrgRepository.saveAll(List.of(currentAccOwner, newAccOwner));
+
+        log.info("Ownership transferred from User {} to User {} for Org {}", currentUserId, newAccOwnerId, orgId);
 
     }
 

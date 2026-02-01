@@ -49,7 +49,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain FilterChain(HttpSecurity http) throws Exception {
         //CORS: later to add
-        http.csrf(AbstractHttpConfigurer::disable);
+        http.csrf(csrf -> csrf.disable());
 
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt));
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

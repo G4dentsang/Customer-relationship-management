@@ -1,5 +1,6 @@
 package com.b2b.b2b.modules.auth.entity;
 
+import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "user_organizations")
-public class UserOrganization  {
+public class UserOrganization extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userOrganizationId;

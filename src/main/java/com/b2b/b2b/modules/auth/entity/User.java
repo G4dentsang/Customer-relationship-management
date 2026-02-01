@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class User {
 
     private boolean userActive;
     private boolean emailVerified;
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
     private Integer failedLoginAttempts = 0;
     private boolean accountNonLocked = true;
@@ -60,7 +61,7 @@ public class User {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDate.now();
     }
 
     public User(String userName, String email, String password ) {

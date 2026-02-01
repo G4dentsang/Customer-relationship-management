@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.auth.payloads;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record MemberResponseDTO(
         Integer id,
@@ -8,6 +8,6 @@ public record MemberResponseDTO(
         String email,
         String role,
         boolean isActive,
-        LocalDateTime joinedAt
+        LocalDate joinedAt
 ) {
 }
