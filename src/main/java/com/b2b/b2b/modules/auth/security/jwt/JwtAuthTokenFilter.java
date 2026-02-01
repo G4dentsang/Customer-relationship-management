@@ -36,6 +36,7 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
                     path.equals("/app/v1/auth/forget-password") ||
                     path.equals("/app/v1/auth/verify-email") ||
                     path.equals("/app/v1/auth/refresh-token") ||
+                    path.equals("/app/v1/auth/reset-password") ||
                     path.equals("/app/v1/auth/resend-verification"))
             {
                 filterChain.doFilter(request, response);

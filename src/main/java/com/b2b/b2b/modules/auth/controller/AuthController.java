@@ -31,7 +31,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,12 +83,11 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             UserDetailImpl userDetails = (UserDetailImpl) authentication.getPrincipal();
-            System.out.print(userDetails.getId());
+
             //Access JWT token
             ResponseCookie jwtCookie = jwtUtils.generateJwtCookies(userDetails);
-
             //Refresh token
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId(), userDetails.getActiveOrganizationId());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId(), userDetails.getOrganizationId());
             ResponseCookie jwtRefreshCookie = jwtUtils.generateRefreshJwtCookies(refreshToken.getToken());
 
             List<String> roles = userDetails.getAuthorities().stream()
@@ -98,7 +99,7 @@ public class AuthController {
                     userDetails.getUsername(),
                     userDetails.getEmail(),
                     roles,
-                    userDetails.getActiveOrganizationId()
+                    userDetails.getOrganizationId()
             );
 
             return ResponseEntity.ok()
@@ -124,18 +125,18 @@ public class AuthController {
         RefreshToken tokenFromDB = refreshTokenService.findByToken(refreshToken);
         refreshTokenService.verifyExpiration(tokenFromDB);
 
-        UserDetailImpl userDetails = UserDetailImpl.build(tokenFromDB.getUser(), tokenFromDB.getCurrentActiveOrgId());
+        UserDetailImpl userDetails = UserDetailImpl.build(tokenFromDB.getUser(), tokenFromDB.getOrganizationId());
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookies(userDetails);
         log.info("NEW Access Token: {}", jwtCookie.toString());
 
-        RefreshToken newRToken = refreshTokenService.createRefreshToken(userDetails.getId(), userDetails.getActiveOrganizationId());
+        RefreshToken newRToken = refreshTokenService.createRefreshToken(userDetails.getId(), userDetails.getOrganizationId());
         ResponseCookie jwtRefreshCookie = jwtUtils.generateRefreshJwtCookies(newRToken.getToken());
         log.info("NEW Refresh Token: {}", jwtRefreshCookie.toString());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, jwtRefreshCookie.toString())
-                .body(new MessageResponse("Token refreshed for Org ID: " + tokenFromDB.getCurrentActiveOrgId()));
+                .body(new MessageResponse("Token refreshed for Org ID: " + tokenFromDB.getOrganizationId()));
     }
 
 
@@ -216,13 +217,16 @@ public class AuthController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<?> currentUserDetailsLoggedIn(Authentication authentication) {
-        UserDetailImpl userDetails = (UserDetailImpl) authentication.getPrincipal();
+    public ResponseEntity<?> currentUserDetailsLoggedIn(@AuthenticationPrincipal UserDetailImpl userDetails) {
 
+        if(userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("You are not logged in, User is not found"));
+        }
+        System.out.println(userDetails.getAuthorities());
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
-        SignInResponseDTO response = new SignInResponseDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles, userDetails.getActiveOrganizationId());
+        SignInResponseDTO response = new SignInResponseDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles, userDetails.getOrganizationId());
 
         return ResponseEntity.ok().body(response);
 

@@ -9,6 +9,6 @@ public class HelperMethods {
 
     public static String getEmailResetPasswordToken(String token) {
         //later add domain name in prod and replace http://localhost:8081
-        return String.format("http://localhost:8081/app/v1/auth/reset-password?token=%s", token);
+        return String.format("http://localhost:8080/app/v1/auth/reset-password?token=%s", token);
     }
 }

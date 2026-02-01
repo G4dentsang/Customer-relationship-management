@@ -60,7 +60,8 @@ public class WebSecurityConfig {
                         "/app/v1/auth/logIn",
                         "/app/v1/auth/forget-password",
                         "/app/v1/auth/verify-email",
-                        "/app/v1/auth/resend-verification"
+                        "/app/v1/auth/resend-verification",
+                        "/app/v1/auth/reset-password"
                 ).permitAll()
                 .requestMatchers(
                         "/app/v1/auth/logOut",

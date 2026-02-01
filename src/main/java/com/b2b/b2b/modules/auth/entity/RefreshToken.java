@@ -6,9 +6,10 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-@Entity(name = "refreshtoken")
+@Entity
 @Getter
 @Setter
+@Table(name = "refresh_token")
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +24,7 @@ public class RefreshToken {
     @Column(nullable = false)
     private Instant expiryDate;
 
-    @Column(name = "current_active_org_id")
-    private Integer currentActiveOrgId;
+    @Column
+    private Integer organizationId;
 
 }

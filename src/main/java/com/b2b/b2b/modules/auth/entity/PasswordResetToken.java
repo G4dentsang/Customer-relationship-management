@@ -9,13 +9,15 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Table(name = "password_reset_token")
 public class PasswordResetToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "password_r_token",unique = true, nullable = false)
     private Long id;
     private String token;
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
     private LocalDateTime expiryDate;
 

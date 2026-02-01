@@ -24,7 +24,6 @@ import java.util.List;
 public class Organization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="org_id")
     private Integer organizationId;
     private String organizationName;
     private LocalDate createdAt;

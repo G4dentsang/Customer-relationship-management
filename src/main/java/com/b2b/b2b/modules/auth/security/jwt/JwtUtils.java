@@ -44,15 +44,15 @@ public class JwtUtils {
 
 
     public ResponseCookie generateJwtCookies(UserDetailImpl userPrincipal) {
-        String jwt = generateTokenFromUsername(userPrincipal.getUsername(), userPrincipal.getActiveOrganizationId());
+        String jwt = generateTokenFromUsername(userPrincipal.getUsername(), userPrincipal.getOrganizationId());
         return generateCookie(jwtCookie, jwt, "/app/v1");
 
     }
 
-    public String generateTokenFromUsername(String username,  Integer activeOrganizationId) {
+    public String generateTokenFromUsername(String username,  Integer organizationId) {
         return Jwts.builder()
                 .subject(username)
-                .claim("activeOrgId", activeOrganizationId)
+                .claim("orgId", organizationId)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key())

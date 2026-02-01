@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Slf4j
 public class LoginAttemptsServiceImpl implements LoginAttemptService {
     private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final long LOCK_DURATION_MINUTES = 15;
+    private static final long LOCK_DURATION_MINUTES = 2;
     private final UserRepository userRepository;
 
 

@@ -17,15 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
-                @UniqueConstraint(columnNames = "email")
-        })
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
     private Integer userId;
 
     @NotBlank
@@ -60,6 +55,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<RefreshToken> refreshToken = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user")
+    private List<PasswordResetToken> passwordResetToken = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -70,9 +68,5 @@ public class User {
         this.password = password;
         this.userName = userName;
     }
-
-
-//    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-//    private List<Address> addresses = new ArrayList<>();
 
 }

@@ -26,23 +26,23 @@ public class UserDetailImpl implements UserDetails {
     @JsonIgnore //ignore the password during serialization into JSON format
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
-    private Integer activeOrganizationId;
+    private Integer organizationId;
     private User user;
 
     public UserDetailImpl(Integer id, String userName, String email, String password,
-                          Collection<? extends GrantedAuthority> authorities, Integer activeOrganizationId) {
+                          Collection<? extends GrantedAuthority> authorities, Integer organizationId) {
         this.id = id;
         this.userName = userName;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
-        this.activeOrganizationId = activeOrganizationId;
+        this.organizationId = organizationId;
     }
 
-    public static UserDetailImpl build(User user, Integer targetOrgId) {
+    public static UserDetailImpl build(User user, Integer orgId) {
         List<GrantedAuthority> authorities = user.getUserOrganizations()
                 .stream()
-                .filter(uo -> uo.getOrganization().getOrganizationId().equals(targetOrgId))
+                .filter(uo -> uo.getOrganization().getOrganizationId().equals(orgId))
                 .map(uo -> new SimpleGrantedAuthority(uo.getRole().getAppRoles().name()))
                 .collect(Collectors.toList());
 
@@ -52,7 +52,7 @@ public class UserDetailImpl implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 authorities,
-                targetOrgId);
+                orgId);
     }
 
     @Override

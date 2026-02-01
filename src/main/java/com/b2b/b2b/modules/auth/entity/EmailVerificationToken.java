@@ -9,12 +9,14 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Table(name = "email_verification_token")
 public class EmailVerificationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String token;
-    @OneToOne
+    @OneToOne()
+    @JoinColumn(name = "user_id")
     private User user;
     private LocalDateTime expiryDate;
     private boolean used;

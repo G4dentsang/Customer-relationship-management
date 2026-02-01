@@ -39,7 +39,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusSeconds(refreshTokenDurationMs));
         refreshToken.setToken(UUID.randomUUID().toString());
-        refreshToken.setCurrentActiveOrgId(activeOrgId);
+        refreshToken.setOrganizationId(activeOrgId);
 
         return refreshTokenRepository.save(refreshToken);
     }
@@ -64,7 +64,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshToken token = refreshTokenRepository.findByUser_UserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("RefreshToken", "userId", userId));
 
-        token.setCurrentActiveOrgId(activeOrgId);
+        token.setOrganizationId(activeOrgId);
         refreshTokenRepository.save(token);
     }
 }
