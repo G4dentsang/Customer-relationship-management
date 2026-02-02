@@ -5,6 +5,8 @@ import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.service.DealService;
 import com.b2b.b2b.modules.crm.lead.payloads.*;
 import com.b2b.b2b.modules.crm.lead.service.LeadService;
+import com.b2b.b2b.shared.AppResponse;
+import com.b2b.b2b.shared.PaginatedResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +34,10 @@ public class LeadController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<LeadResponseDTO>> listAll(LeadFilterDTO filter, @PageableDefault( size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(leadService.findAllByOrganization(filter,pageable));
+    public ResponseEntity<AppResponse<PaginatedResponse<LeadResponseDTO>>> listAll(LeadFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<LeadResponseDTO> leadPage = leadService.findAllByOrganization(filter, pageable);
+        PaginatedResponse<LeadResponseDTO> data = new PaginatedResponse<>(leadPage);
+        return ResponseEntity.ok(new AppResponse<>(true, "Leads retrieved successfully", data));
     }
 
     @PatchMapping("/{leadId}")
@@ -55,9 +59,11 @@ public class LeadController {
         return ResponseEntity.ok(leadService.update(leadId, mainDTO));
     }
 
-    @GetMapping("/my-leads") //userOwned
-    public ResponseEntity<Page<LeadResponseDTO>> listMine(LeadFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(leadService.findMyList(filter, pageable));
+    @GetMapping("/owner-leads")
+    public ResponseEntity<AppResponse<PaginatedResponse<LeadResponseDTO>>> listMine(LeadFilterDTO filter, @PageableDefault(size = AppConstants.DEFAULT_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<LeadResponseDTO> leadPage = leadService.findMyList(filter, pageable);
+        PaginatedResponse<LeadResponseDTO> data = new PaginatedResponse<>(leadPage);
+        return ResponseEntity.ok(new AppResponse<>(true, "leads retrieved successfully", data));
     }
 
     @GetMapping("/{leadId}")

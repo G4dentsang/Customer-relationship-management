@@ -9,23 +9,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice //intercepts any error thrown by any controller
 public class MyGlobalExceptionHandler {
-    @ExceptionHandler(MethodArgumentNotValidException.class) // invalid input field value
-    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-
-        Map<String, String> errorsResponse = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errorsResponse.put(fieldName, errorMessage);
-        });
-        return new ResponseEntity<>(errorsResponse, HttpStatus.BAD_REQUEST);
-    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<APIResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -145,6 +136,52 @@ public class MyGlobalExceptionHandler {
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        Map<String, Object> body = new HashMap<>();
+
+        if (ex.getRequiredType() != null && ex.getRequiredType().isEnum()) {
+            String name = ex.getName();
+            Object value = ex.getValue();
+
+            Object[] symbols = ex.getRequiredType().getEnumConstants();
+
+            body.put("success", false);
+            body.put("message", String.format("The value '%s' is not valid for %s. Allowed values are: %s",
+                    value, name, Arrays.toString(symbols)));
+            return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+
+        }
+
+        body.put("success", false);
+        body.put("message", "Invalid parameter type" + ex.getName());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = ((FieldError) error).getField();
+            errors.put(fieldName, errorMessage);
+        });
+
+        response.put("success", false);
+        response.put("error", "Validation failed due to invalid field value.");
+        response.put("details", errors);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+    }
+
+
 
 }
 

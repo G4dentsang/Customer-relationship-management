@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,10 @@ public class LeadSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("leadStatus"), filter.getLeadStatus()));
             }
 
+            if(filter.getPipelineId() != null){
+                predicates.add(criteriaBuilder.equal(root.get("pipeline").get("id"), filter.getPipelineId()));
+            }
+
             if(filter.getPipelineStageId() != null){
                 predicates.add(criteriaBuilder.equal(root.get("pipelineStage").get("id"), filter.getPipelineStageId()));
             }
@@ -41,7 +46,7 @@ public class LeadSpecifications {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), filter.getStartDate().atStartOfDay()));
             }
             if(filter.getEndDate() != null){
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), filter.getEndDate().atTime(23,59,59)));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), filter.getEndDate().atTime(LocalTime.MAX)));
             }
 
             if(filter.getOwnerId() != null){

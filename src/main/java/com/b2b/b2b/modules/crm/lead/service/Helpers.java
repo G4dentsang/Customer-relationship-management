@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Component("leadHelpers")
@@ -38,6 +39,7 @@ class Helpers {
 
     Lead convertToEntity(CreateLeadRequestDTO request, Organization organization, Company company) {
         Lead lead = modelMapper.map(request, Lead.class);
+        lead.setId(null); //mapper being too smart
         lead.setOrganization(organization);
         lead.setCompany(company);
         return lead;
@@ -54,16 +56,15 @@ class Helpers {
     }
 
     Company getOrCreateCompany(CreateLeadRequestDTO request, Organization org) {
-        if (request.getCompanyId() != null) {
-            return companyRepository.findById(request.getCompanyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Company", "id", request.getCompanyId()));
-        } else {
-            Company company = new Company();
-            company.setWebsite(request.getWebsite());
-            company.setIndustry(request.getIndustry());
-            company.setOrganization(org);
-            return companyRepository.save(company);
-        }
+        return companyRepository.findById(request.getCompanyId())
+                .orElseGet(() -> {
+                    Company company = new Company();
+                    company.setWebsite(request.getWebsite());
+                    company.setIndustry(request.getIndustry());
+                    company.setOrganization(org);
+                    company.setCompanyName("not given company name");
+                    return companyRepository.save(company);
+                });
     }
 
     void assignUser(UpdateLeadRequestDTO request, Lead lead, User oldOwner) {

@@ -17,9 +17,9 @@ public class OrganizationFilterAspect {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Before("execution(* com.b2b.b2b.modules.auth.service.UserManagementService.*(..)) || " +
-            "execution(* com.b2b.b2b.modules.crm..service..*.*(..)) || " +
+    @Before("execution(* com.b2b.b2b.modules.crm..service..*.*(..)) || " +
             "execution(* com.b2b.b2b.modules.workflow..service..*.*(..))")
+
     public void activateFilter(){
         Integer orgId = OrganizationContext.getOrgId();
         if(orgId != null){

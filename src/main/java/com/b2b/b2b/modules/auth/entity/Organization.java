@@ -43,4 +43,8 @@ public class Organization {
         this.organizationName = organizationName;
         this.createdAt = createdAt;
     }
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDate.now();
+    }
 }

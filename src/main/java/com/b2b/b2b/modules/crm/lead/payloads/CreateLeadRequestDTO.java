@@ -22,7 +22,6 @@ public class CreateLeadRequestDTO {
     @Pattern(regexp = "^\\+?[0-9.]{7,15}$", message = "Invalid phone number format")
     private String leadPhone;
 
-    @Size(max = 100)
     private Integer companyId;
 
     @URL(message = "Invalid website URL")

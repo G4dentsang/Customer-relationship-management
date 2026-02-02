@@ -5,6 +5,7 @@ import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
 import com.b2b.b2b.modules.crm.company.entity.Company;
+import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
@@ -41,12 +42,14 @@ public class LeadServiceImpl implements LeadService {
     private final AuthUtil authUtil;
     private final OrganizationRepository organizationRepository;
     private final Helpers helpers;
+    private final CompanyRepository companyRepository;
 
 
     @Override
     @Transactional
     public LeadResponseDTO create(CreateLeadRequestDTO request) {
         Integer orgId = OrganizationContext.getOrgId();
+
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
         Company company = helpers.getOrCreateCompany(request, org);
@@ -55,7 +58,9 @@ public class LeadServiceImpl implements LeadService {
         pipelineService.assignDefaultPipeline(lead, PipelineType.LEAD);
 
         Lead savedLead = leadRepository.save(lead);
+
         domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead));
+
         return leadUtils.createLeadResponseDTO(savedLead);
     }
 
@@ -103,7 +108,7 @@ public class LeadServiceImpl implements LeadService {
 
     @Override
     public Page<LeadResponseDTO> findMyList(LeadFilterDTO filter, Pageable pageable) {
-        if(filter.getOwnerId() == null) filter.setOwnerId(authUtil.loggedInUserId());
+        filter.setOwnerId(authUtil.loggedInUserId());
         Specification<Lead> spec = LeadSpecifications.createSearch(filter);
         return helpers.toDTOList(leadRepository.findAll(spec, pageable));
     }
