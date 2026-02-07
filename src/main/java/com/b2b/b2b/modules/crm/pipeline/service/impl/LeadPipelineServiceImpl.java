@@ -26,8 +26,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class LeadPipelineServiceImpl extends BasePipelineService<LeadPipeline> implements LeadPipelineService {
-
+public class LeadPipelineServiceImpl extends BasePipelineService<LeadPipeline, LeadPipelineStage> implements LeadPipelineService {
 
     private final LeadRepository leadRepository;
     private final LeadPipelineStageRepository leadPipelineStageRepository;
@@ -36,7 +35,8 @@ public class LeadPipelineServiceImpl extends BasePipelineService<LeadPipeline> i
                                    LeadPipelineStageService stageService,
                                    OrganizationRepository organizationRepository,
                                    PipelineUtil pipelineUtil,
-                                   LeadRepository leadRepository, LeadPipelineStageRepository leadPipelineStageRepository) {
+                                   LeadRepository leadRepository,
+                                   LeadPipelineStageRepository leadPipelineStageRepository) {
         super(leadPipelineRepository, stageService, organizationRepository, pipelineUtil);
         this.leadRepository = leadRepository;
         this.leadPipelineStageRepository = leadPipelineStageRepository;

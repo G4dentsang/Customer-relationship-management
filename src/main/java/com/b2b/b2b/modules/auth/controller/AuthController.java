@@ -1,9 +1,9 @@
 package com.b2b.b2b.modules.auth.controller;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.notification.service.EmailService;
 import com.b2b.b2b.modules.organization.model.Organization;
 import com.b2b.b2b.modules.auth.entity.RefreshToken;
+import com.b2b.b2b.modules.organization.service.OrgService;
 import com.b2b.b2b.modules.user.model.User;
 import com.b2b.b2b.modules.user.payload.ResetPasswordRequest;
 import com.b2b.b2b.modules.organization.persistence.OrganizationRepository;
@@ -47,7 +47,6 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     private final AuthService authService;
-    private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final PasswordResetService passwordResetService;
@@ -57,6 +56,7 @@ public class AuthController {
     private final UserOrganizationRepository userOrganizationRepository;
     private final AuthUtil authUtil;
     private final OrganizationRepository organizationRepository;
+    private final OrgService orgService;
 
     @PostMapping("/logIn")
     public ResponseEntity<?> logIn(@Valid @RequestBody LogInRequestDTO request) {
@@ -142,7 +142,7 @@ public class AuthController {
 
     @PostMapping("/register-organization")
     public ResponseEntity<APIResponse> registerOrganization(@Valid @RequestBody SignUpRequestDTO request) {
-       authService.registerOrganizationAndAdmin(request);
+       orgService.registerOrganizationAndAdmin(request);
        return ResponseEntity
                .status(HttpStatus.CREATED)
                .body(new APIResponse("Organization created successfully with you as admin. Please verify email before login.",true));
@@ -150,13 +150,13 @@ public class AuthController {
 
     @GetMapping("/verify-email")
     public ResponseEntity<APIResponse> verifyEmail(@RequestParam String token) {
-         emailService.verifyToken(token);
+         authService.verifyToken(token);
          return ResponseEntity.ok(new APIResponse("Email verified successfully, you can now log in.", true));
     }
 
     @PostMapping("/resend-verification")
     public ResponseEntity<APIResponse> resendVerification(@RequestParam String email){
-        emailService.resendVerificationEmail(email);
+        authService.resendVerificationEmail(email);
         return ResponseEntity.ok(new APIResponse("If the email is valid, a new link has been sent.", true));
     }
 

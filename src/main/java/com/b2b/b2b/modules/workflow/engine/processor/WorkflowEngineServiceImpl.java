@@ -1,11 +1,10 @@
-package com.b2b.b2b.modules.workflow.defination.service.impl;
+package com.b2b.b2b.modules.workflow.engine.processor;
 
 import com.b2b.b2b.modules.workflow.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.workflow.defination.model.WorkflowAction;
 import com.b2b.b2b.modules.workflow.defination.model.WorkflowRule;
 import com.b2b.b2b.modules.workflow.defination.service.WorkflowActionService;
 import com.b2b.b2b.modules.workflow.defination.service.WorkflowConditionService;
-import com.b2b.b2b.modules.workflow.engine.processor.WorkflowEngineService;
 import com.b2b.b2b.modules.workflow.defination.service.WorkflowTarget;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

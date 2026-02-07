@@ -5,7 +5,7 @@ import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.exception.UnauthorizedException;
 import com.b2b.b2b.modules.auth.payload.*;
 import com.b2b.b2b.modules.auth.security.services.UserDetailImpl;
-import com.b2b.b2b.modules.notification.service.EmailService;
+import com.b2b.b2b.modules.organization.service.OrgMailService;
 import com.b2b.b2b.modules.user.util.UserSpecifications;
 import com.b2b.b2b.modules.organization.util.UserUtils;
 import com.b2b.b2b.modules.crm.deal.persistence.DealRepository;
@@ -21,7 +21,6 @@ import com.b2b.b2b.modules.organization.persistence.UserOrganizationRepository;
 import com.b2b.b2b.modules.user.model.User;
 import com.b2b.b2b.modules.user.payload.UserFilterDTO;
 import com.b2b.b2b.modules.user.persistence.UserRepository;
-import com.b2b.b2b.shared.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -50,8 +49,7 @@ public class UserServiceImpl implements UserService {
     private final InvitationRepository invitationRepository;
     private final LeadRepository leadRepository;
     private final DealRepository dealRepository;
-    private final EmailService emailService;
-    private final AuthUtil authUtil;
+    private final OrgMailService  orgMailService;
 
     @Override
     @Transactional
@@ -66,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
         Invitation invitation = new Invitation(role, organization, token, request.getEmail());
         invitationRepository.save(invitation);
-        emailService.sendInvitationEmail(invitation);
+        orgMailService.sendInvitationEmail(invitation);
         log.info("email is send to invite user: {}", invitation.getEmail());
         return new MessageResponse("Invitation sent successfully to " + request.getEmail());
     }

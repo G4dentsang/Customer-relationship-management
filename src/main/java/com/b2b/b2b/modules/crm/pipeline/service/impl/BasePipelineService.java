@@ -1,6 +1,7 @@
 package com.b2b.b2b.modules.crm.pipeline.service.impl;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
+import com.b2b.b2b.modules.crm.pipelineStage.model.BasePipelineStage;
 import com.b2b.b2b.modules.organization.model.Organization;
 import com.b2b.b2b.modules.organization.persistence.OrganizationRepository;
 import com.b2b.b2b.modules.crm.pipeline.model.BasePipeline;
@@ -10,24 +11,27 @@ import com.b2b.b2b.modules.crm.pipeline.service.PipelineOperations;
 import com.b2b.b2b.modules.crm.pipeline.util.PipelineUtil;
 import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageOperations;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
-public abstract class BasePipelineService<P extends BasePipeline> implements PipelineOperations<P> {
+public abstract class BasePipelineService<P extends BasePipeline, S extends BasePipelineStage> implements PipelineOperations<P> {
     protected final BasePipelineRepository<P> pipelineRepository;
-    protected final PipelineStageOperations<P, ?> stageService;
+    protected final PipelineStageOperations<P, S> stageService;
     protected final OrganizationRepository organizationRepository;
     protected final PipelineUtil pipelineUtil;
+
+    protected BasePipelineService(BasePipelineRepository<P> pipelineRepository, PipelineStageOperations<P, S> stageService, OrganizationRepository organizationRepository, PipelineUtil pipelineUtil) {
+        this.pipelineRepository = pipelineRepository;
+        this.stageService = stageService;
+        this.organizationRepository = organizationRepository;
+        this.pipelineUtil = pipelineUtil;
+    }
 
     @Override
     @Transactional

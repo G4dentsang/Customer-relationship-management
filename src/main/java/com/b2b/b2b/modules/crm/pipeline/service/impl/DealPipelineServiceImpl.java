@@ -26,7 +26,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class DealPipelineServiceImpl extends BasePipelineService<DealPipeline> implements DealPipelineService {
+public class DealPipelineServiceImpl extends BasePipelineService<DealPipeline, DealPipelineStage> implements DealPipelineService {
     private final DealRepository dealRepository;
     private final DealPipelineStageRepository dealPipelineStageRepository;
 
@@ -34,12 +34,12 @@ public class DealPipelineServiceImpl extends BasePipelineService<DealPipeline> i
                                    DealPipelineStageService stageService,
                                    OrganizationRepository organizationRepository,
                                    PipelineUtil pipelineUtil,
-                                   DealRepository dealRepository, DealPipelineStageRepository dealPipelineStageRepository) {
+                                   DealRepository dealRepository,
+                                   DealPipelineStageRepository dealPipelineStageRepository) {
         super(dealPipelineRepository, stageService, organizationRepository, pipelineUtil);
         this.dealRepository = dealRepository;
         this.dealPipelineStageRepository = dealPipelineStageRepository;
     }
-
 
     @Override
     protected DealPipeline createPipelineEntity(CreatePipelineRequestDTO2 request, Organization org) {

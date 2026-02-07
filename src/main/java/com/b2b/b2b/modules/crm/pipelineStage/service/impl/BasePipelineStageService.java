@@ -10,26 +10,27 @@ import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageResponseDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.persistence.BasePipelineStageRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageOperations;
 import com.b2b.b2b.modules.crm.pipelineStage.util.StageUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
-public abstract class BasePipelineStageService<
-        P extends BasePipeline,
-        S extends BasePipelineStage>
-        implements PipelineStageOperations<P, S>
+public abstract class BasePipelineStageService<P extends BasePipeline, S extends BasePipelineStage> implements PipelineStageOperations<P, S>
 {
 
     protected final BasePipelineStageRepository<S, P> stageRepository;
     protected final BasePipelineRepository<P>  pipelineRepository;
     protected final StageUtils stageUtils;
+
+    protected BasePipelineStageService(BasePipelineStageRepository<S, P> stageRepository,
+                                       BasePipelineRepository<P> pipelineRepository,
+                                       StageUtils stageUtils) {
+        this.stageRepository = stageRepository;
+        this.pipelineRepository = pipelineRepository;
+        this.stageUtils = stageUtils;
+    }
 
     @Override
     @Transactional

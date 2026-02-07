@@ -26,11 +26,13 @@ public class LeadPipelineStageServiceImpl extends BasePipelineStageService<LeadP
     private final LeadRepository leadRepository;
     private final LeadPipelineStageRepository leadPipelineStageRepository;
 
-    public LeadPipelineStageServiceImpl(LeadPipelineStageRepository stageRepository,
+    public LeadPipelineStageServiceImpl(LeadPipelineStageRepository leadPipelineStageRepository,
                                         LeadPipelineRepository pipelineRepository,
                                         StageUtils stageUtils,
-                                        LeadRepository leadRepository, LeadPipelineStageRepository leadPipelineStageRepository) {
-        super(stageRepository, pipelineRepository, stageUtils);
+                                        LeadRepository leadRepository) {
+
+        super(leadPipelineStageRepository, pipelineRepository, stageUtils);
+
         this.leadRepository = leadRepository;
         this.leadPipelineStageRepository = leadPipelineStageRepository;
     }

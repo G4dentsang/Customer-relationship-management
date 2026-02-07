@@ -1,30 +1,23 @@
 package com.b2b.b2b.modules.auth.service.impl;
 
-import com.b2b.b2b.exception.ResourceAlreadyExistsException;
+import com.b2b.b2b.exception.BadRequestException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.auth.security.request.SignUpRequestDTO;
+import com.b2b.b2b.modules.auth.exception.InvalidTokenException;
+import com.b2b.b2b.modules.auth.exception.RateLimitExceededException;
+import com.b2b.b2b.modules.auth.exception.TokenExpiredException;
+import com.b2b.b2b.modules.auth.service.AuthMailService;
 import com.b2b.b2b.modules.auth.service.AuthService;
-import com.b2b.b2b.modules.notification.service.EmailService;
-import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
-import com.b2b.b2b.modules.crm.pipeline.model.LeadPipeline;
-import com.b2b.b2b.modules.crm.pipeline.service.DealPipelineService;
-import com.b2b.b2b.modules.crm.pipeline.service.LeadPipelineService;
-import com.b2b.b2b.modules.crm.pipelineStage.service.DealPipelineStageService;
-import com.b2b.b2b.modules.crm.pipelineStage.service.LeadPipelineStageService;
-import com.b2b.b2b.modules.organization.model.AppRoles;
-import com.b2b.b2b.modules.organization.model.Organization;
-import com.b2b.b2b.modules.organization.model.Role;
-import com.b2b.b2b.modules.organization.model.UserOrganization;
-import com.b2b.b2b.modules.organization.persistence.OrganizationRepository;
-import com.b2b.b2b.modules.organization.persistence.RoleRepository;
-import com.b2b.b2b.modules.organization.persistence.UserOrganizationRepository;
+import com.b2b.b2b.modules.notification.model.EmailVerificationToken;
+import com.b2b.b2b.modules.notification.persistence.EmailVerificationTokenRepository;
 import com.b2b.b2b.modules.user.model.User;
 import com.b2b.b2b.modules.user.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -32,55 +25,61 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService
 {
-     private final OrganizationRepository organizationRepository;
      private final UserRepository userRepository;
-     private final PasswordEncoder passwordEncoder;
-     private final RoleRepository roleRepository;
-     private final UserOrganizationRepository userOrganizationRepository;
-     private final EmailService emailService;
-     private final LeadPipelineService leadPipelineService;
-     private final DealPipelineService dealPipelineService;
-    private final DealPipelineStageService dealPipelineStageService;
-    private final LeadPipelineStageService leadPipelineStageService;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
+    private final AuthMailService authMailService;
 
     @Override
-    @Transactional
-    public void registerOrganizationAndAdmin(SignUpRequestDTO request) {
-        if (organizationRepository.existsByOrganizationName(request.getOrganizationName())) {
-            throw new ResourceAlreadyExistsException("Organization name", request.getOrganizationName());
+    public void verifyToken(String token) {
+        EmailVerificationToken emailVerificationToken = emailVerificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("verification-token", "token", token));
+
+        if (emailVerificationToken.isUsed()) {
+            throw new InvalidTokenException("This link has already been used. Please log in.");
+        }
+        if (emailVerificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new TokenExpiredException("Verification link expired. Please request a new one.");
         }
 
-        User adminUser = userRepository.findByEmail(request.getEmail())
-                .orElseGet(() -> userRepository.save(new User(request.getUserName(), request.getEmail(), passwordEncoder.encode(request.getPassword()))));
+        User user = emailVerificationToken.getUser();
+        if (!user.isEmailVerified()) {
+            user.setEmailVerified(true);
+            user.setUserActive(true);
+            userRepository.save(user);
+        }
 
-        Organization org = new Organization();
-        org.setOrganizationName(request.getOrganizationName());
-        organizationRepository.save(org);
-
-        LeadPipeline leadPipeline = leadPipelineService.createDefaultPipeline(org);
-        leadPipelineStageService.createDefaultStages(leadPipeline);
-
-        DealPipeline dealPipeline = dealPipelineService.createDefaultPipeline(org);
-        dealPipelineStageService.createDefaultStages(dealPipeline);
-
-        linkUserToOrganization(adminUser, org);
-
-        emailService.sendVerificationEmail(adminUser);
+        emailVerificationToken.setUsed(true);
+        emailVerificationTokenRepository.save(emailVerificationToken);
     }
 
+    @Override
+    public void createAndSendVerificationCode(User user) {
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken emailVerificationToken = new EmailVerificationToken();
+        emailVerificationToken.setToken(token);
+        emailVerificationToken.setUser(user);
+        emailVerificationToken.setUsed(false);
+        emailVerificationToken.setExpiryDate(LocalDateTime.now().plusHours(24));
 
-    private void linkUserToOrganization(User adminUser, Organization organization) {
-        Role adminRole = roleRepository.findByAppRoles(AppRoles.ROLE_ADMIN)
-                .orElseThrow(() -> new ResourceNotFoundException("Role", "admin", AppRoles.ROLE_ADMIN.ordinal()));
+        emailVerificationTokenRepository.save(emailVerificationToken);
 
-        //Check if the user ALREADY has a default home assigned
-        boolean hasDefaultHome = userOrganizationRepository.existsByUserAndIsDefaultHomeTrue(adminUser);
+        authMailService.sendVerificationEmail(user.getEmail(), token);
 
-        UserOrganization userOrganization = new UserOrganization(adminUser, organization, adminRole, true);
-        //If they don't have a default home yet, this new one becomes it
-        userOrganization.setDefaultHome(!hasDefaultHome);
+    }
 
-        userOrganizationRepository.save(userOrganization);
+    @Override
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+        if(user.isEmailVerified()) {
+            throw new BadRequestException("This account is already verified. Please log in.");
+        }
+
+        Optional<EmailVerificationToken> lastToken = emailVerificationTokenRepository.findFirstByUserOrderByCreatedAtDesc(user);
+        if(lastToken.isPresent() && lastToken.get().getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(5))) {
+            throw new RateLimitExceededException("Please wait 5 minutes before requesting another link.");
+        }
+        createAndSendVerificationCode(user);
     }
 
 }

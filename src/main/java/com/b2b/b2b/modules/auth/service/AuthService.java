@@ -1,7 +1,11 @@
 package com.b2b.b2b.modules.auth.service;
 
-import com.b2b.b2b.modules.auth.security.request.SignUpRequestDTO;
+import com.b2b.b2b.modules.user.model.User;
 
 public interface AuthService {
-    void registerOrganizationAndAdmin(SignUpRequestDTO signUpRequestDTO);
+    void verifyToken(String token);
+
+    void resendVerificationEmail(String email);
+
+    void createAndSendVerificationCode(User user);
 }

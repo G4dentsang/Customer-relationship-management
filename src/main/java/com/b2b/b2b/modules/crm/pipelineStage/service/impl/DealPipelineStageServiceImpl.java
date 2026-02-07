@@ -6,6 +6,7 @@ import com.b2b.b2b.modules.crm.deal.model.DealStatus;
 import com.b2b.b2b.modules.crm.deal.persistence.DealRepository;
 import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
 import com.b2b.b2b.modules.crm.pipeline.persistence.BasePipelineRepository;
+import com.b2b.b2b.modules.crm.pipeline.persistence.DealPipelineRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.model.DealPipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.persistence.BasePipelineStageRepository;
@@ -27,9 +28,11 @@ public class DealPipelineStageServiceImpl extends BasePipelineStageService<DealP
     private final DealRepository dealRepository;
     private final DealPipelineStageRepository dealPipelineStageRepository;
 
-    public DealPipelineStageServiceImpl(BasePipelineStageRepository<DealPipelineStage, DealPipeline> stageRepository,
-                                        BasePipelineRepository<DealPipeline> pipelineRepository, StageUtils stageUtils, DealRepository dealRepository, DealPipelineStageRepository dealPipelineStageRepository) {
-        super(stageRepository, pipelineRepository, stageUtils);
+    public DealPipelineStageServiceImpl(DealPipelineStageRepository dealPipelineStageRepository,
+                                        DealPipelineRepository pipelineRepository,
+                                        StageUtils stageUtils,
+                                        DealRepository dealRepository) {
+        super(dealPipelineStageRepository, pipelineRepository, stageUtils);
         this.dealRepository = dealRepository;
         this.dealPipelineStageRepository = dealPipelineStageRepository;
     }
