@@ -1,6 +1,6 @@
 package com.b2b.b2b.shared;
 
-import com.b2b.b2b.modules.auth.entity.Organization;
+import com.b2b.b2b.modules.organization.model.Organization;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

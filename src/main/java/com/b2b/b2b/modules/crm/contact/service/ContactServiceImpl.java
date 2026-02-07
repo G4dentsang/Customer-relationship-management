@@ -1,13 +1,13 @@
 package com.b2b.b2b.modules.crm.contact.service;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.crm.company.entity.Company;
-import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
-import com.b2b.b2b.modules.crm.contact.entity.Contact;
+import com.b2b.b2b.modules.crm.company.model.Company;
+import com.b2b.b2b.modules.crm.company.persistence.CompanyRepository;
+import com.b2b.b2b.modules.crm.contact.model.Contact;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactDTO;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactFilterDTO;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactResponseDTO;
-import com.b2b.b2b.modules.crm.contact.repository.ContactRepository;
+import com.b2b.b2b.modules.crm.contact.persistence.ContactRepository;
 import com.b2b.b2b.modules.crm.contact.util.ContactSpecifications;
 import com.b2b.b2b.modules.crm.contact.util.ContactUtils;
 import lombok.RequiredArgsConstructor;

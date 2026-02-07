@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.auth.service;
 
-import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.user.model.User;
 
 public interface LoginAttemptService {
     void loginFailed(User user);

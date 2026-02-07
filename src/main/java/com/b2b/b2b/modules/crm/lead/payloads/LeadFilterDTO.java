@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.lead.payloads;
 
-import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
+import com.b2b.b2b.modules.crm.lead.model.LeadStatus;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.deal.utils;
 
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
-import com.b2b.b2b.modules.crm.deal.entity.Deal;
+import com.b2b.b2b.modules.crm.deal.model.Deal;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import org.springframework.stereotype.Component;
 

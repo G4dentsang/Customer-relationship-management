@@ -1,8 +1,8 @@
 package com.b2b.b2b.modules.crm.pipeline.service;
 
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.crm.pipeline.entity.BasePipeline;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.BasePipelineStage;
+import com.b2b.b2b.modules.organization.model.Organization;
+import com.b2b.b2b.modules.crm.pipeline.model.BasePipeline;
+import com.b2b.b2b.modules.crm.pipelineStage.model.BasePipelineStage;
 
 public interface PipelineAssignable<P extends BasePipeline, S extends BasePipelineStage> {
     Integer getId();

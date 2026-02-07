@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.deal.payloads;
 
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
-import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
+import com.b2b.b2b.modules.crm.deal.model.DealStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

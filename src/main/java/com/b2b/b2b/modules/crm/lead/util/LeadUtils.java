@@ -1,10 +1,10 @@
 package com.b2b.b2b.modules.crm.lead.util;
 
-import com.b2b.b2b.modules.auth.payloads.MemberResponseDTO;
-import com.b2b.b2b.modules.auth.payloads.OrganizationDTO;
-import com.b2b.b2b.modules.auth.util.UserUtils;
+import com.b2b.b2b.modules.organization.payload.MemberResponseDTO;
+import com.b2b.b2b.modules.organization.payload.OrganizationDTO;
+import com.b2b.b2b.modules.organization.util.UserUtils;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
+import com.b2b.b2b.modules.crm.lead.model.Lead;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
 import org.springframework.stereotype.Component;

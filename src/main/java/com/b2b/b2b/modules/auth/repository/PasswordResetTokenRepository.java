@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.auth.repository;
 
-import com.b2b.b2b.modules.auth.entity.PasswordResetToken;
+import com.b2b.b2b.modules.user.model.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

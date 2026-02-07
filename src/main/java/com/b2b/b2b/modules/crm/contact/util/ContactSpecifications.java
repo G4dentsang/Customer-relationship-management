@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.contact.util;
 
-import com.b2b.b2b.modules.crm.contact.entity.Contact;
+import com.b2b.b2b.modules.crm.contact.model.Contact;
 import com.b2b.b2b.modules.crm.contact.payloads.ContactFilterDTO;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

@@ -1,6 +1,8 @@
 package com.b2b.b2b.exception;
 
-import com.b2b.b2b.shared.APIResponse;
+import com.b2b.b2b.modules.auth.exception.*;
+import com.b2b.b2b.modules.workflow.exception.WorkflowMaintenanceException;
+import com.b2b.b2b.shared.response.APIResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;

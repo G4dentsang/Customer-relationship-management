@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.pipeline.service;
 
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.crm.pipeline.entity.BasePipeline;
+import com.b2b.b2b.modules.organization.model.Organization;
+import com.b2b.b2b.modules.crm.pipeline.model.BasePipeline;
 import com.b2b.b2b.modules.crm.pipeline.payloads.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

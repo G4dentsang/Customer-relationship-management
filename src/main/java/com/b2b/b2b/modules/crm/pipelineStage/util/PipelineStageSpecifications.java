@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.pipelineStage.util;
 
-import com.b2b.b2b.modules.crm.pipelineStage.entity.BasePipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.model.BasePipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageFilterDTO;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

@@ -1,8 +1,8 @@
 package com.b2b.b2b.modules.crm.pipelineStage.util;
 
-import com.b2b.b2b.modules.crm.pipelineStage.entity.BasePipelineStage;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.DealPipelineStage;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.LeadPipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.model.BasePipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.model.DealPipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.model.LeadPipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageResponseDTO;
 import org.springframework.stereotype.Component;
 

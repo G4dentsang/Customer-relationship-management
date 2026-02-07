@@ -1,12 +1,12 @@
 package com.b2b.b2b.modules.crm.pipeline.util;
 
-import com.b2b.b2b.modules.auth.payloads.OrganizationDTO;
-import com.b2b.b2b.modules.crm.pipeline.entity.BasePipeline;
-import com.b2b.b2b.modules.crm.pipeline.entity.DealPipeline;
-import com.b2b.b2b.modules.crm.pipeline.entity.LeadPipeline;
-import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
+import com.b2b.b2b.modules.organization.payload.OrganizationDTO;
+import com.b2b.b2b.modules.crm.pipeline.model.BasePipeline;
+import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
+import com.b2b.b2b.modules.crm.pipeline.model.LeadPipeline;
+import com.b2b.b2b.modules.crm.pipeline.model.PipelineType;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineResponseDTO;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.BasePipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.model.BasePipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageResponseDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.util.StageUtils;
 import lombok.RequiredArgsConstructor;

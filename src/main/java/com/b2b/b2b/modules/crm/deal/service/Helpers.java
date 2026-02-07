@@ -1,15 +1,15 @@
 package com.b2b.b2b.modules.crm.deal.service;
 
 import com.b2b.b2b.exception.APIException;
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.crm.company.entity.Company;
-import com.b2b.b2b.modules.crm.deal.entity.Deal;
-import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
+import com.b2b.b2b.modules.organization.model.Organization;
+import com.b2b.b2b.modules.crm.company.model.Company;
+import com.b2b.b2b.modules.crm.deal.model.Deal;
+import com.b2b.b2b.modules.crm.deal.model.DealStatus;
 import com.b2b.b2b.modules.crm.deal.payloads.DealCreateRequestDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
+import com.b2b.b2b.modules.crm.lead.model.Lead;
+import com.b2b.b2b.shared.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;

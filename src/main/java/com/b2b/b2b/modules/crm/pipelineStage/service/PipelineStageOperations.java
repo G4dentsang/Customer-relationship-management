@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.pipelineStage.service;
 
-import com.b2b.b2b.modules.crm.pipeline.entity.BasePipeline;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.BasePipelineStage;
+import com.b2b.b2b.modules.crm.pipeline.model.BasePipeline;
+import com.b2b.b2b.modules.crm.pipelineStage.model.BasePipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageResponseDTO;
 

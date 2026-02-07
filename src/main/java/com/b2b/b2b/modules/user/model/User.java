@@ -1,0 +1,75 @@
+package com.b2b.b2b.modules.user.model;
+
+import com.b2b.b2b.modules.auth.entity.RefreshToken;
+import com.b2b.b2b.modules.crm.lead.model.Lead;
+import com.b2b.b2b.modules.organization.model.UserOrganization;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer userId;
+
+    @NotBlank
+    @Size(max = 20)
+    @Column(name = "username")
+    private String userName;
+
+    @NotBlank
+    @Size(max = 120)
+    @Column(name = "password")
+    private String password;
+
+    @NotBlank
+    @Size(max = 50)
+    @Email
+    @Column(name = "email")
+    private String email;
+
+    private boolean userActive;
+    private boolean emailVerified;
+    private LocalDate createdAt;
+
+    private Integer failedLoginAttempts = 0;
+    private boolean accountNonLocked = true;
+    private LocalDateTime lockTime;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserOrganization> userOrganizations = new ArrayList<>();
+    @OneToMany(mappedBy = "assignedUser")
+    private  List<Lead> leads = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<RefreshToken> refreshToken = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<PasswordResetToken> passwordResetToken = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDate.now();
+    }
+
+    public User(String userName, String email, String password ) {
+        this.email = email;
+        this.password = password;
+        this.userName = userName;
+    }
+
+}

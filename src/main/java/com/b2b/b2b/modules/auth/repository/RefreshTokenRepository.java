@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.auth.repository;
 
 import com.b2b.b2b.modules.auth.entity.RefreshToken;
-import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 

@@ -1,0 +1,75 @@
+package com.b2b.b2b.modules.workflow.defination.service.impl;
+
+import com.b2b.b2b.exception.ResourceNotFoundException;
+import com.b2b.b2b.modules.workflow.exception.WorkflowMaintenanceException;
+import com.b2b.b2b.modules.workflow.defination.model.WorkflowCondition;
+import com.b2b.b2b.modules.workflow.defination.model.WorkflowRule;
+import com.b2b.b2b.modules.workflow.defination.payloads.WorkflowConditionDTO;
+import com.b2b.b2b.modules.workflow.defination.payloads.WorkflowConditionResponseDTO;
+import com.b2b.b2b.modules.workflow.defination.persistence.WorkflowConditionRepository;
+import com.b2b.b2b.modules.workflow.defination.persistence.WorkflowRuleRepository;
+import com.b2b.b2b.modules.workflow.defination.service.WorkflowConditionService;
+import com.b2b.b2b.modules.workflow.defination.service.WorkflowTarget;
+import com.b2b.b2b.shared.util.AuthUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class WorkflowConditionServiceImpl implements WorkflowConditionService
+{
+    private final WorkflowRuleRepository workflowRuleRepository;
+    private final WorkflowConditionRepository workflowConditionRepository;
+    private final AuthUtil authUtil;
+    private final ModelMapper modelMapper;
+    private final Helpers helpers;
+
+    @Override
+    public boolean evaluateCondition(List<WorkflowCondition> conditions, WorkflowTarget target) {
+        return conditions.stream().allMatch(c -> {
+            String actual = helpers.getDBFieldValue(target, c.getField());
+            return c.getWorkflowConditionOperator().apply(actual, c.getExpectedValue());
+        });
+    }
+
+    @Override
+    @Transactional
+    public List<WorkflowConditionResponseDTO> addConditions(Integer id, List<WorkflowConditionDTO> request) {
+        WorkflowRule rule = workflowRuleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", id));
+
+        List<WorkflowCondition> newConditions = request.stream()
+                        .map(dto -> {
+                            WorkflowCondition condition = modelMapper.map(dto, WorkflowCondition.class);
+                            condition.setWorkflowRule(rule);
+                            return  condition;
+                        }).toList();
+
+        List<WorkflowCondition> savedConditions =   workflowConditionRepository.saveAll(newConditions);
+        return helpers.toDTOConditionList(savedConditions);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCondition(Integer ruleId, Long conditionId) {
+        WorkflowRule rule = workflowRuleRepository.findById(ruleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", ruleId));
+
+        if(rule.isActive()) throw new WorkflowMaintenanceException("Cannot remove logic from an ACTIVE rule. Please deactivate first.");
+
+        WorkflowCondition condition = workflowConditionRepository.findByIdAndWorkflowRule(conditionId, rule)
+                .orElseThrow(() -> new ResourceNotFoundException("Workflow", "id", conditionId));
+
+        rule.getWorkflowConditions().remove(condition);
+        workflowConditionRepository.delete(condition);
+        workflowRuleRepository.save(rule);
+
+        log.info("Condition {} removed from Rule {} by {}", conditionId, ruleId, authUtil.loggedInUser().getEmail());
+    }
+}

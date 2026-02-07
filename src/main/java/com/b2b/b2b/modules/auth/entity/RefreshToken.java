@@ -1,5 +1,6 @@
 package com.b2b.b2b.modules.auth.entity;
 
+import com.b2b.b2b.modules.user.model.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

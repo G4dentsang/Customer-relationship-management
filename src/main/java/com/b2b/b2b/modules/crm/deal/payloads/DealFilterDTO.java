@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.deal.payloads;
 
-import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
+import com.b2b.b2b.modules.crm.deal.model.DealStatus;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;

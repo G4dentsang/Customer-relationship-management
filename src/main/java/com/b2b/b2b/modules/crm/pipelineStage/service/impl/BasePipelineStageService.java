@@ -2,12 +2,12 @@ package com.b2b.b2b.modules.crm.pipelineStage.service.impl;
 
 import com.b2b.b2b.exception.BadRequestException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.crm.pipeline.entity.BasePipeline;
-import com.b2b.b2b.modules.crm.pipeline.repository.BasePipelineRepository;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.BasePipelineStage;
+import com.b2b.b2b.modules.crm.pipeline.model.BasePipeline;
+import com.b2b.b2b.modules.crm.pipeline.persistence.BasePipelineRepository;
+import com.b2b.b2b.modules.crm.pipelineStage.model.BasePipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageResponseDTO;
-import com.b2b.b2b.modules.crm.pipelineStage.repository.BasePipelineStageRepository;
+import com.b2b.b2b.modules.crm.pipelineStage.persistence.BasePipelineStageRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageOperations;
 import com.b2b.b2b.modules.crm.pipelineStage.util.StageUtils;
 import lombok.RequiredArgsConstructor;

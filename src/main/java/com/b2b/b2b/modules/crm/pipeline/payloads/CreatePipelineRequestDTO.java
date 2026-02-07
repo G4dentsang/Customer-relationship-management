@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.pipeline.payloads;
 
-import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
+import com.b2b.b2b.modules.crm.pipeline.model.PipelineType;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,11 +1,11 @@
 package com.b2b.b2b.modules.workflow.util;
 
-import com.b2b.b2b.modules.workflow.entity.WorkflowAction;
-import com.b2b.b2b.modules.workflow.entity.WorkflowCondition;
-import com.b2b.b2b.modules.workflow.payloads.WorkflowActionResponseDTO;
-import com.b2b.b2b.modules.workflow.payloads.WorkflowConditionResponseDTO;
-import com.b2b.b2b.modules.workflow.payloads.WorkflowRuleResponseDTO;
-import com.b2b.b2b.modules.workflow.entity.WorkflowRule;
+import com.b2b.b2b.modules.workflow.defination.model.WorkflowAction;
+import com.b2b.b2b.modules.workflow.defination.model.WorkflowCondition;
+import com.b2b.b2b.modules.workflow.defination.payloads.WorkflowActionResponseDTO;
+import com.b2b.b2b.modules.workflow.defination.payloads.WorkflowConditionResponseDTO;
+import com.b2b.b2b.modules.workflow.defination.payloads.WorkflowRuleResponseDTO;
+import com.b2b.b2b.modules.workflow.defination.model.WorkflowRule;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

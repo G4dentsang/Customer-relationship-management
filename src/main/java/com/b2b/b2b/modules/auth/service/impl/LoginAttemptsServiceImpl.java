@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.auth.service.impl;
 
-import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.auth.repository.UserRepository;
+import com.b2b.b2b.modules.user.model.User;
+import com.b2b.b2b.modules.user.persistence.UserRepository;
 import com.b2b.b2b.modules.auth.service.LoginAttemptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

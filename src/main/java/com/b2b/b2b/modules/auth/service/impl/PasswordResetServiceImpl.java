@@ -1,14 +1,14 @@
 package com.b2b.b2b.modules.auth.service.impl;
 
-import com.b2b.b2b.exception.AccountLockedException;
-import com.b2b.b2b.exception.InvalidTokenException;
+import com.b2b.b2b.modules.auth.exception.AccountLockedException;
+import com.b2b.b2b.modules.auth.exception.InvalidTokenException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.exception.TokenExpiredException;
-import com.b2b.b2b.modules.auth.entity.PasswordResetToken;
-import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.auth.repository.UserRepository;
+import com.b2b.b2b.modules.auth.exception.TokenExpiredException;
+import com.b2b.b2b.modules.user.model.PasswordResetToken;
+import com.b2b.b2b.modules.user.model.User;
+import com.b2b.b2b.modules.user.persistence.UserRepository;
 import com.b2b.b2b.modules.auth.repository.PasswordResetTokenRepository;
-import com.b2b.b2b.modules.auth.service.EmailService;
+import com.b2b.b2b.modules.notification.service.EmailService;
 import com.b2b.b2b.modules.auth.service.LoginAttemptService;
 import com.b2b.b2b.modules.auth.service.PasswordResetService;
 import lombok.RequiredArgsConstructor;

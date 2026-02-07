@@ -1,8 +1,8 @@
 package com.b2b.b2b.modules.auth.security.services;
 
-import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.auth.entity.UserOrganization;
-import com.b2b.b2b.modules.auth.repository.UserRepository;
+import com.b2b.b2b.modules.user.model.User;
+import com.b2b.b2b.modules.organization.model.UserOrganization;
+import com.b2b.b2b.modules.user.persistence.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -2,10 +2,10 @@ package com.b2b.b2b.modules.crm.lead.payloads;
 
 
 
-import com.b2b.b2b.modules.auth.payloads.MemberResponseDTO;
-import com.b2b.b2b.modules.auth.payloads.OrganizationDTO;
+import com.b2b.b2b.modules.organization.payload.MemberResponseDTO;
+import com.b2b.b2b.modules.organization.payload.OrganizationDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
-import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
+import com.b2b.b2b.modules.crm.lead.model.LeadStatus;
 
 import java.time.LocalDateTime;
 

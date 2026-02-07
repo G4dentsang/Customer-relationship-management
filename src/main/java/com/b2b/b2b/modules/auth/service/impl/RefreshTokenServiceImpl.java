@@ -1,11 +1,11 @@
 package com.b2b.b2b.modules.auth.service.impl;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.exception.TokenRefreshException;
+import com.b2b.b2b.modules.auth.exception.TokenRefreshException;
 import com.b2b.b2b.modules.auth.entity.RefreshToken;
-import com.b2b.b2b.modules.auth.entity.User;
+import com.b2b.b2b.modules.user.model.User;
 import com.b2b.b2b.modules.auth.repository.RefreshTokenRepository;
-import com.b2b.b2b.modules.auth.repository.UserRepository;
+import com.b2b.b2b.modules.user.persistence.UserRepository;
 import com.b2b.b2b.modules.auth.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

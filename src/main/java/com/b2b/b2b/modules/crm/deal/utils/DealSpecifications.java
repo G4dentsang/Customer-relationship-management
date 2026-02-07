@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.deal.utils;
 
-import com.b2b.b2b.modules.crm.deal.entity.Deal;
+import com.b2b.b2b.modules.crm.deal.model.Deal;
 import com.b2b.b2b.modules.crm.deal.payloads.DealFilterDTO;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

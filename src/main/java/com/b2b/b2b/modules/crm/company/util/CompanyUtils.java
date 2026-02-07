@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.company.util;
 
-import com.b2b.b2b.modules.crm.company.entity.Company;
+import com.b2b.b2b.modules.crm.company.model.Company;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import org.springframework.stereotype.Component;
 

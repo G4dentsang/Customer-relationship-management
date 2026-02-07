@@ -1,17 +1,15 @@
 package com.b2b.b2b.modules.crm.pipelineStage.service.impl;
 
 import com.b2b.b2b.exception.BadRequestException;
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.crm.deal.entity.Deal;
-import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
-import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
-import com.b2b.b2b.modules.crm.pipeline.entity.DealPipeline;
-import com.b2b.b2b.modules.crm.pipeline.repository.BasePipelineRepository;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.DealPipelineStage;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.LeadPipelineStage;
+import com.b2b.b2b.modules.crm.deal.model.Deal;
+import com.b2b.b2b.modules.crm.deal.model.DealStatus;
+import com.b2b.b2b.modules.crm.deal.persistence.DealRepository;
+import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
+import com.b2b.b2b.modules.crm.pipeline.persistence.BasePipelineRepository;
+import com.b2b.b2b.modules.crm.pipelineStage.model.DealPipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
-import com.b2b.b2b.modules.crm.pipelineStage.repository.BasePipelineStageRepository;
-import com.b2b.b2b.modules.crm.pipelineStage.repository.DealPipelineStageRepository;
+import com.b2b.b2b.modules.crm.pipelineStage.persistence.BasePipelineStageRepository;
+import com.b2b.b2b.modules.crm.pipelineStage.persistence.DealPipelineStageRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.service.DealPipelineStageService;
 import com.b2b.b2b.modules.crm.pipelineStage.util.StageUtils;
 import lombok.extern.slf4j.Slf4j;

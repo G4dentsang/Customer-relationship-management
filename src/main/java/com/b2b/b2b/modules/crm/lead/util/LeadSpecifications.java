@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.lead.util;
 
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
+import com.b2b.b2b.modules.crm.lead.model.Lead;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadFilterDTO;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

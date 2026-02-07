@@ -1,18 +1,18 @@
 package com.b2b.b2b.modules.crm.lead.service;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.auth.entity.User;
-import com.b2b.b2b.modules.auth.repository.UserRepository;
-import com.b2b.b2b.modules.crm.company.entity.Company;
-import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
+import com.b2b.b2b.modules.organization.model.Organization;
+import com.b2b.b2b.modules.user.model.User;
+import com.b2b.b2b.modules.user.persistence.UserRepository;
+import com.b2b.b2b.modules.crm.company.model.Company;
+import com.b2b.b2b.modules.crm.company.persistence.CompanyRepository;
+import com.b2b.b2b.modules.crm.lead.model.Lead;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.util.LeadUtils;
-import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
-import com.b2b.b2b.modules.workflow.events.LeadAssignedEvent;
+import com.b2b.b2b.shared.DomainEventPublisher;
+import com.b2b.b2b.modules.crm.lead.event.LeadAssignedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;

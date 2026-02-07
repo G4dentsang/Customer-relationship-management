@@ -1,11 +1,11 @@
 package com.b2b.b2b.modules.crm.pipeline.service.impl;
 
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
-import com.b2b.b2b.modules.crm.pipeline.entity.BasePipeline;
+import com.b2b.b2b.modules.organization.model.Organization;
+import com.b2b.b2b.modules.organization.persistence.OrganizationRepository;
+import com.b2b.b2b.modules.crm.pipeline.model.BasePipeline;
 import com.b2b.b2b.modules.crm.pipeline.payloads.*;
-import com.b2b.b2b.modules.crm.pipeline.repository.BasePipelineRepository;
+import com.b2b.b2b.modules.crm.pipeline.persistence.BasePipelineRepository;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineOperations;
 import com.b2b.b2b.modules.crm.pipeline.util.PipelineUtil;
 import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageOperations;

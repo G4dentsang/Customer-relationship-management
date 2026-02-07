@@ -2,13 +2,13 @@ package com.b2b.b2b.modules.crm.company.service;
 
 import com.b2b.b2b.exception.APIException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.auth.entity.Organization;
-import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
-import com.b2b.b2b.modules.crm.company.entity.Company;
+import com.b2b.b2b.modules.organization.model.Organization;
+import com.b2b.b2b.modules.organization.persistence.OrganizationRepository;
+import com.b2b.b2b.modules.crm.company.model.Company;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyFilterDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
-import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
+import com.b2b.b2b.modules.crm.company.persistence.CompanyRepository;
 import com.b2b.b2b.modules.crm.company.util.CompanySpecifications;
 import com.b2b.b2b.modules.crm.company.util.CompanyUtils;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
