@@ -13,9 +13,11 @@ import com.b2b.b2b.modules.crm.lead.payloads.*;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.lead.util.LeadSpecifications;
 import com.b2b.b2b.modules.crm.lead.util.LeadUtils;
+import com.b2b.b2b.modules.crm.pipeline.entity.LeadPipeline;
 import com.b2b.b2b.modules.crm.pipeline.service.LeadPipelineService;
 import com.b2b.b2b.modules.crm.pipelineStage.entity.LeadPipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.repository.LeadPipelineStageRepository;
+import com.b2b.b2b.modules.crm.pipelineStage.service.LeadPipelineStageService;
 import com.b2b.b2b.modules.workflow.events.*;
 import com.b2b.b2b.shared.AuthUtil;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
@@ -43,6 +45,7 @@ public class LeadServiceImpl implements LeadService {
     private final UserRepository userRepository;
     private final LeadPipelineStageRepository pipelineStageRepository;
     private final LeadPipelineService leadPipelineService;
+    private final LeadPipelineStageService leadPipelineStageService;
 
 
     @Override
@@ -64,7 +67,9 @@ public class LeadServiceImpl implements LeadService {
 
         lead.setAssignedUser(user);
         // ---- minimum one pipeline will be assigned to every new lead
-        leadPipelineService.assignDefaultPipeline(lead);
+        LeadPipeline defaultPipeline = leadPipelineService.assignDefaultPipeline(lead);
+        leadPipelineStageService.assignDefaultStage(defaultPipeline,lead);
+
         Lead savedLead = leadRepository.save(lead);
 
         domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead));

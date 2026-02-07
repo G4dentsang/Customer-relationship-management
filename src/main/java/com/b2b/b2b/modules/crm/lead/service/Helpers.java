@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-
+import org.springframework.web.servlet.View;
 
 
 @Component("leadHelpers")
@@ -31,6 +31,7 @@ class Helpers {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher domainEventPublisher;
+    private final View error;
 
 
     Lead convertToEntity(CreateLeadRequestDTO request, Organization organization, Company company) {
@@ -67,11 +68,13 @@ class Helpers {
         if (request.getNewOwnerId() != null) {
             User newOwner = userRepository.findById(request.getNewOwnerId())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getNewOwnerId()));
-            if (oldOwner == null || !oldOwner.equals(newOwner)) {
+            if (!oldOwner.equals(newOwner)) {
                 lead.setAssignedUser(newOwner);
                 log.info("Lead {} assigned to {}",
                         lead.getId(), newOwner.getUserName());
                 domainEventPublisher.publishEvent(new LeadAssignedEvent(lead, newOwner));
+            } else{
+                throw new IllegalStateException("You are already the assigned one : " + oldOwner.getUserName());
             }
         }
     }

@@ -36,4 +36,23 @@ public class LeadPipelineStage extends BasePipelineStage {
         this.pipeline = pipeline;
         this.mappedStatus = mappedStatus;
     }
+
+    private void syncOrganization() {
+        if (this.pipeline != null) {
+            this.setOrganization(this.pipeline.getOrganization());
+        }
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        syncOrganization();
+    }
+
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
+        syncOrganization();
+    }
+
 }

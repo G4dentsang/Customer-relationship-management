@@ -1,6 +1,5 @@
 package com.b2b.b2b.modules.crm.lead.entity;
 
-import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
@@ -27,10 +26,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Lead extends BaseEntity implements PipelineAssignable<LeadPipeline, LeadPipelineStage>, WorkflowTarget {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "lead_id", nullable = false)
-    private Integer id;
 
     @NotBlank(message = "Lead name is required")
     @Size(max = 100)
@@ -54,12 +49,6 @@ public class Lead extends BaseEntity implements PipelineAssignable<LeadPipeline,
 
     private String lossReason;
 
-    @Column(name = "created_at", nullable = false, updatable = false, length = 100)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "converted_at")
     private LocalDateTime convertedAt;
 
@@ -72,14 +61,8 @@ public class Lead extends BaseEntity implements PipelineAssignable<LeadPipeline,
     /*******************GDPR Fields*********************/
     @Column(name = "gdpr_consent_given", nullable = false)
     private boolean gdprConsentGiven = false; // automated email
-
     private LocalDateTime gdprDataProcessingConsent; // time terms agreement
     private LocalDateTime gdprErasedAt; // time deletion
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", nullable = false)
-    @NotNull(message = "Organization is required")
-    private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
@@ -104,12 +87,6 @@ public class Lead extends BaseEntity implements PipelineAssignable<LeadPipeline,
         this.leadEmail = leadEmail;
         this.leadName = leadName;
         this.leadPhone = leadPhone;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void markAsConverted(){

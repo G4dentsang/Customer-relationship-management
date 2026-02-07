@@ -1,6 +1,5 @@
 package com.b2b.b2b.modules.crm.deal.entity;
 
-import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
@@ -19,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "deal")
@@ -28,10 +26,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Deal extends BaseEntity implements PipelineAssignable<DealPipeline, DealPipelineStage>, WorkflowTarget {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "deal_id", nullable = false)
-    private Integer id;
 
     @NotBlank(message = "Deal name is required")
     @Size(max = 100)
@@ -45,15 +39,6 @@ public class Deal extends BaseEntity implements PipelineAssignable<DealPipeline,
     @Column(name = "deal_status", nullable = false, length = 50)
     private DealStatus dealStatus;
 
-    @Column(name = "created_at", nullable = false, updatable = false, length = 100)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "closed_at")
-    private LocalDateTime closedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lead_id", nullable = false)
     @NotNull(message = "Lead is required")
@@ -62,11 +47,6 @@ public class Deal extends BaseEntity implements PipelineAssignable<DealPipeline,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     private Company company;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", nullable = false)
-    @NotNull(message = "Organization is required")
-    private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "deal_pipeline_id")
@@ -79,12 +59,5 @@ public class Deal extends BaseEntity implements PipelineAssignable<DealPipeline,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user_id")
     private User assignedUser;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.closedAt = LocalDateTime.now();
-    }
 
 }

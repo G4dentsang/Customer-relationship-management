@@ -14,9 +14,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WorkflowCondition extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     private String field;
     private WorkflowConditionOperator workflowConditionOperator;
     private String expectedValue;

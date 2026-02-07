@@ -17,7 +17,9 @@ import com.b2b.b2b.modules.crm.deal.utils.DealSpecifications;
 import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
+import com.b2b.b2b.modules.crm.pipeline.entity.DealPipeline;
 import com.b2b.b2b.modules.crm.pipeline.service.DealPipelineService;
+import com.b2b.b2b.modules.crm.pipelineStage.service.DealPipelineStageService;
 import com.b2b.b2b.modules.workflow.events.DealCreatedEvent;
 import com.b2b.b2b.modules.workflow.events.DealDeletedEvent;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
@@ -46,6 +48,7 @@ public class DealServiceImpl implements DealService
     private final OrganizationRepository organizationRepository;
     private final Helpers helpers;
     private final DealPipelineService dealPipelineService;
+    private final DealPipelineStageService dealPipelineStageService;
 
     @Override
     @Transactional
@@ -137,7 +140,6 @@ public class DealServiceImpl implements DealService
     @Override
     @Transactional
     public DealResponseDTO convertFromLead(Integer id) {
-
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", id));
 
@@ -148,7 +150,9 @@ public class DealServiceImpl implements DealService
                 .orElseThrow(()-> new ResourceNotFoundException("Organization", "id", orgId));
 
         Deal deal = helpers.createDealFromLead(lead, org);
-        dealPipelineService.assignDefaultPipeline(deal);
+
+        DealPipeline defaultPipeline = dealPipelineService.assignDefaultPipeline(deal);
+        dealPipelineStageService.assignDefaultStage(defaultPipeline,  deal);
 
         Deal savedDeal = dealRepository.save(deal);
 

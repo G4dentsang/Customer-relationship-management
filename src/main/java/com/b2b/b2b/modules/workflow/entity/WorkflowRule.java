@@ -1,6 +1,5 @@
 package com.b2b.b2b.modules.workflow.entity;
 
-import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
@@ -9,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,31 +17,20 @@ import java.util.List;
 @Getter
 @Setter
 public class WorkflowRule extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
 
     @Enumerated(EnumType.STRING)
     private WorkflowTriggerType workflowTriggerType;
 
     private String name;
-    private String description;
-    private boolean isActive;
-    private LocalDateTime createdAt;
 
-    @ManyToOne
-    private Organization organization;
+    private String description;
+
+    private boolean isActive;
+
     @OneToMany(mappedBy = "workflowRule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowCondition> workflowConditions = new ArrayList<>();
+
     @OneToMany(mappedBy = "workflowRule",  cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowAction> workflowActions = new ArrayList<>();
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-
-
 
 }

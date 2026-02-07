@@ -79,9 +79,9 @@ public class LeadPipelineStageServiceImpl extends BasePipelineStageService<LeadP
     public void createDefaultStages(LeadPipeline pipeline) {
         List<LeadPipelineStage> stages = new ArrayList<>();
         stages.add(new LeadPipelineStage("New", 1, pipeline, LeadStatus.NEW));
-        stages.add(new LeadPipelineStage("Converted", 3, pipeline, LeadStatus.CONTACTED));
+        stages.add(new LeadPipelineStage("Contacted", 2, pipeline, LeadStatus.CONTACTED));
         stages.add(new LeadPipelineStage("Qualified", 2, pipeline, LeadStatus.QUALIFIED));
-        stages.add(new LeadPipelineStage("Lost", 2, pipeline, LeadStatus.LOST));
+        stages.add(new LeadPipelineStage("Lost", 3, pipeline, LeadStatus.LOST));
         stages.add(new LeadPipelineStage("Converted", 3, pipeline, LeadStatus.CONVERTED));
 
         stageRepository.saveAll(stages);

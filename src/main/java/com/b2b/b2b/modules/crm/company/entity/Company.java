@@ -24,11 +24,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Company extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "company_id", nullable = false)
-    private Integer id;
-
     @NotBlank(message = "Company name is required")
     @Size(max = 100)
     @Column(name = "company_name", nullable = false, length = 100)
@@ -54,14 +49,12 @@ public class Company extends BaseEntity {
     @Column(name = "is_Deleted")
     private Boolean isDeleted;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", nullable = false)
-    private Organization organization;
-
     @OneToMany(mappedBy = "company")
     private List<Deal> deals = new ArrayList<>();
+
     @OneToMany(mappedBy = "company")
     private List<Contact> contacts = new ArrayList<>();
+
     @OneToMany(mappedBy = "company")
     private List<Lead> leads = new ArrayList<>();
 
@@ -69,7 +62,7 @@ public class Company extends BaseEntity {
         this.companyName = companyName;
         this.website = website;
         this.industry = industry;
-        this.organization = organization;
+        this.setOrganization(organization);
     }
 
 }

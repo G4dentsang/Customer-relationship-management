@@ -13,24 +13,24 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "user_organizations")
-public class UserOrganization extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userOrganizationId;
+public class UserOrganization extends BaseEntity{
+
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "user_id")
     private User user;
-    @ManyToOne
-    private Organization organization;
+
     @ManyToOne
     private Role role;
-    private boolean isAccountOwner;//super admin of an organization, one that can remove sub admin
-    private boolean isDefaultHome; // for user with multiple organization account, there 1st is default home
+
+    //super admin of an organization, one that can remove sub admin
+    private boolean isAccountOwner;
+    // for user with multiple organization account, there 1st is default home
+    private boolean isDefaultHome;
+
     public UserOrganization(User user, Organization organization, Role role, boolean isAccountOwner) {
         this.user = user;
-        this.organization = organization;
+        this.setOrganization(organization);
         this.role = role;
         this.isAccountOwner = isAccountOwner;
     }
-
 }

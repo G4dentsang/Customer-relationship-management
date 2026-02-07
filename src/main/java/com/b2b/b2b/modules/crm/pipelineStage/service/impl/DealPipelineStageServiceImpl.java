@@ -73,8 +73,8 @@ public class DealPipelineStageServiceImpl extends BasePipelineStageService<DealP
     public void createDefaultStages(DealPipeline pipeline) {
         List<DealPipelineStage> stages = new ArrayList<>();
         stages.add(new DealPipelineStage("Discovery", 1, pipeline, DealStatus.OPEN));
-        stages.add(new DealPipelineStage("Negotiated", 3, pipeline, DealStatus.OPEN));
-        stages.add(new DealPipelineStage("Lost", 2, pipeline, DealStatus.CLOSED_LOST));
+        stages.add(new DealPipelineStage("Negotiated", 2, pipeline, DealStatus.OPEN));
+        stages.add(new DealPipelineStage("Lost", 3, pipeline, DealStatus.CLOSED_LOST));
         stages.add(new DealPipelineStage("Won", 3, pipeline, DealStatus.CLOSED_WON));
 
         dealPipelineStageRepository.saveAll(stages);

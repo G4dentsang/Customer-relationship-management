@@ -7,6 +7,7 @@ import com.b2b.b2b.modules.crm.deal.entity.Deal;
 import com.b2b.b2b.modules.crm.deal.entity.DealStatus;
 import com.b2b.b2b.modules.crm.deal.repository.DealRepository;
 import com.b2b.b2b.modules.crm.pipeline.entity.DealPipeline;
+import com.b2b.b2b.modules.crm.pipeline.entity.LeadPipeline;
 import com.b2b.b2b.modules.crm.pipeline.payloads.CreatePipelineRequestDTO2;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineFilterDTO;
 import com.b2b.b2b.modules.crm.pipeline.payloads.PipelineMigrationRequestDTO;
@@ -57,11 +58,12 @@ public class DealPipelineServiceImpl extends BasePipelineService<DealPipeline> i
     }
 
     @Override
-    public void assignDefaultPipeline(Deal deal) {
+    public DealPipeline assignDefaultPipeline(Deal deal) {
         DealPipeline defaultPipeline = pipelineRepository.findByIsDefaultTrue()
                 .orElseThrow(() -> new ResourceNotFoundException("Default Deal Pipeline", "dealID", deal.getId()));
 
         deal.setPipeline(defaultPipeline);
+        return defaultPipeline;
     }
 
     @Override

@@ -26,7 +26,9 @@ public class Organization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer organizationId;
+
     private String organizationName;
+
     private LocalDate createdAt;
 
     @OneToMany(mappedBy = "organization")
@@ -47,10 +49,10 @@ public class Organization {
     @OneToMany(mappedBy = "organization")
     private List<WorkflowRule> workflowRule = new ArrayList<>();
 
-    public Organization(String organizationName, LocalDate createdAt) {
+    public Organization(String organizationName) {
         this.organizationName = organizationName;
-        this.createdAt = createdAt;
     }
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDate.now();

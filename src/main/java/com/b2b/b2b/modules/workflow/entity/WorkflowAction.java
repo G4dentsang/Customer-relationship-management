@@ -14,13 +14,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WorkflowAction extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     @Enumerated(EnumType.STRING)
     private WorkflowActionType actionType;
+
     @Column(columnDefinition = "TEXT")
     private String actionConfigJson; //actual action
+
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowRule workflowRule;
 

@@ -58,11 +58,12 @@ public class LeadPipelineServiceImpl extends BasePipelineService<LeadPipeline> i
     }
 
     @Override
-    public void assignDefaultPipeline(Lead lead) {
+    public LeadPipeline assignDefaultPipeline(Lead lead) {
         LeadPipeline defaultPipeline = pipelineRepository.findByIsDefaultTrue()
                 .orElseThrow(() -> new ResourceNotFoundException("Default Lead Pipeline", "leadId", lead.getId()));
 
       lead.setPipeline(defaultPipeline);
+      return defaultPipeline;
     }
 
     @Override
