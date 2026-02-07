@@ -2,6 +2,7 @@ package com.b2b.b2b.modules.crm.lead.payloads;
 
 
 
+import com.b2b.b2b.modules.auth.payloads.MemberResponseDTO;
 import com.b2b.b2b.modules.auth.payloads.OrganizationDTO;
 import com.b2b.b2b.modules.crm.company.payloads.CompanyResponseDTO;
 import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
@@ -18,6 +19,8 @@ public record LeadResponseDTO(
         Integer stageOrder,
         Double progressPercentage,
         LocalDateTime createdAt,
+        LocalDateTime updatedAt,
+        MemberResponseDTO assignedUser,
         OrganizationDTO organization,
         CompanyResponseDTO company
 ) { }

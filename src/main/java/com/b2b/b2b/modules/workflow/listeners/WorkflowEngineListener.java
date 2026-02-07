@@ -30,74 +30,83 @@ public class WorkflowEngineListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnLeadCreatedEvent(LeadCreatedEvent event) {
-        log.info("Listening on LeadCreatedEvent for Lead ID: {}", event.getLead().getId());
-        processWorkflow(event.getLead(), event.getLead().getCompany().getOrganization(), WorkflowTriggerType.LEAD_CREATED);
+        log.info("Listening on LeadCreatedEvent for Lead ID: {}", event.lead().getId());
+        processWorkflow(event.lead(), event.lead().getOrganization(), WorkflowTriggerType.LEAD_CREATED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnLeadStatusUpdatedEvent(LeadStatusUpdatedEvent event) {
-        log.info("Listening on LeadStatusUpdatedEvent for Lead ID: {} ", event.getLead().getId());
-        Lead lead = event.getLead();
-        processWorkflow(lead, lead.getCompany().getOrganization(), WorkflowTriggerType.LEAD_STATUS_UPDATED);
+        log.info("Listening on LeadStatusUpdatedEvent for Lead ID: {} ", event.lead().getId());
+        Lead lead = event.lead();
+        processWorkflow(lead, lead.getOrganization(), WorkflowTriggerType.LEAD_STATUS_UPDATED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnLeadAssignedEvent(LeadAssignedEvent event) {
-        log.info("Listening on LeadAssignedEvent for Lead ID: {}", event.getLead().getId());
-        Lead lead = event.getLead();
-        processWorkflow(lead, lead.getCompany().getOrganization(), WorkflowTriggerType.LEAD_ASSIGNED);
+        log.info("Listening on LeadAssignedEvent for Lead ID: {}", event.lead().getId());
+        Lead lead = event.lead();
+        processWorkflow(lead, lead.getOrganization(), WorkflowTriggerType.LEAD_ASSIGNED);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOnLeadStatusChangedEvent(LeadAssignedEvent event) {
+        log.info("Listening on LeadStatusChangedEvent for Lead ID: {}", event.lead().getId());
+        Lead lead = event.lead();
+        processWorkflow(lead, lead.getOrganization(), WorkflowTriggerType.LEAD_ASSIGNED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnLeadDeletedEvent(LeadDeletedEvent event) {
-        log.info("Listening on LeadDeletedEvent for Lead ID: {}", event.getLead().getId());
-        processWorkflow(event.getLead(), event.getLead().getCompany().getOrganization(), WorkflowTriggerType.LEAD_DELETED);
+        log.info("Listening on LeadDeletedEvent for Lead ID: {}", event.lead().getId());
+        processWorkflow(event.lead(), event.lead().getOrganization(), WorkflowTriggerType.LEAD_DELETED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnDealCreatedEvent(DealCreatedEvent event) {
-        log.info("Listening on DealCreatedEvent for Deal ID: {}", event.getDeal().getId());
-        processWorkflow(event.getDeal(), event.getDeal().getCompany().getOrganization(), WorkflowTriggerType.DEAL_CREATED);
+        log.info("Listening on DealCreatedEvent for Deal ID: {}", event.deal().getId());
+        processWorkflow(event.deal(), event.deal().getOrganization(), WorkflowTriggerType.DEAL_CREATED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnDealStatusUpdatedEvent(DealStatusUpdatedEvent event){
-        log.info("Listening on DealStatusUpdatedEvent  for Deal ID: {}", event.getDeal().getId());
-        Deal deal = event.getDeal();
-        processWorkflow(deal, deal.getCompany().getOrganization(), WorkflowTriggerType.DEAL_STATUS_UPDATED);
+        log.info("Listening on DealStatusUpdatedEvent  for Deal ID: {}", event.deal().getId());
+        Deal deal = event.deal();
+        processWorkflow(deal, deal.getOrganization(), WorkflowTriggerType.DEAL_STATUS_UPDATED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOnDealDeletedEvent(DealDeletedEvent event) {
-        log.info("Listening on DealDeletedEvent for Deal ID: {}", event.getDeal().getId());
-        processWorkflow(event.getDeal(), event.getDeal().getCompany().getOrganization(), WorkflowTriggerType.DEAL_DELETED);
+        log.info("Listening on DealDeletedEvent for Deal ID: {}", event.deal().getId());
+        processWorkflow(event.deal(), event.deal().getOrganization(), WorkflowTriggerType.DEAL_DELETED);
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleOnPipelineStageChangeEvent(PipelineStageChangeEvent event) {
+    public void handleOnLeadStageChangeEvent(LeadPipelineStageChangeEvent event) {
+        log.info("Lead {} moved from {} to {}",
+                event.lead().getId(),
+                event.fromStage().getStageName(),
+                event.toStage().getStageName());
+        processWorkflow(event.lead(), event.lead().getOrganization(), WorkflowTriggerType.LEAD_STAGE_CHANGED);
 
-        if(event.getEntity() instanceof Lead lead){
-            log.info("Lead {} moved from {} to {}",
-                    lead.getLeadName(),
-                    event.getFromStage().getStageName(),
-                    event.getToStage().getStageName());
-            processWorkflow(lead, lead.getOrganization(),WorkflowTriggerType.LEAD_STAGE_CHANGED);
+    }
 
-        }
-        if(event.getEntity() instanceof Deal deal){
-            log.info("Deal {} moved from {} to {}",
-                    deal.getDealName(),
-                    event.getFromStage().getStageName(),
-                    event.getToStage().getStageName());
-            processWorkflow(deal, deal.getOrganization(),WorkflowTriggerType.DEAL_STAGE_CHANGED);
-        }
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOnDealStageChangeEvent(DealPipelineStageChangeEvent event) {
+        log.info("Deal {} moved from {} to {}",
+                event.deal().getId(),
+                event.fromStage().getStageName(),
+                event.toStage().getStageName());
+        processWorkflow(event.deal(), event.deal().getOrganization(), WorkflowTriggerType.LEAD_STAGE_CHANGED);
+
     }
 
     private void processWorkflow(WorkflowTarget target, Organization org, WorkflowTriggerType type) {
@@ -110,7 +119,7 @@ public class WorkflowEngineListener {
             workflowEngineService.run(target, rules);
         } catch (WorkflowMaintenanceException ex) {
             log.warn("Maintenance Alert: {}", ex.getMessage());
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             log.error("Workflow Engine failed: {}", ex.getMessage());
         }
     }

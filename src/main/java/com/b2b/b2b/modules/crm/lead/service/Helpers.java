@@ -7,21 +7,18 @@ import com.b2b.b2b.modules.auth.repository.UserRepository;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
 import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
 import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
 import com.b2b.b2b.modules.crm.lead.util.LeadUtils;
-import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import com.b2b.b2b.modules.workflow.events.LeadAssignedEvent;
-import com.b2b.b2b.modules.workflow.events.LeadStatusUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+
 
 
 @Component("leadHelpers")
@@ -34,7 +31,6 @@ class Helpers {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher domainEventPublisher;
-    private final PipelineStageService pipelineStageService;
 
 
     Lead convertToEntity(CreateLeadRequestDTO request, Organization organization, Company company) {
@@ -68,9 +64,9 @@ class Helpers {
     }
 
     void assignUser(UpdateLeadRequestDTO request, Lead lead, User oldOwner) {
-        if (request.getOwnerId() != null) {
-            User newOwner = userRepository.findById(request.getOwnerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getOwnerId()));
+        if (request.getNewOwnerId() != null) {
+            User newOwner = userRepository.findById(request.getNewOwnerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getNewOwnerId()));
             if (oldOwner == null || !oldOwner.equals(newOwner)) {
                 lead.setAssignedUser(newOwner);
                 log.info("Lead {} assigned to {}",
@@ -80,21 +76,5 @@ class Helpers {
         }
     }
 
-    void processStatusChange(LeadStatus newStatus, LeadStatus oldStatus, Lead lead) {
-        lead.setLeadStatus(newStatus);
-        log.info("Lead {} status changed from {} to {}",
-                lead.getId(), oldStatus, newStatus);
-        if (newStatus.getGroupId() == 3) {
-            if (newStatus == LeadStatus.CONVERTED) {
-                lead.setReadyForConversion(true);
-            }
-        } else {
-            if (newStatus.getGroupId() != oldStatus.getGroupId()) {
-                pipelineStageService.promoteToNextStage(lead);
-            }
-
-        }
-        domainEventPublisher.publishEvent(new LeadStatusUpdatedEvent(lead, oldStatus, newStatus));
-    }
 
 }

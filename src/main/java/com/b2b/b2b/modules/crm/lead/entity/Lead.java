@@ -4,9 +4,9 @@ import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.deal.entity.Deal;
-import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.modules.crm.pipeline.entity.LeadPipeline;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.entity.LeadPipelineStage;
 import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
@@ -21,11 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "lead")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Lead extends BaseEntity implements PipelineAssignable, WorkflowTarget {
+public class Lead extends BaseEntity implements PipelineAssignable<LeadPipeline, LeadPipelineStage>, WorkflowTarget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lead_id", nullable = false)
@@ -50,6 +51,8 @@ public class Lead extends BaseEntity implements PipelineAssignable, WorkflowTarg
     @Enumerated(EnumType.STRING)
     @Column(name = "lead_status", nullable = false, length = 50)
     private LeadStatus leadStatus = LeadStatus.NEW;
+
+    private String lossReason;
 
     @Column(name = "created_at", nullable = false, updatable = false, length = 100)
     private LocalDateTime createdAt;
@@ -83,12 +86,12 @@ public class Lead extends BaseEntity implements PipelineAssignable, WorkflowTarg
     private Company company;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_id")
-    private Pipeline pipeline;
+    @JoinColumn(name = "lead_pipeline_id")
+    private LeadPipeline pipeline;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_stage_id")
-    private PipelineStage pipelineStage;
+    @JoinColumn(name = "lead_stage_id")
+    private LeadPipelineStage pipelineStage;
 
     @OneToMany(mappedBy = "lead")
     private List<Deal> deals = new ArrayList<>();
@@ -106,7 +109,7 @@ public class Lead extends BaseEntity implements PipelineAssignable, WorkflowTarg
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void markAsConverted(){
@@ -115,6 +118,4 @@ public class Lead extends BaseEntity implements PipelineAssignable, WorkflowTarg
         this.isConverted = true;
         this.convertedAt = LocalDateTime.now();
     }
-
-
 }

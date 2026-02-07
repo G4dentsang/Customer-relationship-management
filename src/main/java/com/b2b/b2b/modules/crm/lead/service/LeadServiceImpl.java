@@ -1,22 +1,21 @@
 package com.b2b.b2b.modules.crm.lead.service;
 
+import com.b2b.b2b.exception.BadRequestException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
 import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.auth.repository.OrganizationRepository;
+import com.b2b.b2b.modules.auth.repository.UserRepository;
 import com.b2b.b2b.modules.crm.company.entity.Company;
-import com.b2b.b2b.modules.crm.company.repository.CompanyRepository;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.entity.LeadStatus;
-import com.b2b.b2b.modules.crm.lead.payloads.CreateLeadRequestDTO;
-import com.b2b.b2b.modules.crm.lead.payloads.LeadFilterDTO;
-import com.b2b.b2b.modules.crm.lead.payloads.LeadResponseDTO;
-import com.b2b.b2b.modules.crm.lead.payloads.UpdateLeadRequestDTO;
+import com.b2b.b2b.modules.crm.lead.payloads.*;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
 import com.b2b.b2b.modules.crm.lead.util.LeadSpecifications;
 import com.b2b.b2b.modules.crm.lead.util.LeadUtils;
-import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
-import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
+import com.b2b.b2b.modules.crm.pipeline.service.LeadPipelineService;
+import com.b2b.b2b.modules.crm.pipelineStage.entity.LeadPipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.repository.LeadPipelineStageRepository;
 import com.b2b.b2b.modules.workflow.events.*;
 import com.b2b.b2b.shared.AuthUtil;
 import com.b2b.b2b.shared.multitenancy.OrganizationContext;
@@ -37,12 +36,13 @@ public class LeadServiceImpl implements LeadService {
 
     private final LeadRepository leadRepository;
     private final DomainEventPublisher domainEventPublisher;
-    private final PipelineService pipelineService;
     private final LeadUtils leadUtils;
     private final AuthUtil authUtil;
     private final OrganizationRepository organizationRepository;
     private final Helpers helpers;
-    private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
+    private final LeadPipelineStageRepository pipelineStageRepository;
+    private final LeadPipelineService leadPipelineService;
 
 
     @Override
@@ -53,10 +53,18 @@ public class LeadServiceImpl implements LeadService {
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
         Company company = helpers.getOrCreateCompany(request, org);
+
         Lead lead = helpers.convertToEntity(request, org, company);
 
-        pipelineService.assignDefaultPipeline(lead, PipelineType.LEAD);
+        if(request.getAssignedUserId() == null) {
+            lead.setAssignedUser(null);
+        }
+        User user = userRepository.findById(request.getAssignedUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getAssignedUserId()));
 
+        lead.setAssignedUser(user);
+        // ---- minimum one pipeline will be assigned to every new lead
+        leadPipelineService.assignDefaultPipeline(lead);
         Lead savedLead = leadRepository.save(lead);
 
         domainEventPublisher.publishEvent(new LeadCreatedEvent(savedLead));
@@ -70,18 +78,26 @@ public class LeadServiceImpl implements LeadService {
         Lead lead = leadRepository.findById(leadId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", leadId));
 
-        LeadStatus oldStatus = lead.getLeadStatus();
         User oldOwner = lead.getAssignedUser();
 
         helpers.updateDtoToEntity(request, lead);
-
         helpers.assignUser(request, lead, oldOwner);
-        if(request.getLeadStatus() != null && !request.getLeadStatus().equals(oldStatus)) {
-            helpers.processStatusChange(request.getLeadStatus(), oldStatus, lead);
-        }
 
-        Lead savedLead = leadRepository.save(lead);
-        return leadUtils.createLeadResponseDTO(savedLead);
+        return leadUtils.createLeadResponseDTO(leadRepository.save(lead));
+    }
+
+    @Override
+    public LeadResponseDTO updateStatus(Integer leadId, LeadUpdateStatusRequestDTO request) {
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", leadId));
+
+        LeadStatus oldStatus = lead.getLeadStatus();
+        lead.setLeadStatus(LeadStatus.LOST);
+        lead.setLossReason(request.getLossReason());
+
+        domainEventPublisher.publishEvent(new LeadStatusUpdatedEvent(lead, oldStatus, LeadStatus.LOST));
+
+        return leadUtils.createLeadResponseDTO(leadRepository.save(lead));
     }
 
     @Override
@@ -114,10 +130,40 @@ public class LeadServiceImpl implements LeadService {
     }
 
     @Override
-    public LeadResponseDTO getById(Integer id) {
-        Lead lead = leadRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", id));
+    public LeadResponseDTO getById(Integer leadId) {
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", leadId));
         return leadUtils.createLeadResponseDTO(lead);
+    }
+
+    @Override
+    public LeadResponseDTO changeStage(Integer leadId, ChangeStageRequestDTO request) {
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", leadId));
+        LeadPipelineStage destinationStage = pipelineStageRepository.findById(request.getDestinationStageId())
+                .orElseThrow(() -> new ResourceNotFoundException("Stage", "id", request.getDestinationStageId()));
+        LeadPipelineStage oldStage = lead.getPipelineStage();
+
+        if (!lead.getPipeline().getId().equals(oldStage.getPipeline().getId())) {
+            throw new BadRequestException("Lead Pipeline Stage mismatch: Cannot move across pipelines");
+        }
+
+        lead.setPipelineStage(destinationStage);
+        //Avoiding memory loop -> DB Query is used
+        Integer maxOrder = pipelineStageRepository.findMaxOrder(lead.getPipeline().getId());
+
+        if (destinationStage.getStageOrder().equals(maxOrder)) {
+            lead.setLeadStatus(LeadStatus.READY_FOR_CONVERSION);
+            lead.setReadyForConversion(true);
+        } else {
+            lead.setLeadStatus(destinationStage.getMappedStatus());
+            lead.setReadyForConversion(false);
+        }
+
+        Lead savedLead = leadRepository.save(lead);
+        domainEventPublisher.publishEvent(new LeadPipelineStageChangeEvent(lead, oldStage, destinationStage));
+
+        return leadUtils.createLeadResponseDTO(savedLead);
     }
 
 }

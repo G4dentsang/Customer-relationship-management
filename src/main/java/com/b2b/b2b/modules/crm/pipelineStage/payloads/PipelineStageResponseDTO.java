@@ -4,6 +4,7 @@ public record PipelineStageResponseDTO(
         Integer id,
         String stageName,
         String stageDescription,
-        Integer stageOrder
+        Integer stageOrder,
+        String status
 ) {
 }

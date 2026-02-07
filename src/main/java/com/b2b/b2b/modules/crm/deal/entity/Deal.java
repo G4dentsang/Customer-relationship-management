@@ -4,9 +4,9 @@ import com.b2b.b2b.modules.auth.entity.Organization;
 import com.b2b.b2b.modules.auth.entity.User;
 import com.b2b.b2b.modules.crm.company.entity.Company;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.modules.crm.pipeline.entity.DealPipeline;
 import com.b2b.b2b.modules.crm.pipeline.service.PipelineAssignable;
-import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.entity.DealPipelineStage;
 import com.b2b.b2b.modules.workflow.service.WorkflowTarget;
 import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
@@ -22,11 +22,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "deal")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Deal extends BaseEntity implements PipelineAssignable, WorkflowTarget {
+public class Deal extends BaseEntity implements PipelineAssignable<DealPipeline, DealPipelineStage>, WorkflowTarget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "deal_id", nullable = false)
@@ -68,12 +69,12 @@ public class Deal extends BaseEntity implements PipelineAssignable, WorkflowTarg
     private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_id")
-    private Pipeline pipeline;
+    @JoinColumn(name = "deal_pipeline_id")
+    private DealPipeline pipeline;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_stage_id")
-    private PipelineStage pipelineStage;
+    @JoinColumn(name = "deal_stage_id")
+    private DealPipelineStage pipelineStage;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user_id")

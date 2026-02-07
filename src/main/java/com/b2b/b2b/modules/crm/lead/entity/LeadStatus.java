@@ -4,23 +4,40 @@ import lombok.Getter;
 
 @Getter
 public enum LeadStatus {
-    //ACTIVE group
-    NEW(1),
-    CONTACTED(1),
-    INTERESTED(1),
 
-    //PENDING group
-    WAITING_FOR_REPLY(2),
-    ON_HOLD(2),
+    NEW(StatusCategory.OPEN, "New"),
+    CONTACTED(StatusCategory.OPEN, "Contacted"),
+    QUALIFIED(StatusCategory.OPEN, "Qualified"),
 
-    //TERMINAL group
-    DISQUALIFIED(3),
-    CONVERTED(3),
-    SOFT_DELETED(3);
 
-    private final int groupId;
-    LeadStatus(int groupId)
-    {
-        this.groupId = groupId;
+    WAITING_FOR_REPLY(StatusCategory.PENDING, "Waiting for Reply"),
+    ON_HOLD(StatusCategory.PENDING, "On Hold"),
+    READY_FOR_CONVERSION(StatusCategory.PENDING, "Ready to Convert"),
+
+
+    CONVERTED(StatusCategory.CLOSED, "Converted"),
+    LOST(StatusCategory.CLOSED, "Lost"),
+    SOFT_DELETED(StatusCategory.CLOSED, "Deleted");  //to think if needed
+
+    private final StatusCategory category; ;
+    private final String label;
+
+    LeadStatus(StatusCategory category, String label) {
+        this.category = category;
+        this.label = label;
+    }
+
+    public boolean isOpen() {
+        return this.category == StatusCategory.OPEN;
+    }
+
+    public boolean isClosed() {
+        return this.category == StatusCategory.CLOSED;
+    }
+
+    public enum StatusCategory{
+        OPEN,
+        PENDING,
+        CLOSED
     }
 }

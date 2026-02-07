@@ -9,44 +9,41 @@ import com.b2b.b2b.modules.crm.deal.payloads.DealCreateRequestDTO;
 import com.b2b.b2b.modules.crm.deal.payloads.DealResponseDTO;
 import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.pipelineStage.service.PipelineStageService;
-import com.b2b.b2b.modules.workflow.events.DealStatusUpdatedEvent;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 
 @Component("dealHelpers")
 @RequiredArgsConstructor
 class Helpers {
-    private final PipelineStageService pipelineStageService;
     private final DomainEventPublisher domainEventPublisher;
     private final DealUtils dealUtils;
     private final ModelMapper modelMapper;
 
-
-    void processStatusChange(Deal deal, DealStatus newStatus, DealStatus oldStatus) {
-        deal.setDealStatus(newStatus);
-        if (newStatus.getGroupId() == 3) {
-            deal.setClosedAt(LocalDateTime.now());
-        } else {
-            if (newStatus.getGroupId() != oldStatus.getGroupId()) {
-                pipelineStageService.promoteToNextStage(deal);
-            }
-        }
-        domainEventPublisher.publishEvent(new DealStatusUpdatedEvent(deal, oldStatus, newStatus));
-    }
+//
+//    void processStatusChange(Deal deal, DealStatus newStatus, DealStatus oldStatus) {
+//        deal.setDealStatus(newStatus);
+//        if (newStatus.getGroupId() == 3) {
+//            deal.setClosedAt(LocalDateTime.now());
+//        } else {
+//            if (newStatus.getGroupId() != oldStatus.getGroupId()) {
+//                pipelineStageService.promoteToNextStage(deal);
+//            }
+//        }
+//        domainEventPublisher.publishEvent(new DealStatusUpdatedEvent(deal, oldStatus, newStatus));
+//    }
 
     Deal createDealFromLead(Lead lead, Organization org) {
         Deal deal = new Deal();
         deal.setDealName(lead.getLeadName());
-        deal.setDealStatus(DealStatus.ACTIVE);
+        deal.setDealStatus(DealStatus.OPEN);
         deal.setCompany(lead.getCompany());
         deal.setLead(lead);
         deal.setOrganization(org);
+        deal.setAssignedUser(lead.getAssignedUser());
         return deal;
     }
 

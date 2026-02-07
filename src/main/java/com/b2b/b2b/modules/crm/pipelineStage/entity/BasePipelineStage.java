@@ -1,30 +1,25 @@
 package com.b2b.b2b.modules.crm.pipelineStage.entity;
 
-import com.b2b.b2b.modules.crm.deal.entity.Deal;
-import com.b2b.b2b.modules.crm.lead.entity.Lead;
-import com.b2b.b2b.modules.crm.pipeline.entity.Pipeline;
+import com.b2b.b2b.modules.crm.pipeline.entity.BasePipeline;
 import com.b2b.b2b.shared.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Entity
+@MappedSuperclass
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class PipelineStage extends BaseEntity {
+public class BasePipelineStage extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pipline_stage_id",  nullable = false)
+    @Column(name = "id", nullable = false)
     private Integer id;
 
     @NotBlank(message = "Pipeline stage name is required")
@@ -46,14 +41,11 @@ public class PipelineStage extends BaseEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_id", nullable = false)
-    private Pipeline pipeline;
-
-    @OneToMany(mappedBy = "pipelineStage")
-    private List<Lead> leads;
-    @OneToMany(mappedBy = "pipelineStage")
-    private List<Deal> deals;
+    public BasePipelineStage(String stageName, String stageDescription, Integer stageOrder) {
+        this.stageName = stageName;
+        this.stageDescription = stageDescription;
+        this.stageOrder = stageOrder;
+    }
 
     @PrePersist
     public void prePersist()
@@ -62,11 +54,4 @@ public class PipelineStage extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public PipelineStage(String stageName, String stageDescription, Integer stageOrder, LocalDateTime createdAt, Pipeline pipeline) {
-        this.stageName = stageName;
-        this.stageDescription = stageDescription;
-        this.stageOrder = stageOrder;
-        this.createdAt = createdAt;
-        this.pipeline = pipeline;
-    }
 }

@@ -45,17 +45,15 @@ public class LeadController {
         return ResponseEntity.ok(leadService.update(leadId, request));
     }
 
-    @PatchMapping("/{leadId}/status")
-    public ResponseEntity<LeadResponseDTO> status(@PathVariable Integer leadId, @Valid @RequestBody LeadUpdateStatusRequestDTO request) {
-        UpdateLeadRequestDTO mainDTO =  new UpdateLeadRequestDTO();
-        mainDTO.setLeadStatus(request.getLeadStatus());
-        return ResponseEntity.ok(leadService.update(leadId, mainDTO));
+    @PatchMapping("/{leadId}/lost")
+    public ResponseEntity<LeadResponseDTO> markAsLost(@PathVariable Integer leadId, @Valid @RequestBody LeadUpdateStatusRequestDTO request) {
+        return ResponseEntity.ok(leadService.updateStatus(leadId, request));
     }
 
     @PatchMapping("/{leadId}/assign")
     public ResponseEntity<LeadResponseDTO> assign(@PathVariable Integer leadId, @Valid @RequestBody AssignUserRequestDTO request) {
         UpdateLeadRequestDTO mainDTO =  new UpdateLeadRequestDTO();
-        mainDTO.setOwnerId(request.getNewOwnerId());
+        mainDTO.setNewOwnerId(request.getNewOwnerId());
         return ResponseEntity.ok(leadService.update(leadId, mainDTO));
     }
 
@@ -82,5 +80,9 @@ public class LeadController {
         return ResponseEntity.ok(dealService.convertFromLead(leadId));
     }
 
+    @PutMapping("/{leadId}/stage")
+    public ResponseEntity<LeadResponseDTO> updateStage(@PathVariable Integer leadId, @Valid @RequestBody ChangeStageRequestDTO request) {
+        return ResponseEntity.ok(leadService.changeStage(leadId, request));
+    }
 
 }

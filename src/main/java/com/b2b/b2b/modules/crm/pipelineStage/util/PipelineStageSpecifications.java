@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.pipelineStage.util;
 
-import com.b2b.b2b.modules.crm.pipelineStage.entity.PipelineStage;
+import com.b2b.b2b.modules.crm.pipelineStage.entity.BasePipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageFilterDTO;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,7 +11,7 @@ import java.util.List;
 /***********************Will see later***********************/
 @Component
 public class PipelineStageSpecifications {
-    public static Specification<PipelineStage> createSearch(PipelineStageFilterDTO filter) {
+    public static <P extends BasePipelineStage> Specification<P> createSearch(PipelineStageFilterDTO filter) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

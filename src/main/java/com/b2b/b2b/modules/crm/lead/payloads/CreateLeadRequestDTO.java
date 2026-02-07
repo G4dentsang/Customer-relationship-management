@@ -29,4 +29,6 @@ public class CreateLeadRequestDTO {
 
     @Size(max = 50)
     private String industry;
+
+    private Integer assignedUserId;
 }

@@ -17,8 +17,7 @@ import com.b2b.b2b.modules.crm.deal.utils.DealSpecifications;
 import com.b2b.b2b.modules.crm.deal.utils.DealUtils;
 import com.b2b.b2b.modules.crm.lead.entity.Lead;
 import com.b2b.b2b.modules.crm.lead.repository.LeadRepository;
-import com.b2b.b2b.modules.crm.pipeline.entity.PipelineType;
-import com.b2b.b2b.modules.crm.pipeline.service.PipelineService;
+import com.b2b.b2b.modules.crm.pipeline.service.DealPipelineService;
 import com.b2b.b2b.modules.workflow.events.DealCreatedEvent;
 import com.b2b.b2b.modules.workflow.events.DealDeletedEvent;
 import com.b2b.b2b.modules.workflow.events.DomainEventPublisher;
@@ -43,10 +42,10 @@ public class DealServiceImpl implements DealService
     private final DealRepository dealRepository;
     private final DealUtils dealUtils;
     private final DomainEventPublisher domainEventPublisher;
-    private final PipelineService pipelineService;
     private final AuthUtil authUtil;
     private final OrganizationRepository organizationRepository;
     private final Helpers helpers;
+    private final DealPipelineService dealPipelineService;
 
     @Override
     @Transactional
@@ -66,7 +65,7 @@ public class DealServiceImpl implements DealService
         }
 
         Deal deal = helpers.convertToEntity(request, org, company, lead);
-        pipelineService.assignDefaultPipeline(deal, PipelineType.DEAL);
+        dealPipelineService.assignDefaultPipeline(deal);
 
         lead.setConverted(true);
         leadRepository.save(lead);
@@ -108,7 +107,7 @@ public class DealServiceImpl implements DealService
         if (request.getDealAmount() != null) deal.setDealAmount(request.getDealAmount());
 
         if (request.getDealStatus() != null && !request.getDealStatus().equals(oldStatus)) {
-            helpers.processStatusChange(deal, request.getDealStatus(), oldStatus);
+           // helpers.processStatusChange(deal, request.getDealStatus(), oldStatus);
         }
 
         return dealUtils.createDealResponseDTO(dealRepository.save(deal));
@@ -135,20 +134,22 @@ public class DealServiceImpl implements DealService
         return helpers.toDTOList(dealRepository.findAllByCompanyContactsId(id, pageable));
     }
 
-
     @Override
     @Transactional
     public DealResponseDTO convertFromLead(Integer id) {
-        Integer orgId = OrganizationContext.getOrgId();
-        Organization org = organizationRepository.findById(orgId)
-                .orElseThrow(()-> new ResourceNotFoundException("Organization", "id", orgId));
+
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead", "id", id));
 
         helpers.validateLeadForConversion(lead);
 
+        Integer orgId = OrganizationContext.getOrgId();
+        Organization org = organizationRepository.findById(orgId)
+                .orElseThrow(()-> new ResourceNotFoundException("Organization", "id", orgId));
+
         Deal deal = helpers.createDealFromLead(lead, org);
-        pipelineService.assignDefaultPipeline(deal, PipelineType.DEAL);
+        dealPipelineService.assignDefaultPipeline(deal);
+
         Deal savedDeal = dealRepository.save(deal);
 
         lead.markAsConverted();

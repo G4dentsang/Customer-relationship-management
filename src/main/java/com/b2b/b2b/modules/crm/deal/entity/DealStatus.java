@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum DealStatus {
     //active group...
+    OPEN(1),
     ACTIVE(1),
     NEEDS_ANALYSIS(1),
 
