@@ -15,5 +15,4 @@ public interface UserOrganizationRepository extends JpaRepository<UserOrganizati
     boolean existsByUserAndIsDefaultHomeTrue(User user);
     Optional<UserOrganization> findByOrganization_OrganizationIdAndUser_UserId(Integer organizationId, Integer userId);
     Optional<UserOrganization> findByUser_UserIdAndOrganization(Integer userId, Organization organization);
-    Optional<UserOrganization> findByUserAndOrganization(User user, Organization organization);
 }
