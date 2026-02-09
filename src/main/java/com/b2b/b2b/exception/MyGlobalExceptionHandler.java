@@ -34,6 +34,13 @@ public class MyGlobalExceptionHandler {
         return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<APIResponse> handleEmailNotVerifiedExceptionException(EmailNotVerifiedException ex) {
+        String errorMessage = ex.getMessage();
+        APIResponse apiResponse = new APIResponse(errorMessage, false);
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<APIResponse> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
         String errorMessage = ex.getMessage();

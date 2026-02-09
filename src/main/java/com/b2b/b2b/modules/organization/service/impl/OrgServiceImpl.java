@@ -2,7 +2,7 @@ package com.b2b.b2b.modules.organization.service.impl;
 
 import com.b2b.b2b.exception.ResourceAlreadyExistsException;
 import com.b2b.b2b.exception.ResourceNotFoundException;
-import com.b2b.b2b.modules.auth.security.request.SignUpRequestDTO;
+import com.b2b.b2b.modules.organization.payload.RegisterOrganizationRequestDTO;
 import com.b2b.b2b.modules.auth.service.AuthService;
 import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
 import com.b2b.b2b.modules.crm.pipeline.model.LeadPipeline;
@@ -42,7 +42,7 @@ public class OrgServiceImpl implements OrgService
 
     @Override
     @Transactional
-    public void registerOrganizationAndAdmin(SignUpRequestDTO request) {
+    public void registerOrganizationAndAdmin(RegisterOrganizationRequestDTO request) {
         if (organizationRepository.existsByOrganizationName(request.getOrganizationName())) {
             throw new ResourceAlreadyExistsException("Organization name", request.getOrganizationName());
         }
@@ -78,4 +78,5 @@ public class OrgServiceImpl implements OrgService
 
         userOrganizationRepository.save(userOrganization);
     }
+
 }

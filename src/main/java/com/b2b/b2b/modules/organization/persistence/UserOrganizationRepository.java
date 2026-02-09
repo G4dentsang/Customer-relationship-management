@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface UserOrganizationRepository extends JpaRepository<UserOrganization, Integer>, JpaSpecificationExecutor<UserOrganization> {
     boolean existsByUser(User user);
+    boolean existsByUserAndOrganization(User user, Organization organization);
     boolean existsByUser_UserIdAndOrganization(Integer userId,  Organization organization);
     boolean existsByUserAndIsDefaultHomeTrue(User user);
     Optional<UserOrganization> findByOrganization_OrganizationIdAndUser_UserId(Integer organizationId, Integer userId);

@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignInResponseDTO {
+public class LogInResponseDTO {
     private Integer id;
     private String userName;
     private String email;

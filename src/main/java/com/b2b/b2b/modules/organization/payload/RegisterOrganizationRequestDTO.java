@@ -1,4 +1,4 @@
-package com.b2b.b2b.modules.auth.security.request;
+package com.b2b.b2b.modules.organization.payload;
 
 
 import jakarta.validation.constraints.Email;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class SignUpRequestDTO {
+public class RegisterOrganizationRequestDTO {
     @NotBlank(message = "User name is required")
     @Size(max = 100, message = "User name is too long, keep it under 100 characters")
     private String userName;

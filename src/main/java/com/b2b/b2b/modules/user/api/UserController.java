@@ -1,6 +1,8 @@
 package com.b2b.b2b.modules.user.api;
 
 import com.b2b.b2b.config.AppConstants;
+import com.b2b.b2b.modules.auth.security.response.LogInResponseDTO;
+import com.b2b.b2b.modules.auth.security.services.UserDetailImpl;
 import com.b2b.b2b.modules.organization.model.AppRoles;
 import com.b2b.b2b.modules.auth.payload.*;
 import com.b2b.b2b.modules.organization.payload.AcceptInviteRequestDTO;
@@ -21,7 +23,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -70,6 +77,22 @@ public class UserController {
     public ResponseEntity<APIResponse> transferAccOwner(@RequestParam Integer newOwnerId) {
         userManagementService.transferOwnerShip(newOwnerId);
         return ResponseEntity.ok(new APIResponse("Account Ownership successfully transferred", true));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> currentUserDetailsLoggedIn(@AuthenticationPrincipal UserDetailImpl userDetails) {
+
+        if(userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new com.b2b.b2b.shared.response.MessageResponse("You are not logged in, User is not found"));
+        }
+        System.out.println(userDetails.getAuthorities());
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
+        LogInResponseDTO response = new LogInResponseDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles, userDetails.getOrganizationId());
+
+        return ResponseEntity.ok().body(response);
+
     }
 
 }
