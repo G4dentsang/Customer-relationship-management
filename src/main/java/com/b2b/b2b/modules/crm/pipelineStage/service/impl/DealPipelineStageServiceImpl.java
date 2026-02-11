@@ -1,15 +1,13 @@
 package com.b2b.b2b.modules.crm.pipelineStage.service.impl;
 
 import com.b2b.b2b.exception.BadRequestException;
-import com.b2b.b2b.modules.crm.deal.model.Deal;
-import com.b2b.b2b.modules.crm.deal.model.DealStatus;
-import com.b2b.b2b.modules.crm.deal.persistence.DealRepository;
+import com.b2b.b2b.modules.crm.deal.internal.infrastructure.persistence.Deal;
+import com.b2b.b2b.modules.crm.deal.internal.infrastructure.persistence.DealStatus;
+import com.b2b.b2b.modules.crm.deal.internal.infrastructure.persistence.DealRepository;
 import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
-import com.b2b.b2b.modules.crm.pipeline.persistence.BasePipelineRepository;
 import com.b2b.b2b.modules.crm.pipeline.persistence.DealPipelineRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.model.DealPipelineStage;
 import com.b2b.b2b.modules.crm.pipelineStage.payloads.PipelineStageRequestDTO;
-import com.b2b.b2b.modules.crm.pipelineStage.persistence.BasePipelineStageRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.persistence.DealPipelineStageRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.service.DealPipelineStageService;
 import com.b2b.b2b.modules.crm.pipelineStage.util.StageUtils;

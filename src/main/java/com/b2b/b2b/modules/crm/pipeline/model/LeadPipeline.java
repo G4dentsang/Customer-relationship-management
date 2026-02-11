@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.pipeline.model;
 
 import com.b2b.b2b.modules.organization.model.Organization;
-import com.b2b.b2b.modules.crm.lead.model.Lead;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.Lead;
 import com.b2b.b2b.modules.crm.pipelineStage.model.LeadPipelineStage;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

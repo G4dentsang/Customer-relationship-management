@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.crm.pipelineStage.service;
 
-import com.b2b.b2b.modules.crm.lead.model.Lead;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.Lead;
 import com.b2b.b2b.modules.crm.pipeline.model.LeadPipeline;
 import com.b2b.b2b.modules.crm.pipelineStage.model.LeadPipelineStage;
 

@@ -1,9 +1,9 @@
 package com.b2b.b2b.modules.crm.pipelineStage.service.impl;
 
 import com.b2b.b2b.exception.BadRequestException;
-import com.b2b.b2b.modules.crm.lead.model.Lead;
-import com.b2b.b2b.modules.crm.lead.model.LeadStatus;
-import com.b2b.b2b.modules.crm.lead.persistence.LeadRepository;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.Lead;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.LeadStatus;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.LeadRepository;
 import com.b2b.b2b.modules.crm.pipeline.model.LeadPipeline;
 import com.b2b.b2b.modules.crm.pipeline.persistence.LeadPipelineRepository;
 import com.b2b.b2b.modules.crm.pipelineStage.model.LeadPipelineStage;

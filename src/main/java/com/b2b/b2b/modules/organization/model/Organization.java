@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.organization.model;
 
-import com.b2b.b2b.modules.crm.company.model.Company;
-import com.b2b.b2b.modules.crm.lead.model.Lead;
+import com.b2b.b2b.modules.crm.company.internal.entity.Company;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.Lead;
 import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
 import com.b2b.b2b.modules.crm.pipeline.model.LeadPipeline;
 import com.b2b.b2b.modules.workflow.defination.model.WorkflowRule;

@@ -9,7 +9,6 @@ import com.b2b.b2b.modules.user.model.PasswordResetToken;
 import com.b2b.b2b.modules.user.model.User;
 import com.b2b.b2b.modules.user.persistence.UserRepository;
 import com.b2b.b2b.modules.auth.repository.PasswordResetTokenRepository;
-import com.b2b.b2b.modules.notification.service.EmailInfrastructureService;
 import com.b2b.b2b.modules.auth.service.LoginAttemptService;
 import com.b2b.b2b.modules.auth.service.PasswordResetService;
 import lombok.RequiredArgsConstructor;

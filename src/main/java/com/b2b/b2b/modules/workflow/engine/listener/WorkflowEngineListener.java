@@ -1,14 +1,14 @@
 package com.b2b.b2b.modules.workflow.engine.listener;
 
-import com.b2b.b2b.modules.crm.deal.event.DealCreatedEvent;
-import com.b2b.b2b.modules.crm.deal.event.DealDeletedEvent;
-import com.b2b.b2b.modules.crm.deal.event.DealPipelineStageChangeEvent;
-import com.b2b.b2b.modules.crm.deal.event.DealStatusUpdatedEvent;
-import com.b2b.b2b.modules.crm.lead.event.*;
+import com.b2b.b2b.modules.crm.deal.api.event.DealCreatedEvent;
+import com.b2b.b2b.modules.crm.deal.api.event.DealDeletedEvent;
+import com.b2b.b2b.modules.crm.deal.api.event.DealPipelineStageChangeEvent;
+import com.b2b.b2b.modules.crm.deal.api.event.DealStatusUpdatedEvent;
+import com.b2b.b2b.modules.crm.lead.api.event.*;
 import com.b2b.b2b.modules.workflow.exception.WorkflowMaintenanceException;
 import com.b2b.b2b.modules.organization.model.Organization;
-import com.b2b.b2b.modules.crm.deal.model.Deal;
-import com.b2b.b2b.modules.crm.lead.model.Lead;
+import com.b2b.b2b.modules.crm.deal.internal.infrastructure.persistence.Deal;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.Lead;
 import com.b2b.b2b.modules.workflow.defination.model.WorkflowRule;
 import com.b2b.b2b.modules.workflow.enums.WorkflowTriggerType;
 import com.b2b.b2b.modules.workflow.engine.processor.WorkflowEngineService;

@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.organization.service.impl;
 
-import com.b2b.b2b.modules.notification.service.EmailInfrastructureService;
-import com.b2b.b2b.modules.notification.util.Utils;
+import com.b2b.b2b.modules.notification.api.NotificationApi;
+import com.b2b.b2b.modules.notification.api.dto.EmailElements;
 import com.b2b.b2b.modules.organization.model.Invitation;
 import com.b2b.b2b.modules.organization.service.OrgMailService;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrgMailServiceImpl implements OrgMailService
 {
-    private final EmailInfrastructureService emailSender;
+    private final NotificationApi api;
     @Override
     public void sendInvitationEmail(Invitation invitation) {
-        String url = Utils.getInvitationEmailLink(invitation.getToken());
+        String url = OrganizationLinkGenerator.getInvitationEmailLink(invitation.getToken());
         String role = invitation.getRole().getAppRoles().name();
         String orgName = invitation.getOrganization().getOrganizationName();
 
@@ -24,6 +24,8 @@ public class OrgMailServiceImpl implements OrgMailService
                 "<a href='%s'>Accept Invitation</a>",
                 orgName, role, url);
 
-        emailSender.sendHtmlEmail(invitation.getEmail(), "You're Invited!", html);
+        EmailElements emailElements = new EmailElements(invitation.getEmail(), "You're Invited!", html);
+
+        api.sendHtmlEmail(emailElements);
     }
 }

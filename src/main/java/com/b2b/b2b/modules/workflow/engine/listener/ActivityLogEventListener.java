@@ -1,6 +1,6 @@
 package com.b2b.b2b.modules.workflow.engine.listener;
 
-import com.b2b.b2b.modules.crm.lead.event.LeadCreatedEvent;
+import com.b2b.b2b.modules.crm.lead.api.event.LeadCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -14,7 +14,7 @@ public class ActivityLogEventListener {
     @Async
     public void handleOnLeadCreatedEvent(LeadCreatedEvent leadCreatedEvent)
     {
-        //logger for replaces ActivityLog service
+        //logger for replaces ActivityLog infrastructure
         logger.info("Activity logging  with id {}", leadCreatedEvent.lead().getId());
         //other domain related task
     }

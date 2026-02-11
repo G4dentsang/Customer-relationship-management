@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.crm.pipelineStage.model;
 
-import com.b2b.b2b.modules.crm.deal.model.Deal;
-import com.b2b.b2b.modules.crm.deal.model.DealStatus;
+import com.b2b.b2b.modules.crm.deal.internal.infrastructure.persistence.Deal;
+import com.b2b.b2b.modules.crm.deal.internal.infrastructure.persistence.DealStatus;
 import com.b2b.b2b.modules.crm.pipeline.model.DealPipeline;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

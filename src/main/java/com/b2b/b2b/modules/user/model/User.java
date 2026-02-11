@@ -1,7 +1,7 @@
 package com.b2b.b2b.modules.user.model;
 
 import com.b2b.b2b.modules.auth.entity.RefreshToken;
-import com.b2b.b2b.modules.crm.lead.model.Lead;
+import com.b2b.b2b.modules.crm.lead.internal.infrastructure.persistence.Lead;
 import com.b2b.b2b.modules.organization.model.UserOrganization;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
